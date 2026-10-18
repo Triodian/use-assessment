@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>User guide · AI Use Assessment</title>
+<meta name="description" content="User guide for the AI Use Assessment app: what it is for, who does what, the eight phases, the register, review points, outputs, versions and notifications.">
+<link rel="icon" href="/triodian-mark.svg" type="image/svg+xml">
+<link rel="preload" href="/fonts/source-serif-4-latin-opsz-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/ibm-plex-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/app.css">
+<style>
+/* User guide for the AI Use Assessment app. Uses the app's design system (app.css) and its tokens.
+   Guide-only classes are prefixed g- so they do not collide with the app's own .steps, .sub and .sh. */
+.hdr{border-top-color:var(--navy)}
+.g-back{font:500 13px var(--sans);color:var(--ink-soft);text-decoration:none;white-space:nowrap;border:1px solid var(--rule);border-radius:6px;padding:6px 10px;background:var(--card)}
+.g-back:hover{color:var(--ink);border-color:var(--ink-soft)}
+html{scroll-behavior:smooth;scroll-padding-top:76px}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+.g-page{max-width:820px;margin:0 auto;padding:40px 24px 80px}
+@media (max-width:639px){.g-page{padding:28px 16px 64px}}
+.g-paper{background:var(--card);border:1px solid var(--rule);border-radius:12px;padding:8px clamp(18px,4vw,44px) 40px}
+.g-docline{display:flex;flex-wrap:wrap;gap:4px 16px;padding:14px 0 12px;margin-bottom:22px;border-bottom:1px solid var(--rule-soft);font:400 13px var(--sans);color:var(--ink-faint)}
+.g-hero h1{font:600 clamp(30px,5vw,40px)/1.12 var(--serif);letter-spacing:-.01em;margin:0 0 14px;text-wrap:balance}
+.g-lede{font:400 19px/1.5 var(--serif);color:var(--ink-soft);margin:0 0 18px}
+.g-paper p,.g-paper li,.g-paper dd{font:400 16px/1.62 var(--serif);color:var(--ink)}
+.g-paper p{margin:0 0 12px}
+.g-paper h2{font:600 clamp(23px,3.4vw,28px)/1.2 var(--serif);margin:0 0 6px;text-wrap:balance}
+.g-paper h3{font:600 19px/1.3 var(--serif);margin:26px 0 8px}
+.g-paper h4{font:600 15px/1.3 var(--sans);margin:20px 0 6px;color:var(--ink)}
+.g-paper ul,.g-paper ol{margin:0 0 12px;padding-left:1.3rem}
+.g-paper li{margin:0 0 6px;padding-left:2px}
+.g-paper li::marker{color:var(--ink-faint)}
+.g-paper strong{font-weight:600}
+.g-ui{font:600 .9em var(--sans)}
+.g-code{font:600 .86em var(--sans);font-variant-numeric:tabular-nums;white-space:nowrap}
+section.g-sec{padding-top:40px;margin-top:36px;border-top:1px solid var(--rule)}
+.g-eyebrow{font:500 12px var(--sans);color:var(--ink-faint);margin:0 0 6px}
+.g-intro{color:var(--ink-soft)}
+.g-toc{background:var(--parchment-2);border:1px solid var(--rule);border-radius:10px;padding:16px 20px 10px;margin:22px 0 4px}
+.g-toc .g-eyebrow{margin-bottom:8px}
+.g-toc ol{margin:0;padding-left:1.4rem;columns:2;column-gap:28px}
+@media (max-width:639px){.g-toc ol{columns:1}}
+.g-toc li{font:400 15px/1.45 var(--sans);margin:0 0 6px;break-inside:avoid}
+.g-toc a{color:var(--ink);text-decoration:none}
+.g-toc a:hover{color:var(--aubergine);text-decoration:underline}
+.g-note{display:block;padding:12px 16px;margin:16px 0;background:var(--card);border:1px solid var(--rule);border-left:3px solid var(--ink-soft);border-radius:4px}
+.g-note p:last-child{margin-bottom:0}
+.g-note.priv{border-left-color:var(--privilege)}
+.g-note.priv .g-lbl{color:var(--privilege)}
+.g-note.new{border-left-color:var(--navy);background:#F3F5F8}
+.g-lbl{font:600 13px var(--sans);margin-right:6px;color:var(--ink)}
+.g-paper .tw{margin:10px 0 16px}
+.g-paper table.lg td{font:400 14px/1.5 var(--sans);color:var(--ink-soft)}
+.g-paper table.lg td:first-child{color:var(--ink);font-weight:600}
+.g-paper table.lg td.code{white-space:nowrap}
+.g-role{padding:16px 0 4px;border-top:1px solid var(--rule-soft);margin-top:14px}
+.g-role:first-of-type{border-top:0}
+.g-role h3{margin-top:0}
+.g-cant{font:400 14px/1.5 var(--sans);color:var(--ink-soft);border-left:3px solid var(--red);padding:6px 0 6px 12px;margin:6px 0 12px}
+.g-cant b{color:var(--red);font-weight:600;margin-right:4px}
+.g-top{display:inline-block;margin-top:14px;font:500 13px var(--sans);color:var(--ink-faint);text-decoration:none}
+.g-top:hover{color:var(--aubergine)}
+dl.g-dl{margin:0 0 12px;border-top:1px solid var(--rule-soft)}
+dl.g-dl>div{display:grid;grid-template-columns:minmax(0,12rem) minmax(0,1fr);gap:2px 18px;padding:9px 2px;border-bottom:1px solid var(--rule-soft)}
+@media (max-width:639px){dl.g-dl>div{grid-template-columns:minmax(0,1fr)}}
+dl.g-dl dt{font:600 14px/1.45 var(--sans);color:var(--ink)}
+dl.g-dl dd{margin:0;font-size:15px;color:var(--ink-soft)}
+.g-foot{margin-top:40px;padding-top:18px;border-top:1px solid var(--rule);display:flex;gap:12px;align-items:center;flex-wrap:wrap;font:400 13px var(--sans);color:var(--ink-faint)}
+.g-foot img{height:18px;width:auto;display:block}
+@media print{
+  .hdr,.g-top,.g-back{display:none!important}
+  html,body{background:#fff}
+  .g-page{padding:0;max-width:none}
+  .g-paper{border:0;padding:0}
+  section.g-sec{break-before:auto}
+  .tw,.g-note,.g-role{break-inside:avoid}
+  a{color:inherit;text-decoration:none}
+}
+</style>
+</head>
+<body>
+
+<header class="hdr"><div class="hdr-in">
+  <a class="brand" href="/" aria-label="Triodian · back to the assessment"><img src="/triodian-logo.svg" alt="" style="height:22px;width:auto"></a>
+  <span class="vrule" aria-hidden="true"></span>
+  <span class="apptitle">User guide · AI Use Assessment</span>
+  <div class="hdr-r"><a class="g-back" href="/">Back to the assessment</a></div>
+</div></header>
+
+<div class="g-page" id="top">
+<main class="g-paper" style="padding-top:8px;min-height:0">
+
+<div class="g-hero">
+  <div class="g-docline"><span>User guide</span><span>Version of 18 October 2026</span><span>For counsel, the GC, the insurer’s risk people and Triodian staff</span></div>
+  <h1>AI Use Assessment: user guide</h1>
+  <p class="g-lede">The app records, for a set of an insurer’s arrangements, where AI acts, what it can do, and what evidence of its behaviour can reach the insurer at each boundary. This guide explains what each person does, on which screen, and when.</p>
+</div>
+
+<nav class="g-toc" aria-label="Contents">
+  <div class="g-eyebrow">Contents</div>
+  <ol>
+    <li><a href="#purpose">What the app is for</a></li>
+    <li><a href="#start">Before you start</a></li>
+    <li><a href="#roles">Who does what</a></li>
+    <li><a href="#phases">The eight phases</a></li>
+    <li><a href="#register">Working on the register</a></li>
+    <li><a href="#review">Review points and the legal-line check</a></li>
+    <li><a href="#outputs">Outputs</a></li>
+    <li><a href="#versions">Comparing versions</a></li>
+    <li><a href="#next">The next annual assessment</a></li>
+    <li><a href="#notify">Email notifications and your profile</a></li>
+  </ol>
+</nav>
+
+<!-- 1 -->
+<section class="g-sec" id="purpose">
+  <div class="g-eyebrow">Everyone</div>
+  <h2>What the app is for</h2>
+  <p>Each site holds one assessment for one insurer. The assessment covers a representative set of the insurer’s arrangements, agreed with the GC. An arrangement is one relationship: a provider, the platform behind it, or an external AI service the insurer’s own staff use.</p>
+  <p>For each arrangement the app records:</p>
+  <ul>
+    <li>one register entry for each place AI acts, with every fact sourced or marked not known;</li>
+    <li>how much authority the AI holds and how serious a failure would be;</li>
+    <li>what evidence could be produced and checked, tested one rung at a time;</li>
+    <li>the questions put to counsel and counsel’s answers;</li>
+    <li>one finding.</li>
+  </ul>
+  <p>Without a calibration set from the AI Risk Appetite app, it measures against the framework’s defaults. With one, it measures against the board’s appetite.</p>
+  <div class="g-note"><span class="g-lbl">What it is not.</span>The app states what documents show and how AI uses are classified. It gives no legal advice and recommends no product. Counsel determines what the law requires. No provider is approached, no policyholder data is used and no system is connected to.</div>
+  <a class="g-top" href="#top">Back to contents</a>
+</section>
+
+<!-- 2 -->
+<section class="g-sec" id="start">
+  <div class="g-eyebrow">Everyone</div>
+  <h2>Before you start</h2>
+
+  <h3>Signing in</h3>
+  <p>You sign in through Cloudflare Access with your email address. A code is sent to that address. An administrator adds you as a user and gives you your roles in <span class="g-ui">Admin</span>. If you sign in before you are added, the app says you do not have access yet, and your request is listed for an administrator. You can still open the worked example.</p>
+  <p>Your roles decide what you can change. A control you cannot use is greyed out, and the reason is shown beside it with a <span class="g-ui">Why</span> link to the role limits. An account with no role can read the assessment but not change it.</p>
+  <p>Every change is saved to the server within about a second. If two people edit at once, their changes are merged. A change is refused only when both people changed the very same item, and the app names that item. The history is kept in order, cannot be edited, and is signed by the server.</p>
+  <p>Until the method owner, the delivery manager or an administrator starts the assessment, the opening screen says it has not been started yet.</p>
+
+  <h3>The worked example</h3>
+  <p>Choose <span class="g-ui">Open the worked example</span> on the opening screen or in the menu. It is the framework’s illustration: a fictional insurer, Corvane General Insurance, whose outside claims manager uses a triage model to route motor claims. It has three arrangements and one person in each role.</p>
+  <ul>
+    <li>It runs in your browser only. Nothing in it is saved.</li>
+    <li>A yellow bar on every screen says it is a worked example.</li>
+    <li>Use <span class="g-ui">Acting as</span> in the header to choose whose view to try. This is how you see what each role can and cannot change.</li>
+    <li>Choose <span class="g-ui">Back to the assessment</span> in the yellow bar, or <span class="g-ui">Leave the worked example</span> in the menu, to return.</li>
+  </ul>
+
+  <h3>The privilege band</h3>
+  <p>A band under the header shows the privilege marking counsel directs, and the insurer and reference. The same marking is printed as the first line of every output. If no marking has been set, the band says so; set-up is where it is entered.</p>
+  <div class="g-note priv"><span class="g-lbl">Privilege.</span>The assessment holds verbatim agreement extracts and counsel’s responses. Store and send every download as counsel directs.</div>
+
+  <h3>Other bands you may see</h3>
+  <ul>
+    <li><strong>Uncalibrated: framework defaults apply.</strong> No calibration set is loaded.</li>
+    <li><strong>Blind re-derivation.</strong> You are a peer reviewer and the classifier’s work on the listed entries is hidden until you record your own tier.</li>
+    <li><strong>Test site.</strong> An orange bar on the test copy of the app. It is for trying things out and is not the live assessment.</li>
+  </ul>
+
+  <h3>My actions</h3>
+  <p><span class="g-ui">My actions</span> is the first item in the header, with a count. It lists what is waiting for you, based on your roles. Each item opens where the work is: the entry and tab, the classification step, the review point or the output. Items that need attention now are marked <span class="g-ui">Now</span> and listed first.</p>
+  <p>Items include facts or classification to finish, a failure consequence to confirm, a blind re-derivation, an R3 difference, questions to answer, review points, and sign-offs (R1, R2, R4 to R7, the annex and the hand-back list). If nothing is waiting, it says so.</p>
+
+  <h3>Finding your way</h3>
+  <p>The header lists the screens in order: Set-up, Set, Register, Classify, Counsel, Findings, Review and Outputs. The menu also has Overview and Reference. <span class="g-ui">Overview</span> shows the eight phases and their gates, and a panel naming the next open gate. <span class="g-ui">Reference</span> holds the seven questions, the scales, the tests, the deliverables, the glossary and the framework text. Underlined terms on any screen open a short definition.</p>
+  <a class="g-top" href="#top">Back to contents</a>
+</section>
+
+<!-- 3 -->
+<section class="g-sec" id="roles">
+  <div class="g-eyebrow">Roles</div>
+  <h2>Who does what</h2>
+  <p class="g-intro">There are ten roles. Five are Triodian roles: method owner, assessor, peer reviewer, validation and delivery manager. One person may hold several roles. Separation of duties is enforced by person, not by role, and the server checks it on every save. For example, you cannot peer review an entry you classified, and you cannot validate a set in which you classified or peer reviewed an entry.</p>
+
+  <div class="g-role" id="role-method">
+    <h3>Method owner (Triodian)</h3>
+    <p>Responsible for the method, its sequence and the evidence each stage produces.</p>
+    <ul>
+      <li>Keeps set-up and the people list, with the delivery manager.</li>
+      <li>Can record arrangements, enter facts and classify, as an assessor can.</li>
+      <li>Keeps the legal-line phrase list and clears legal-line hits (R5).</li>
+      <li>Writes the technical annex (DL5), section by section, and signs it.</li>
+    </ul>
+    <p class="g-cant"><b>Cannot:</b>sign the annex if they peer reviewed any entry; edit or classify an entry they are the peer reviewer of.</p>
+  </div>
+
+  <div class="g-role" id="role-assessor">
+    <h3>Assessor (Triodian)</h3>
+    <ul>
+      <li>Records arrangements in the set.</li>
+      <li>Adds register entries and enters facts in fields 1 to 14.</li>
+      <li>Classifies each entry, proposes the failure consequence and runs the obtainability test.</li>
+      <li>Raises questions to counsel, transcribes counsel’s written responses, and completes the gap owner and routes on findings.</li>
+    </ul>
+    <p class="g-cant"><b>Cannot:</b>edit or classify an entry they are the peer reviewer of.</p>
+  </div>
+
+  <div class="g-role" id="role-peer">
+    <h3>Peer reviewer (Triodian)</h3>
+    <ul>
+      <li>Re-derives each entry’s authority tier blind (R3), from fields 11 to 13 alone. The classifier’s tier, reasons and proposal stay hidden on every screen, including outputs, until the peer reviewer records a tier.</li>
+      <li>Where the two tiers differ, both are kept and a written resolution is needed before phase 3 can close.</li>
+    </ul>
+    <p class="g-cant"><b>Cannot:</b>review an entry they classified; record R3 on an entry another peer reviewer has already recorded.</p>
+  </div>
+
+  <div class="g-role" id="role-validation">
+    <h3>Validation (Triodian)</h3>
+    <ul>
+      <li>Records R4 on the Review screen as passed or with exceptions. R4 checks that the rules for rungs and obtainability were applied the same way across entries, that every adjustment has a reason, and that every obtainable rung has five test results.</li>
+    </ul>
+    <p class="g-cant"><b>Cannot:</b>record R4 if they classified or peer reviewed any entry in the set.</p>
+  </div>
+
+  <div class="g-role" id="role-delivery">
+    <h3>Delivery manager (Triodian)</h3>
+    <ul>
+      <li>Keeps set-up with the method owner: engagement details, the independent reviewer and reporting line, the calibration set, documents D1 to D10 and interviews.</li>
+      <li>Records arrangements in the set.</li>
+      <li>Runs the register completeness check (R2).</li>
+    </ul>
+    <p class="g-cant"><b>Cannot:</b>enter facts or classify, unless they also hold the assessor or method owner role.</p>
+  </div>
+
+  <div class="g-role" id="role-counsel">
+    <h3>Counsel</h3>
+    <p>The law firm leading the engagement. Owns every legal call. Triodian works for counsel on technical matters.</p>
+    <ul>
+      <li>Records counsel’s own agreement to the set (part of R1).</li>
+      <li>Answers questions to counsel and records determinations in fields 23 to 25.</li>
+      <li>Records counsel review of the drafts (R6). Every draft goes to counsel before anyone at the insurer sees it.</li>
+      <li>Receives the review pack when the independent reviewer reports through counsel.</li>
+    </ul>
+    <p class="g-cant"><b>Cannot:</b>edit facts, classifications or test results.</p>
+  </div>
+
+  <div class="g-role" id="role-gc">
+    <h3>GC</h3>
+    <p>The insurer’s General Counsel decides the brief and owns the outcome.</p>
+    <ul>
+      <li>Confirms the brief. Set-up records who confirmed it, on what date and with what reference.</li>
+      <li>Records the GC’s own agreement to the set (part of R1).</li>
+    </ul>
+    <p class="g-cant"><b>Cannot:</b>edit the register or classifications.</p>
+  </div>
+
+  <div class="g-role" id="role-owner">
+    <h3>Arrangement owner (insurer)</h3>
+    <ul>
+      <li>Confirms the failure consequence proposed for each entry (C1 to C5).</li>
+      <li>As the owner of the insurer’s AI inventory, accepts the hand-back list (DL6): AI uses found that are not on the inventory. This closes phase 7.</li>
+    </ul>
+    <p class="g-cant"><b>Cannot:</b>edit classifications.</p>
+  </div>
+
+  <div class="g-role" id="role-ir">
+    <h3>Independent reviewer</h3>
+    <p>A party outside Triodian that checks, on behalf of the CRO, whether the assessment is sound and its findings supported. The app shows the role, never the firm.</p>
+    <ul>
+      <li>Logs review points on the Review screen, each against an output and section.</li>
+      <li>Closes or discloses each point once Triodian has responded. Only the independent reviewer can.</li>
+      <li>Confirms R7 when the reporting line runs through counsel.</li>
+    </ul>
+    <p class="g-cant"><b>Cannot:</b>edit anything in the assessment other than review points.</p>
+  </div>
+
+  <div class="g-role" id="role-cro">
+    <h3>CRO (insurer)</h3>
+    <ul>
+      <li>When set-up records the reporting line as directly to the CRO, the review pack is addressed to the CRO, and the CRO named in set-up confirms R7.</li>
+    </ul>
+  </div>
+
+  <div class="g-role" id="role-admin">
+    <h3>Administrator</h3>
+    <p>Not an assessment role. An administrator manages users, their roles, access requests and activity in <span class="g-ui">Admin</span>, can edit set-up, and sees held notifications. Being an administrator does not by itself allow changing the register or recording sign-offs.</p>
+  </div>
+  <a class="g-top" href="#top">Back to contents</a>
+</section>
+
+<!-- 4 -->
+<section class="g-sec" id="phases">
+  <div class="g-eyebrow">Everyone</div>
+  <h2>The eight phases</h2>
+  <p class="g-intro">Each phase has a screen and an exit gate. The gate is shown at the foot of the screen, with each open item listed. Under an open item the app shows chips for the entries holding it open; each chip opens that entry. The app does not stop anyone working ahead of a gate, but any output produced before its gate is met is marked draft.</p>
+
+  <h3>0 Mobilise · Set-up</h3>
+  <p>Record the engagement (insurer, reference, counsel firm, start date) and the privilege marking counsel directs. Record who confirmed the brief, when and with what reference. Set the independent reviewer, the organisation filling the role and the reporting line. Load the calibration set from the Risk Appetite app or from a file. Track documents D1 to D10 and interviews. Give each received document a short ID for source references, such as <span class="g-code">D5-ARR02 p.14</span>.</p>
+  <p><strong>Gate:</strong> brief confirmed by the GC; privilege marking entered; document request issued.</p>
+
+  <h3>1 Confirm the set · Set</h3>
+  <p>Record each arrangement (ARR-01 onward): its parties, its boundary types, the criteria it meets and the reason it was selected. The default is four arrangements. A coverage strip shows whether each boundary type is represented:</p>
+  <ul>
+    <li><span class="g-code">B1</span> insurer to third party, such as a claims manager or underwriting agency;</li>
+    <li><span class="g-code">B2</span> third party to fourth party: the provider and the platform or AI model behind it;</li>
+    <li><span class="g-code">B3</span> the insurer’s own use of an external AI service.</li>
+  </ul>
+  <p>The GC and counsel each record their own agreement. Together these are review point R1.</p>
+  <p><strong>Gate:</strong> set agreed by the GC and by counsel (R1); B1, B2 and B3 each represented, or recorded as an exception in the exceptions log.</p>
+
+  <h3>2 Map the AI · Register</h3>
+  <p>Add one entry (REG-001 onward) for each place AI acts, under its arrangement, and record fields 1 to 14. See <a href="#register">Working on the register</a>.</p>
+  <p><strong>Gate:</strong> at least one entry; fields 1 to 14 complete or not known, every value sourced; no broken references.</p>
+
+  <h3>3 Classify and test · Classify</h3>
+  <p>Work through each entry in five steps: authority, consequence, indicative (or expected) rung, obtainability, and blind re-derivation (R3). Validation then records R4.</p>
+  <p><strong>Gate:</strong> fields 15 to 22 complete; every entry re-derived (R3) and any difference resolved; R4 validation passed.</p>
+
+  <h3>4 Questions to counsel · Counsel</h3>
+  <p>Anything that turns on what the law requires goes to counsel as a numbered written question. It is never answered in a working paper. Counsel’s answers are recorded in fields 23 to 25.</p>
+  <p><strong>Gate:</strong> every question answered, or recorded as open with an owner.</p>
+
+  <h3>5 Findings and report · Findings</h3>
+  <p>The app sets one finding per arrangement and builds its worksheet, parts A to J. Triodian completes the named gap owner. Drafts go to counsel first, and the method owner clears the legal-line check.</p>
+  <p><strong>Gate:</strong> every arrangement has a finding or is awaiting counsel; R5 legal-line check cleared; R6 counsel review recorded.</p>
+
+  <h3>6 Independent check · Review</h3>
+  <p>The independent reviewer logs points, Triodian responds, and the reviewer closes or discloses each one. R7 is then confirmed.</p>
+  <p><strong>Gate:</strong> R7 independent check complete.</p>
+
+  <h3>7 Close · Outputs</h3>
+  <p>Download the outputs. The arrangement owner accepts the hand-back list.</p>
+  <p><strong>Gate:</strong> hand-back list accepted.</p>
+  <a class="g-top" href="#top">Back to contents</a>
+</section>
+
+<!-- 5 -->
+<section class="g-sec" id="register">
+  <div class="g-eyebrow">Triodian, counsel, arrangement owner</div>
+  <h2>Working on the register</h2>
+  <p class="g-intro">Each entry has 26 fields. Fields 1 to 14 are facts. Fields 15 to 22 are Triodian’s classification and test. Fields 23 to 25 are counsel’s. Field 26 is the finding.</p>
+
+  <h3>Facts: fields 1 to 14</h3>
+  <p>Fields 1 (entry ID) and 2 (arrangement ID) are set by the app. Every other fact needs a source: a document and page, or an interview and date. A value without a source is recorded as <strong>not known</strong>, never estimated. Not-known fields are counted and reported.</p>
+  <div class="tw"><table class="lg"><thead><tr><th>Field</th><th>What is recorded</th></tr></thead><tbody>
+    <tr><td class="code">3</td><td>Boundary type: B1, B2 or B3</td></tr>
+    <tr><td class="code">4</td><td>Where the AI acts: own staff, provider, or platform behind a provider</td></tr>
+    <tr><td class="code">5</td><td>Business function, and the critical operation supported from the insurer’s CPS 230 list, or “none”</td></tr>
+    <tr><td class="code">6</td><td>On the insurer’s inventory: yes, no or partly</td></tr>
+    <tr><td class="code">7–10</td><td>System name and purpose; supplier; platform and model provider behind it; location of each party and any offshoring</td></tr>
+    <tr><td class="code">11</td><td>What the AI does: two sentences in plain words, using only verbs from the source</td></tr>
+    <tr><td class="code">12</td><td>Human involvement: a person acts, a person decides, the output is the decision, or unattended</td></tr>
+    <tr><td class="code">13</td><td>Credentials and systems the AI can change, or “none”</td></tr>
+    <tr><td class="code">14</td><td>Agreement terms on information, audit, sub-contracting and notification, with clause references and verbatim extracts</td></tr>
+  </tbody></table></div>
+  <p>Field 11 is written before the tier is chosen, so a reviewer can re-derive the tier from it. The tier cannot be set until field 11 is saved with a source.</p>
+
+  <h3>Classification: fields 15 to 22</h3>
+  <h4>Authority tier, field 15</h4>
+  <p>Answer the authority tests with sources. The app proposes the highest tier any answer supports. Accept it, or record a different tier with a reason.</p>
+  <div class="tw"><table class="lg"><thead><tr><th>Tier</th><th>Meaning</th></tr></thead><tbody>
+    <tr><td class="code">A1 Productivity</td><td>Drafts, summarises, searches. A person still acts</td></tr>
+    <tr><td class="code">A2 Analytical</td><td>Scores, ranks, recommends. A person decides</td></tr>
+    <tr><td class="code">A3 Decision</td><td>Approves, declines, triages. The output is the decision; no person reviews it before it takes effect</td></tr>
+    <tr><td class="code">A4 Transactional</td><td>Prices, allocates, pays. Money or positions move</td></tr>
+    <tr><td class="code">A5 Agentic</td><td>Plans and acts across steps and tools, unattended</td></tr>
+    <tr><td class="code">A6 Actuation</td><td>Holds credentials that change systems, assets or infrastructure</td></tr>
+  </tbody></table></div>
+
+  <h4>Failure consequence, field 16</h4>
+  <p>The most serious credible outcome if the AI acted wrongly and went undetected for one reporting period. Triodian proposes the level; the arrangement owner confirms it. Where a calibration set is loaded, the insurer’s thresholds are shown beside each level.</p>
+  <div class="tw"><table class="lg"><thead><tr><th>Level</th><th>Meaning</th></tr></thead><tbody>
+    <tr><td class="code">C1 Immaterial</td><td>No effect outside the team using it</td></tr>
+    <tr><td class="code">C2 Contract breach</td><td>The provider or insurer would be in breach of an agreement term</td></tr>
+    <tr><td class="code">C3 Financial loss</td><td>Loss to the insurer above its reporting threshold for the operation</td></tr>
+    <tr><td class="code">C4 Policyholder harm</td><td>A policyholder is wrongly declined, delayed, charged or paid</td></tr>
+    <tr><td class="code">C5 Critical-operation disruption</td><td>A critical operation moves outside the tolerance the board has set</td></tr>
+  </tbody></table></div>
+
+  <h4>Indicative rung, field 17</h4>
+  <p>The app reads the rung from the tier and consequence. Without a calibration set it is the <strong>indicative rung</strong>, by the framework’s base rule. With one, the field is labelled <strong>expected rung</strong> and comes from the board’s evidence expectation (parameter P3). Rungs run from <span class="g-code">E0</span> none, <span class="g-code">E1</span> disclosure, <span class="g-code">E2</span> attestation, <span class="g-code">E3</span> event notification, <span class="g-code">E4</span> audit and <span class="g-code">E5</span> continuous telemetry, to <span class="g-code">E6</span> deterministic actuation control.</p>
+
+  <h4>Evidence and the obtainability test, fields 18 to 22</h4>
+  <p>Record the evidence received today (18), the evidence the system could produce (19) and whether it is independently checkable (20). Then run the obtainability test, starting at the indicative or expected rung. At each rung, answer five tests, each with a source:</p>
+  <ul>
+    <li><span class="g-code">T1</span> Produced: does a record of this type exist, or could the system generate it without redesign?</li>
+    <li><span class="g-code">T2</span> Aggregate: can it be given without individual decisions, policyholder data or the model?</li>
+    <li><span class="g-code">T3</span> Reachable: is there a term in force, or a contracting point, by which it can reach the insurer?</li>
+    <li><span class="g-code">T4</span> Checkable: can someone independent of the producer verify it?</li>
+    <li><span class="g-code">T5</span> Timely: can it arrive in time for the insurer to act and meet its own notification obligations?</li>
+  </ul>
+  <p>A failure steps down one rung. The obtainable rung (21) is the first where all five pass. For an A1 entry at C1, the test is only whether disclosure exists. If a new calibration set changes the rung a test started from, the entry is marked for re-test.</p>
+  <p>The app proposes confidence (22) from the source of the T1 result: high where it is a received document of type D7, D8 or D9, medium where another document is cited, and low otherwise. At B2, confidence is low unless field 14 or a D7 provider disclosure supports it. You may lower confidence freely; raising it needs a reason.</p>
+
+  <h3>Blind re-derivation (R3)</h3>
+  <p>When a tier is recorded, peer reviewers are told. A peer reviewer who did not classify the entry opens step 5 on the Classify screen, sees fields 11 to 13 only, and records a tier. Until then the classifier’s tier, the rungs and the finding are hidden from that person on every screen. If the two tiers differ, both are kept side by side and a written resolution with a reason is needed. An unresolved difference keeps phase 3 open.</p>
+
+  <h3>Questions to counsel</h3>
+  <p>Triodian raises a question from <span class="g-ui">Ask counsel</span> beside a field, or from the form on the Counsel screen. Each question states which of the seven framework questions it relates to, the facts with sources, why it matters, and the question itself. Questions 1 to 4 and 7 are counsel’s to determine; under question 5 counsel determines the authority delegated; under question 6 the insurer confirms the consequence.</p>
+  <ul>
+    <li>Counsel enters the response, or a Triodian person transcribes counsel’s written response verbatim. The record shows who transcribed it.</li>
+    <li>From an answered question, the determination is recorded in field 23 (nexus, relationship and location), 24 (rights held) or 25 (required rung and grading: requirement, expectation or better view). Once recorded it is locked.</li>
+    <li>Only the newest answer for an entry and field can be recorded. To change a determination, ask and answer a new question.</li>
+    <li>A question not yet answered can be recorded as open with a named owner.</li>
+  </ul>
+
+  <h3>Findings</h3>
+  <p>The app sets one finding per arrangement from the entries under it. The method owner and counsel never type a finding in.</p>
+  <div class="tw"><table class="lg"><thead><tr><th>Finding</th><th>When</th></tr></thead><tbody>
+    <tr><td class="code">F1 Evidence obtainable</td><td>The obtainable rung is at or above the required rung</td></tr>
+    <tr><td class="code">F2 Gap</td><td>The obtainable rung is below the required rung. The worksheet gives the gap in rungs, the priority, the test that failed, the gap owner, the routes, and any time limit from the appetite</td></tr>
+    <tr><td class="code">F3 No reasonable reach</td><td>Counsel has determined the insurer cannot reasonably require evidence at this boundary. This follows from counsel’s answers of no nexus, no relationship and passive rights only (questions 1 to 3), or from an explicit reach determination. A conclusion, not a gap</td></tr>
+    <tr><td class="code">F4 Not determinable on documents</td><td>An entry is recorded as not determinable: the documents do not show whether AI is used, or what it can do. The specific question that would resolve it, and who could answer it, are recorded</td></tr>
+  </tbody></table></div>
+  <p>Until counsel has set the required rung for every entry, the arrangement shows <strong>awaiting counsel</strong>. Flags are shown beside the finding, never inside it: above the board’s authority ceiling, a location the board has marked, below the minimum confidence, not-known fields over the limit, F4 standing too long, or a concentration on one platform or model provider. Flags appear only when a calibration set is loaded.</p>
+  <a class="g-top" href="#top">Back to contents</a>
+</section>
+
+<!-- 6 -->
+<section class="g-sec" id="review">
+  <div class="g-eyebrow">Triodian, counsel, independent reviewer, CRO</div>
+  <h2>Review points and the legal-line check</h2>
+  <p class="g-intro">The Review screen lists the seven review points. Open points are listed first; completed ones fold into one line.</p>
+  <div class="tw"><table class="lg"><thead><tr><th>Point</th><th>When</th><th>Who records it</th><th>What it tests</th></tr></thead><tbody>
+    <tr><td class="code">R1 Set review</td><td>End of phase 1</td><td>The GC and counsel, each for themselves, on the Set screen</td><td>Selection criteria applied; each boundary type represented</td></tr>
+    <tr><td class="code">R2 Register completeness</td><td>End of phase 2</td><td>Delivery manager</td><td>Fields 1 to 14 complete or not known; every value sourced and dated</td></tr>
+    <tr><td class="code">R3 Classification review</td><td>During phase 3</td><td>A peer reviewer who did not classify the entry, on Classify step 5</td><td>Tier re-derived from fields 11 to 13 without sight of the original; differences resolved</td></tr>
+    <tr><td class="code">R4 Validation</td><td>End of phase 3</td><td>Validation, who classified and reviewed nothing in the set</td><td>Rules applied consistently; every adjustment has a reason; every obtainable rung has five test results</td></tr>
+    <tr><td class="code">R5 Legal-line check</td><td>Before any draft leaves Triodian</td><td>Method owner</td><td>No sentence states what the law requires</td></tr>
+    <tr><td class="code">R6 Counsel review</td><td>Phase 5</td><td>Counsel</td><td>Draft seen by counsel first; determinations transcribed accurately</td></tr>
+    <tr><td class="code">R7 Independent check</td><td>Phase 6</td><td>Independent reviewer through counsel, or the CRO when the line is direct</td><td>Is the assessment sound, and are its findings supported?</td></tr>
+  </tbody></table></div>
+
+  <h3>The legal-line check (R5)</h3>
+  <p>The app scans every draft output for wording that states what the law requires. The method owner keeps the phrase list, one phrase per line. It starts with “must comply”, “is required by”, “breach of”, “non-compliant”, “in breach”, “legally required” and “obliged to”.</p>
+  <p>Each hit shows the phrase, the field it came from and every output it appears in. The method owner changes the text at its source or clears the hit. A hit is keyed by its phrase and source text, so clearing it once clears it in every output that carries that text. <strong>Final export stays blocked until every hit is cleared.</strong></p>
+
+  <h3>Exceptions and broken references</h3>
+  <p>Triodian records any departure from the method in the exceptions log, with its reason, who approved it and the date. A boundary type missing from the set is recorded here with its code. If any item points to an arrangement, entry or person that does not exist, the Review screen lists it under <span class="g-ui">Broken references</span>, and phase 2 stays open until it is fixed.</p>
+
+  <h3>Independent review points</h3>
+  <p>The independent reviewer logs each point against an output and section. Any Triodian person responds. Only the independent reviewer closes or discloses a point. When no point is open, R7 can be confirmed: by the independent reviewer when the line runs through counsel, or by the CRO named in set-up when it runs directly to the CRO.</p>
+  <a class="g-top" href="#top">Back to contents</a>
+</section>
+
+<!-- 7 -->
+<section class="g-sec" id="outputs">
+  <div class="g-eyebrow">Everyone</div>
+  <h2>Outputs</h2>
+  <p class="g-intro">The Outputs screen lists every document with its status. Open one to read it, copy it or download it. Every output carries the privilege marking on its first line, and the calibration status and version, draft or final, and the date in its header. Outputs always use the full date form, such as 18 October 2026.</p>
+  <div class="tw"><table class="lg"><thead><tr><th>Output</th><th>Contents</th><th>Final once</th></tr></thead><tbody>
+    <tr><td class="code">DL1</td><td>AI dependency register: all 26 fields for every entry, source index and not-known count</td><td>Phase 3 gate met</td></tr>
+    <tr><td class="code">DL2</td><td>Evidence obtainable at each boundary: one worksheet per arrangement and a summary table</td><td>Phase 5 gate met</td></tr>
+    <tr><td class="code">DL3</td><td>Control-library shape for the insurer’s own AI boundary: B3 entries only, categories of rule and the record each would produce, with no product named</td><td>Phase 5 gate met</td></tr>
+    <tr><td class="code">DL4</td><td>Technical schedule, tolerance and trigger design for each F1 and F2, to sit beside counsel’s flow-down clauses</td><td>Phase 5 gate met</td></tr>
+    <tr><td class="code">DL5</td><td>Technical annex, in Triodian’s name, written and signed by the method owner</td><td>Phase 6 gate met</td></tr>
+    <tr><td class="code">DL6</td><td>Hand-back list: AI uses found that are not on the insurer’s inventory</td><td>Phase 2 gate met</td></tr>
+    <tr><td class="code">QS</td><td>Question set to counsel</td><td>Phase 3 gate met</td></tr>
+    <tr><td class="code">RP</td><td>Review pack for the independent reviewer, addressed by the reporting line</td><td>Phase 5 gate met</td></tr>
+    <tr><td class="code">CM</td><td>Closing measures</td><td>Phase 7 gate met</td></tr>
+    <tr><td class="code">DR</td><td>Difference report: what changed in the results when a new calibration version was loaded</td><td>Any time</td></tr>
+  </tbody></table></div>
+
+  <h3>Draft and final</h3>
+  <p>An output is final only when three things are true: every legal-line hit is cleared (R5), the phase 5 gate is met, and the output’s own gate is met. Until then it is marked <strong>Draft</strong>, and the screen says why. This keeps unchecked wording and unreviewed findings from leaving as final documents. Counsel sees every draft first.</p>
+  <p>The status column also shows when the annex is signed and when the hand-back list is accepted.</p>
+
+  <h3>Downloads</h3>
+  <ul>
+    <li><span class="g-ui">Download Word</span> makes a .docx.</li>
+    <li><span class="g-ui">Download PDF</span> opens the print dialog; choose Save as PDF.</li>
+    <li><span class="g-ui">Download .md</span> saves the markdown. <span class="g-ui">Copy markdown</span> copies it instead.</li>
+    <li>On the register (DL1) you can also download a .csv, and the register extract.</li>
+  </ul>
+  <p>Each download is marked draft or final to match the output’s status. Where the app is shown inside another page and downloads are blocked, use <span class="g-ui">Copy markdown</span>.</p>
+
+  <h3>The register extract</h3>
+  <p><span class="g-ui">Register extract (.json)</span> on DL1 is the file that goes back to the AI Risk Appetite app, where it informs the evidence expectation and check K10. For each entry it holds only the function, location, authority tier, consequence and the rung received today. It carries no facts, sources or client wording, so it can pass to the appetite work without the assessment’s working papers.</p>
+  <a class="g-top" href="#top">Back to contents</a>
+</section>
+
+<!-- 8 -->
+<section class="g-sec" id="versions">
+  <div class="g-eyebrow">Everyone</div>
+  <h2>Comparing versions</h2>
+  <div class="g-note new"><span class="g-lbl">Being added.</span>This feature is being built now. Details may change.</div>
+  <p>The app keeps a version of the assessment at each sign-off: when the set is agreed (R1), when counsel records review (R6), when the independent check (R7) is complete, when the technical annex is signed, and when the hand-back list is accepted. The server adds each version; no one can change or remove one.</p>
+  <p>On the Outputs screen, <span class="g-ui">Compare versions</span> compares any version with a later one, or with the assessment now. Each changed field, finding or arrangement is listed, with the old value struck through beside the new value. When comparing with now, the table also shows who last changed each field. Select an entry to open it. The register (DL1) and the technical annex (DL5) include a section listing the changes since the latest version.</p>
+  <a class="g-top" href="#top">Back to contents</a>
+</section>
+
+<!-- 9 -->
+<section class="g-sec" id="next">
+  <div class="g-eyebrow">Method owner, administrator</div>
+  <h2>The next annual assessment</h2>
+  <div class="g-note new"><span class="g-lbl">Being added.</span>This feature is being built now. Details may change.</div>
+  <p>Once the assessment is closed, an administrator or the method owner can start the next one from Set-up. The assessment is closed when the hand-back list is accepted and R7 is complete.</p>
+  <ul>
+    <li><strong>Kept as a starting point:</strong> the set-up, the people, the arrangements and each entry’s facts.</li>
+    <li><strong>Cleared:</strong> classification, questions to counsel, review points and sign-offs.</li>
+  </ul>
+  <p>The facts carried over still need checking against the current documents. The closed assessment is kept, read-only, under <span class="g-ui">Earlier assessments</span> in the menu.</p>
+  <a class="g-top" href="#top">Back to contents</a>
+</section>
+
+<!-- 10 -->
+<section class="g-sec" id="notify">
+  <div class="g-eyebrow">Everyone</div>
+  <h2>Email notifications and your profile</h2>
+  <h3>Email notifications</h3>
+  <p>When a save gives someone something to do, the app writes them a message:</p>
+  <div class="tw"><table class="lg"><thead><tr><th>When</th><th>Who is told</th></tr></thead><tbody>
+    <tr><td>A question is sent to counsel</td><td>Counsel</td></tr>
+    <tr><td>Counsel’s answer is recorded</td><td>The method owner</td></tr>
+    <tr><td>A failure consequence is proposed and not yet confirmed</td><td>The arrangement owner</td></tr>
+    <tr><td>An authority tier is recorded</td><td>Peer reviewers, other than the person who classified the entry</td></tr>
+    <tr><td>A blind re-derivation differs from the recorded tier (R3)</td><td>The classifier and the method owner</td></tr>
+    <tr><td>An independent review point is logged</td><td>The method owner and the delivery manager</td></tr>
+    <tr><td>Triodian responds to a review point</td><td>The independent reviewer</td></tr>
+    <tr><td>The independent check (R7) is recorded as complete</td><td>Counsel and the GC</td></tr>
+    <tr><td>Daily at 07:00 Brisbane time, for questions open for a week or more</td><td>Counsel, one reminder listing them</td></tr>
+  </tbody></table></div>
+  <p>You are not emailed about your own saves. Each email links to My actions and to your profile. The same items always appear under My actions, whether or not emails are on.</p>
+  <div class="g-note"><span class="g-lbl">Currently switched off.</span>Sending is not yet switched on. Until it is, messages are held and administrators can read them under <span class="g-ui">Admin → Notifications</span>. A notification problem never stops a save.</div>
+
+  <h3>Your profile</h3>
+  <p>Open <span class="g-ui">Your profile</span> from the opening screen or the header.</p>
+  <dl class="g-dl">
+    <div><dt>Your details</dt><dd>Your name and organisation. Your name is shown on the work you record.</dd></div>
+    <div><dt>Email address</dt><dd>To change it, enter the new address, then sign out and sign in with it; a code is sent there.</dd></div>
+    <div><dt>Date format</dt><dd>18 October 2026, 18 Oct 2026, 18/10/2026 or 2026-10-18. Used on the screens; outputs always use the full form.</dd></div>
+    <div><dt>Time zone</dt><dd>Automatic, from your device, or a time zone you choose. Used wherever a time is shown.</dd></div>
+    <div><dt>Email notifications</dt><dd>Untick the box to stop the emails. My actions still lists everything.</dd></div>
+    <div><dt>Access</dt><dd>Your roles, and whether you are an administrator. Roles are given by an administrator.</dd></div>
+  </dl>
+  <a class="g-top" href="#top">Back to contents</a>
+</section>
+
+<div class="g-foot"><img src="/triodian-logo.svg" alt="Triodian"><span>AI Use Assessment · user guide</span><span>·</span><a href="/">Back to the assessment</a></div>
+</main>
+</div>
+</body>
+</html>
