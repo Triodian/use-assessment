@@ -6,7 +6,9 @@ const SCREENS = ['overview', 'actions', 'setup', 'set', 'register', 'classify', 
 
 test('worked example: every screen and every output opens without errors', async ({ browser }) => {
   const page = await pageAs(browser, U.assessor);
-  await page.click('[data-act="example"]');
+  // On a fresh database the start screen offers the example; once an assessment exists it is in the menu.
+  if (await page.locator('main [data-act="example"]').count()) await page.click('main [data-act="example"]');
+  else { await page.click('header [data-act="drawer"]'); await page.click('.drawer [data-act="example"]'); }
   for (const s of SCREENS) { await page.evaluate(s => window.AUA.go(s), s); await page.waitForTimeout(150); }
   await page.evaluate(() => window.AUA.go('outputs'));
   const n = await page.locator('.outrow').count();
@@ -17,8 +19,10 @@ test('worked example: every screen and every output opens without errors', async
 
 test('the method owner starts the assessment; everyone can open every screen', async ({ browser }) => {
   const mo = await pageAs(browser, U.mo);
-  await mo.click('[data-act="new"]');
-  await expect(mo.locator('#savechip')).toHaveText(/Saved/, { timeout: 10_000 });
+  if (!(await api('GET', '/api/engagement', undefined, U.mo)).body.exists) {
+    await mo.click('[data-act="new"]');
+    await expect(mo.locator('#savechip')).toHaveText(/Saved/, { timeout: 10_000 });
+  }
   const e = await api('GET', '/api/engagement', undefined, U.mo);
   expect(e.body.exists).toBe(true);
   for (const who of Object.values(U)) {
