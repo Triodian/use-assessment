@@ -461,7 +461,7 @@ function drawer() {
   const it = (to, label) => `<button class="item" data-act="go" data-to="${to}" ${UI.screen === to ? 'aria-current="page"' : ''}>${label}</button>`;
   return `<div class="drawer-bg" data-act="drawer"></div><aside class="drawer" role="dialog" aria-label="Menu">
     <div class="row between"><strong>Menu</strong><button class="iconbtn" data-act="drawer" aria-label="Close menu">✕</button></div>
-    ${S && (SRV.user || practice()) ? it('actions', 'My actions' + (myActions().length ? ` <span class="navcount">${myActions().length}</span>` : '')) : ''}<div class="grp">Steps</div>${SEQ.map(s => it(s, SNAME[s])).join('')}${it('reference', 'Reference')}
+    ${S && (SRV.user || practice()) ? it('actions', 'My actions' + (myActions().length ? ` <span class="navcount">${myActions().length}</span>` : '')) : ''}<div class="grp">Steps</div>${SEQ.map(s => it(s, SNAME[s])).join('')}${it('reference', 'Reference')}<a class="item" href="/user-guide/" style="text-decoration:none">User guide</a>
     ${practice() || !SRV.user ? `<div class="grp">Acting as · practice</div><label class="chip" style="width:100%"><span aria-hidden="true">⌾</span>${personSelect('who-drw')}</label>` : ''}
     <div class="row" style="margin-top:8px">${calBadge()}</div>
     ${(SRV.archives || []).length ? `<div class="grp">Earlier assessments</div>${SRV.archives.map(a => `<button class="item" data-act="openArchive" data-id="${a.id}">${esc(a.label)}<span class="small soft" style="margin-left:auto">read only</span></button>`).join('')}` : ''}
@@ -476,7 +476,7 @@ function drawer() {
 function footer() {
   return `<footer class="ft"><div class="wrap"><div class="scope" role="note"><span aria-hidden="true">⚠</span><span><strong>Scope.</strong> ${esc(C.banner)}</span></div>
     <div class="ftrow"><span class="row" style="gap:12px">${LOGO(20)}<span class="mono soft">Framework ${esc(C.frameworkDate)}</span></span>
-    <span class="row"><button class="lnk" data-act="go" data-to="reference">Reference</button><span class="mono">${esc(calLabel())}</span></span></div></div></footer>`;
+    <span class="row"><a class="lnk" href="/user-guide/">User guide</a><button class="lnk" data-act="go" data-to="reference">Reference</button><span class="mono">${esc(calLabel())}</span></span></div></div></footer>`;
 }
 function appetiteUrl() { return SRV.site ? 'https://risk-appetite-test.triodian.com/' : 'https://risk-appetite.triodian.com/'; }
 function entryStatus() {
@@ -497,7 +497,7 @@ function entryOverlay() {
     <div class="acts">
       ${SRV.on && canSetup() ? `<button class="act" data-act="new"><span class="mono" style="color:var(--navy)">01</span><span><strong>Start the assessment</strong><br><span class="small soft">Begin at set-up. Everyone with a role then works on the same assessment.</span></span></button>` : ''}
       <button class="act" data-act="example"><span class="mono" style="color:var(--navy)">${SRV.on && canSetup() ? '02' : '01'}</span><span><strong>Open the worked example</strong><br><span class="small soft">Practice on the framework's illustration: an outside claims manager whose triage model routes motor claims. Fictional, and never saved.</span></span></button>
-    </div>${SRV.user ? `<p class="small soft" style="margin-top:16px">Signed in as ${esc(SRV.user.email)} · <a href="/profile/">Your profile</a>${SRV.user.isAdmin ? ' · <a href="/admin/">Admin</a>' : ''} · <a href="/cdn-cgi/access/logout">Sign out</a></p>` : ''}<div class="scope" style="margin-top:22px"><span aria-hidden="true">⚠</span><span>${esc(C.banner)}</span></div></div></div>`;
+    </div><p class="small" style="margin-top:16px">New to the app? <a href="/user-guide/">Read the user guide</a>: who does what, the eight phases, and how the outputs are made.</p>${SRV.user ? `<p class="small soft" style="margin-top:8px">Signed in as ${esc(SRV.user.email)} · <a href="/profile/">Your profile</a>${SRV.user.isAdmin ? ' · <a href="/admin/">Admin</a>' : ''} · <a href="/cdn-cgi/access/logout">Sign out</a></p>` : ''}<div class="scope" style="margin-top:22px"><span aria-hidden="true">⚠</span><span>${esc(C.banner)}</span></div></div></div>`;
 }
 const opening = (eb, h1, sub) => `<div class="opening"><div class="eyebrow">${eb}</div><h1 class="h1">${h1}</h1>${sub ? `<p class="sub">${sub}</p>` : ''}</div>`;
 function seqNav() { const i = SEQ.indexOf(UI.screen); return i < 0 ? {} : { prev: SEQ[i - 1], next: SEQ[i + 1] }; }
@@ -1279,6 +1279,7 @@ function account() {
     <div class="acct-who"><span class="avatar" aria-hidden="true">${esc(initials(u.name || u.email))}</span><div><strong>${esc(u.name || u.email)}</strong>${u.name ? `<div class="small soft">${esc(u.email)}</div>` : ''}<div class="small soft">${esc(roles || 'No role in this assessment')}${u.isAdmin ? ' · administrator' : ''}</div></div></div>
     <a role="menuitem" class="item" href="/profile/">Your profile</a>
     ${u.isAdmin ? '<a role="menuitem" class="item" href="/admin/">Admin · users and activity</a>' : ''}
+    <a role="menuitem" class="item" href="/user-guide/">User guide</a>
     <button role="menuitem" class="item" data-act="go" data-to="reference">Reference</button>
     <a role="menuitem" class="item signout" href="/cdn-cgi/access/logout">Sign out</a></div>` : ''}</span>`;
 }
