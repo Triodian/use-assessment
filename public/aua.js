@@ -67,7 +67,7 @@ function newAssessment() {
     arrangements: [], setAgreed: { gcBy: '', gcOn: '', counselBy: '', counselOn: '', on: '' },
     entries: [], questions: [], findings: [],
     reviews: C.reviews.map(r => ({ point: r.id, by: '', on: '', result: '', notes: '' })),
-    exceptions: [], independentReviewPoints: [], r5Cleared: {}, diffReports: [], history: []
+    exceptions: [], independentReviewPoints: [], r5Cleared: {}, diffReports: [], versions: [], history: []
   };
 }
 function newEntry(arrId, id) {
@@ -930,6 +930,7 @@ function summaryTable() { return tbl(['Arrangement', 'Tier', 'Consequence', rung
 function genDL1() {
   let m = mdHead(O('DL1')) + `All entries, all 26 fields, with sources. Not-known fields: ${S.entries.reduce((n, e) => n + notKnownCount(e), 0)}.\n\n`;
   S.entries.forEach(e => { m += `## ${e.id} · ${e.arrangementId}\n\n` + tbl(['#', 'Field', 'Value', 'Source'], C.fields.map(d => [d.n, FLD(d.n).name, fieldOut(e, d.n), fieldSrc(e, d.n)])) + `Flags: ${flags(e).map(x => x.label).join('; ') || 'none'} · not known: ${notKnownCount(e)}\n\n`; });
+  m += redlineMd();
   m += `## Source index\n\n` + tbl(['ID', 'Document', 'Status', 'Date'], S.documents.map(d => [d.id, d.title, d.status, d.date])) + tbl(['ID', 'Interview', 'Date', 'Notes'], S.interviews.map(v => [v.id, v.who, v.date, v.notesRef]));
   return m;
 }
@@ -956,6 +957,7 @@ function genDL5() {
   const gen = [`The assessment answers what evidence about AI can reach ${e.insurer || 'the insurer'} at each boundary in the set, and how firmly.`, 'No data was processed. No provider was approached. No production system was accessed. No legal advice is given.', S.arrangements.map(a => `${a.id} ${a.name}: ${a.reason || '—'}`).join('\n\n'), 'Register of 26 fields per entry; the seven questions in order; the evidence ladder E0 to E6; the five-part obtainability test T1 to T5. ' + calLabel() + '.', summaryTable(), S.arrangements.map(a => { const fd = finding(a); return `${a.id}: ${fd.type ? fd.type + ' ' + findingName(fd.type) : fd.label || '—'}${fd.priority ? ', priority ' + fd.priority : ''}`; }).join('\n\n'), Object.keys(fails).length ? Object.entries(fails).sort((a, b) => b[1] - a[1]).map(([k, n]) => `${k}: ${n}`).join(' · ') : 'No failed tests recorded.', S.arrangements.map(a => { const fd = finding(a); return fd.type === 'F2' ? `${a.id}: ${fd.routes.join('; ')}` : ''; }).filter(Boolean).join('\n\n') || 'No gaps recorded.', `Not-known fields by arrangement: ${nk || '—'}. Obtainable rungs by confidence: ${CONF.map(c => c + ' ' + S.entries.filter(x => confidence(x) === c).length).join(', ')}.`, 'Register extract (DL1), question log (QS), source index (DL1), exceptions log.'];
   let m = mdHead(O('DL5')) + `In Triodian's name.\n\n`;
   C.annexOutline.forEach((t, k) => { m += `## ${k + 1}. ${t}\n\n${gen[k]}\n\n${A[k + 1] ? A[k + 1] + '\n\n' : '[Method owner\u2019s text]\n\n'}`; });
+  m += redlineMd();
   m += `## Exceptions log\n\n` + (S.exceptions.length ? tbl(['Ref', 'Departure', 'Reason', 'Approved by', 'Date'], S.exceptions.map(x => [x.ref, x.departure, x.reason, pname(x.approvedBy), x.on])) : 'None.\n\n');
   m += `Signed for Triodian: ${e.annexSigned.by ? pname(e.annexSigned.by) + ', method owner, ' + e.annexSigned.on : '[not signed]'}\n`;
   return m;
@@ -972,6 +974,66 @@ function genCM() {
 }
 function genDR() { return mdHead(O('DR')) + (S.diffReports.length ? S.diffReports.slice().reverse().map(d => `## ${d.from} → ${d.to} · ${fmtAt(d.at)}\n\nParameters changed: ${(d.changedParameters || []).join(', ') || 'none'}. Facts, classifications, test results and counsel's determinations are unchanged.\n\n` + (d.changes.length ? tbl(['Item', 'What', 'From', 'To', 'Why'], d.changes.map(c => [c.item, c.what, c.from, c.to, c.why])) : 'No result changed.\n\n')).join('') : 'No calibration version change recorded.\n'); }
 function withMode(mode, fn) { FORCE = mode; try { return fn(); } finally { FORCE = ''; } }
+/* ---------- Versions: kept at each sign-off; compare any two, or a version with now ----------
+   The server adds versions to the saved assessment (lib/core/versions.js). These copies of its two functions
+   keep versions for the worked example, which is never saved. */
+function snapshotOf(d) {
+  const entries = {};
+  (d.entries || []).forEach(e => { const f = {}; Object.entries(e.fields || {}).forEach(([n, x]) => { if (!x) return; const v = x.notKnown ? 'not known' : String(x.value == null ? '' : x.value) + (x.detail ? ' · ' + x.detail : ''); if (v) f[n] = v; });
+    if (e.expectedRung && e.expectedRung.value) f[17] = e.expectedRung.value; if (e.confidence) f[22] = e.confidence; entries[e.id] = { arr: e.arrangementId || '', f }; });
+  const findings = {}, arrangements = {};
+  (d.findings || []).forEach(x => { if (x && x.arrangementId) findings[x.arrangementId] = x.type || x.label || ''; });
+  (d.arrangements || []).forEach(a => { if (a && a.id) arrangements[a.id] = a.name || ''; });
+  return { entries, findings, arrangements };
+}
+function signOffState(d) { const rv = p => (d.reviews || []).find(r => r.point === p) || {}, sa = d.setAgreed || {}, e = d.engagement || {};
+  return [['Set agreed (R1)', !!(sa.gcBy && sa.counselBy)], ['Counsel review recorded (R6)', !!rv('R6').on], ['Independent check complete (R7)', rv('R7').result === 'complete'], ['Technical annex signed', !!(e.annexSigned || {}).by], ['Hand-back list accepted', !!(e.handBack || {}).by]]; }
+/* Worked example only: add a version when a sign-off happens in the browser. */
+function practiceVersions() {
+  if (!S || !practice()) return;
+  const st = signOffState(S), key = st.map(x => +x[1]).join('');
+  if (UI.vkey == null || UI.vfor !== S) { UI.vkey = key; UI.vfor = S; return; }
+  if (key === UI.vkey) return;
+  const was = UI.vkey.split(''); UI.vkey = key;
+  const fresh = st.filter((x, k) => x[1] && was[k] === '0'); if (!fresh.length) return;
+  const snap = snapshotOf(snapshotForSave());
+  fresh.forEach(x => S.versions.push({ id: 'V' + (S.versions.length + 1), label: x[0], at: nowISO(), by: pname(UI.personId) || '', snapshot: snap }));
+  REV++; toast('Version kept: ' + fresh.map(x => x[0]).join(', ') + '.');
+}
+const verLabel = v => `${v.id} · ${v.label} · ${dAU(v.at)}`;
+/* Differences between two snapshots: one row per changed field, finding or arrangement. */
+function diffSnap(a, b) {
+  const rows = [], ids = [...new Set([...Object.keys(a.entries || {}), ...Object.keys(b.entries || {})])].sort();
+  ids.forEach(id => { const x = (a.entries || {})[id], y = (b.entries || {})[id];
+    if (!x) return rows.push({ entry: id, what: 'Entry added', was: '', now: y.arr });
+    if (!y) return rows.push({ entry: id, what: 'Entry removed', was: x.arr, now: '' });
+    [...new Set([...Object.keys(x.f), ...Object.keys(y.f)])].sort((p, q) => p - q).forEach(n => { if ((x.f[n] || '') !== (y.f[n] || '')) rows.push({ entry: id, n: +n, what: n + ' ' + FLD(+n).name, was: x.f[n] || '', now: y.f[n] || '' }); }); });
+  [...new Set([...Object.keys(a.findings || {}), ...Object.keys(b.findings || {})])].sort().forEach(id => { const w = (a.findings || {})[id] || '', n = (b.findings || {})[id] || ''; if (w !== n) rows.push({ entry: id, what: 'Finding', was: codeOpt(w), now: codeOpt(n) }); });
+  [...new Set([...Object.keys(a.arrangements || {}), ...Object.keys(b.arrangements || {})])].sort().forEach(id => { const w = (a.arrangements || {})[id], n = (b.arrangements || {})[id]; if (w == null) rows.push({ entry: id, what: 'Arrangement added', was: '', now: n }); else if (n == null) rows.push({ entry: id, what: 'Arrangement removed', was: w, now: '' }); });
+  return rows;
+}
+const nowSnap = () => snapshotOf(snapshotForSave());
+const snapFor = id => id === 'now' ? nowSnap() : ((S.versions || []).find(v => v.id === id) || {}).snapshot || null;
+const showVal = v => { v = String(v || ''); return codeName(v.split(' · ')[0]) ? codeOpt(v.split(' · ')[0]) + v.slice(v.split(' · ')[0].length) : v; };
+function compareCard() {
+  const vs = S.versions || [];
+  if (!vs.length) return `<section class="card" style="margin-top:18px"><h2 class="sh">Compare versions</h2><p class="small soft" style="margin:0">A version is kept at each sign-off: the set agreed (R1), counsel review (R6), the independent check (R7), the annex signed and the hand-back accepted. Once one exists you can compare it with any later version, or with the assessment now.</p></section>`;
+  const from = vs.some(v => v.id === UI.cmpFrom) ? UI.cmpFrom : vs[vs.length - 1].id, to = UI.cmpTo === 'now' || vs.some(v => v.id === UI.cmpTo) ? UI.cmpTo || 'now' : 'now';
+  const a = snapFor(from), b = snapFor(to), rows = a && b ? diffSnap(a, b) : [];
+  const opt = (sel, list) => list.map(v => `<option value="${esc(v[0])}" ${sel === v[0] ? 'selected' : ''}>${esc(v[1])}</option>`).join('');
+  const vlist = vs.map(v => [v.id, verLabel(v)]);
+  const lastBy = r => { const e = S.entries.find(x => x.id === r.entry), f = e && r.n ? e.fields[r.n] : null; return f && f.by ? pname(f.by) : ''; };
+  return `<section class="card" style="margin-top:18px" id="compare"><h2 class="sh">Compare versions</h2>
+    <div class="fgrid" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr));margin-bottom:12px"><label class="f" for="cmp-from">From<select class="in" id="cmp-from" data-act="cmp" data-k="from">${opt(from, vlist)}</select></label><label class="f" for="cmp-to">To<select class="in" id="cmp-to" data-act="cmp" data-k="to">${opt(to, [['now', 'The assessment now'], ...vlist])}</select></label></div>
+    ${rows.length ? `<p class="small soft">${rows.length} ${rows.length === 1 ? 'change' : 'changes'}. Old values are struck through.</p><div class="tw"><table class="lg"><thead><tr><th>Entry</th><th>What changed</th><th>Was</th><th>Now</th>${to === 'now' ? '<th>Last changed by</th>' : ''}</tr></thead><tbody>${rows.map(r => `<tr><td class="code">${S.entries.some(e => e.id === r.entry) ? `<button class="lnk mono" data-act="openEntry" data-id="${esc(r.entry)}" data-t="${r.n >= 15 ? (r.n <= 17 ? 'classify' : 'evidence') : 'facts'}">${esc(r.entry)}</button>` : esc(r.entry)}</td><td class="small">${esc(r.what)}</td><td class="small"><del>${esc(showVal(r.was)) || '—'}</del></td><td class="small"><strong>${esc(showVal(r.now)) || '—'}</strong></td>${to === 'now' ? `<td class="small">${esc(lastBy(r)) || '—'}</td>` : ''}</tr>`).join('')}</tbody></table></div>`
+      : '<p class="small soft" style="margin:0">No changes between these two.</p>'}</section>`;
+}
+/* Redline for the register and the annex: what changed since the latest version. */
+function redlineMd() {
+  const vs = S.versions || []; if (!vs.length) return '';
+  const v = vs[vs.length - 1], rows = diffSnap(v.snapshot, nowSnap());
+  return `## Changes since ${v.id} · ${v.label} (${dDoc(String(v.at).slice(0, 10))})\n\n` + (rows.length ? tbl(['Entry', 'What changed', 'Was', 'Now'], rows.map(r => [r.entry, r.what, r.was ? '~~' + showVal(r.was) + '~~' : '', r.now ? showVal(r.now) : ''])) : 'No changes since this version.\n\n');
+}
 /* Outputs open on a list of documents with their status; each opens on its own page with a way back. */
 const outDesc = o => ((C.deliverables || []).find(d => d.id === o.id) || {}).contents || ({ QS: 'Every question put to counsel, with its status and the response.', RP: 'What the independent reviewer needs to test the assessment.', CM: 'The measures that close the assessment.', DR: 'What changed between versions of the assessment.' })[o.id] || '';
 function outStatusInfo(o) {
@@ -986,7 +1048,7 @@ function outputsList() {
   const nFinal = OUTS.filter(o => !finalWhy(o)).length;
   return `${opening('Phase 7 · outputs and close', 'Outputs', 'Every output carries the privilege marking, the calibration status and version, draft or final, and the date. Open one to read it or download it.')}
   <p class="small soft" style="margin:-6px 0 12px">${nFinal} of ${OUTS.length} ready as final. The rest download marked draft until their gate is met.</p>
-  <div class="outlist">${rows}</div>${gateCard(7)}${stepbar()}`;
+  <div class="outlist">${rows}</div>${compareCard()}${gateCard(7)}${stepbar()}`;
 }
 function screenOutputs() {
   const bl = blindEntries();
@@ -1029,7 +1091,7 @@ function screenReference() {
 /* ---------- markdown ---------- */
 function mdToHtml(md, anchors) {
   const L = md.split('\n'); let h = '', i = 0;
-  const inl = s => esc(s).replace(/`([^`]+)`/g, '<code>$1</code>').replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>').replace(/(^|[\s(])\*([^*\s][^*]*?)\*(?=[\s).,;:]|$)/g, '$1<em>$2</em>').replace(/\\([\[\]|])/g, '$1');
+  const inl = s => esc(s).replace(/`([^`]+)`/g, '<code>$1</code>').replace(/~~([^~]+)~~/g, '<del>$1</del>').replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>').replace(/(^|[\s(])\*([^*\s][^*]*?)\*(?=[\s).,;:]|$)/g, '$1<em>$2</em>').replace(/\\([\[\]|])/g, '$1');
   const isBlock = l => /^(#{1,4} |\s*\||\s*([-*]|\d+\.) |---\s*$)/.test(l);
   const split = r => { const out = []; let cur = ''; const s = r.trim().replace(/^\|/, '').replace(/\|$/, ''); for (let k = 0; k < s.length; k++) { if (s[k] === '\\' && s[k + 1] === '|') { cur += '|'; k++; } else if (s[k] === '|') { out.push(cur.trim()); cur = ''; } else cur += s[k]; } out.push(cur.trim()); return out; };
   while (i < L.length) {
@@ -1094,6 +1156,7 @@ function doRender() {
   if (!S) { app.innerHTML = entryOverlay(); return; }
   if (UI.personId && !person(UI.personId) && (practice() || !SRV.user)) UI.personId = '';
   if (S && !practice()) applyIdentity();
+  practiceVersions();
   const ae = document.activeElement, fid = ae && ae.id, fkey = !fid ? dsKey(ae) : null; let sel = null; try { if (ae && ae.selectionStart != null) sel = [ae.selectionStart, ae.selectionEnd]; } catch (e) {}
   const s = UI.screen, G = gates(), gi = { setup: 0, set: 1, register: 2, classify: 3, counsel: 4, findings: 5, review: 6, outputs: 7 }[s];
   const scr = { actions: screenActions, setup: screenSetup, overview: screenOverview, set: screenSet, register: screenRegister, classify: screenClassify, counsel: screenCounsel, findings: screenFindings, review: screenReview, outputs: screenOutputs, reference: screenReference }[s] || screenOverview;
@@ -1158,6 +1221,7 @@ async function saveNow() {
       try { const keep = { screen: UI.screen, entryId: UI.entryId, tab: UI.tab }; S = hydrate(next); Object.assign(UI, keep); applyIdentity(); } catch (e) { toast('Merged, but the result could not be shown. Reload the page.'); }
       toast('Saved, together with changes by ' + (r.body.mergedWith || 'someone else') + '.'); REV++; render();
     }
+    if (r.ok && Array.isArray(r.body.versions)) { S.versions = r.body.versions; REV++; setTimeout(render, 0); }
     if (r.ok) { SRV.rev = r.body.revision; SRV.exists = true; SRV.lastAt = r.body.updatedAt; SRV.lastBy = r.body.updatedBy; SRV.err = ''; if (SRV.again) { SRV.again = false; SRV.state = 'pending'; return saveNow(); } SRV.state = 'saved'; UI.dirty = false; }
     else if (r.status === 409) { SRV.state = 'conflict'; SRV.conflict = r.body || {}; const items = conflictNames(SRV.conflict.conflicts); SRV.err = r.error + (items ? ' Item: ' + items + '.' : ''); toast(SRV.err); }
     else { SRV.state = 'error'; SRV.err = r.error; toast('Not saved: ' + r.error); }
@@ -1234,6 +1298,14 @@ function snapshotForSave() {
 function readJson(file, cb) { const fr = new FileReader(); fr.onload = () => { try { cb(JSON.parse(fr.result)); } catch (er) { toast('Could not read: ' + er.message); } }; fr.readAsText(file); }
 
 /* ---------- worked example (fictional, after framework 8.5) ---------- */
+/* The worked example's set was agreed in phase 1, before classification: its version holds facts only. */
+function seedExampleVersion() {
+  const snap = nowSnap();
+  Object.values(snap.entries).forEach(x => Object.keys(x.f).forEach(n => { if (+n >= 15) delete x.f[n]; }));
+  snap.findings = {};
+  S.versions = [{ id: 'V1', label: 'Set agreed (R1)', at: (S.setAgreed.counselOn || S.setAgreed.on || today()) + 'T09:00:00.000Z', by: pname(S.setAgreed.counselBy) || '', snapshot: snap }];
+  UI.vkey = null;
+}
 function buildExample() {
   const X = newAssessment(), old = S; S = X;
   Object.assign(X.engagement, { insurer: 'Corvane General Insurance (fictional)', reference: 'AUA-CGI-2026-01', counselFirm: 'Askew Lane Partners (fictional)', privilegeMarking: 'Privileged and confidential · prepared at the direction of counsel · worked example', startDate: '2026-10-13', briefConfirmed: { by: 'p2', on: '2026-10-09', ref: 'Brief v1, 9 Oct 2026' }, documentsRequestedOn: '2026-10-09', irPersonId: 'p9', irOrganisation: 'Independent reviewer (fictional firm)', croPersonId: 'p10', example: true });
@@ -1287,7 +1359,7 @@ function onClick(ev) {
     loadCalApp: async () => { toast('Reading the calibration set from the Risk Appetite app…'); const r = await api('GET', '/api/calibration-from-appetite'); if (!r.ok) return toast(r.code === 'not_linked' ? r.error : 'Could not load: ' + r.error); if (loadCalibration(r.body)) { render(); toast('Calibration loaded: ' + calLabel()); } },
     new: async () => { if (!SRV.on) return toast('The server could not be reached.'); if (!canSetup()) return toast('The method owner or the delivery manager starts the assessment.'); const r = await api('GET', '/api/engagement'); if (r.ok && r.body.exists) { await loadReal(); go('overview'); return toast('The assessment was already started by ' + (r.body.updatedBy || 'someone else') + '.'); }
       S = newAssessment(); S.people = SRV.people || []; applyIdentity(); UI.entryId = null; log('mobilise', 'engagement', null, 'started'); go('setup'); },
-    example: () => { if (savesHere() && SRV.state !== 'saved') return toast('Wait until your changes are saved.'); S = buildExample(); UI.personId = 'p5'; UI.entryId = null; UI.dirty = false; go('overview'); toast('Worked example open. Corvane and its providers are fictional. Nothing here is saved.'); },
+    example: () => { if (savesHere() && SRV.state !== 'saved') return toast('Wait until your changes are saved.'); S = buildExample(); seedExampleVersion(); UI.personId = 'p5'; UI.entryId = null; UI.dirty = false; go('overview'); toast('Worked example open. Corvane and its providers are fictional. Nothing here is saved.'); },
     leaveExample: async () => { S = null; UI.entryId = null; await loadReal(); UI.screen = 'overview'; render(); },
     addPerson: () => { S.people.push({ id: 'p' + uid(), name: '', organisation: '', roles: [] }); log('addPerson', 'people'); render(); },
     rmPerson: () => { const p = S.people[+d.i]; if (confirm('Remove ' + (p.name || 'this person') + '?')) { S.people.splice(+d.i, 1); if (UI.personId === p.id) UI.personId = ''; log('removePerson', 'people', p.name, null); render(); } },
@@ -1349,6 +1421,7 @@ function onChange(ev) { inChange = true; try { changeHandler(ev); } finally { in
 function changeHandler(ev) {
   const t = ev.target, d = t.dataset, e = curEntry(); if (t.id) UI.lastCtl = t.id;
   if (t.id === 'calIn') { if (t.files[0]) readJson(t.files[0], o => { if (loadCalibration(o)) { render(); toast('Calibration loaded: ' + calLabel()); } }); t.value = ''; return; }
+  if (d.act === 'cmp') { if (d.k === 'from') UI.cmpFrom = t.value; else UI.cmpTo = t.value; render(); return; }
   if (d.act === 'person') { if (!practice() && SRV.user) return render(); UI.personId = t.value; UI.err = {}; render(); return; }
   if (d.act === 'tab') { UI.tab = t.value; render(); return; }
   if (d.act === 'pickEntry') { UI.entryId = t.value; render(); return; }

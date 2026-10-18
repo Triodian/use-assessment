@@ -27,11 +27,11 @@
   /* inline: **bold**, *italic*, `code`; returns [{text, b, i, code}] */
   function inlines(s) {
     s = s.replace(/\\([\[\]|])/g, '$1');
-    const out = [], re = /\*\*([^*]+)\*\*|(^|[\s(])\*([^*\s][^*]*?)\*(?=[\s).,;:]|$)|`([^`]+)`/g; let last = 0, m;
+    const out = [], re = /\*\*([^*]+)\*\*|(^|[\s(])\*([^*\s][^*]*?)\*(?=[\s).,;:]|$)|`([^`]+)`|~~([^~]+)~~/g; let last = 0, m;
     while ((m = re.exec(s))) {
       const pre = m[2] || '', start = m.index + pre.length;
       if (start > last) out.push({ text: s.slice(last, start) });
-      if (m[1] != null) out.push({ text: m[1], b: true }); else if (m[3] != null) out.push({ text: m[3], i: true }); else out.push({ text: m[4], code: true });
+      if (m[1] != null) out.push({ text: m[1], b: true }); else if (m[3] != null) out.push({ text: m[3], i: true }); else if (m[5] != null) out.push({ text: m[5], s: true }); else out.push({ text: m[4], code: true });
       last = re.lastIndex;
     }
     if (last < s.length) out.push({ text: s.slice(last) });
@@ -59,7 +59,7 @@
     const D = await loadDocx();
     const { marking, body, title } = split(md);
     meta = Object.assign({}, meta, { wide: blocks(body).some(b => b.t === 'table' && b.head.length >= 7) }); // wide tables → landscape
-    const runs = (s, o = {}) => inlines(s).map(x => new D.TextRun({ text: x.text, bold: x.b || o.bold, italics: x.i || o.italics, font: x.code ? 'Consolas' : undefined, size: o.size, color: o.color }));
+    const runs = (s, o = {}) => inlines(s).map(x => new D.TextRun({ text: x.text, bold: x.b || o.bold, italics: x.i || o.italics, strike: x.s || undefined, font: x.code ? 'Consolas' : undefined, size: o.size, color: o.color }));
     const children = []; let h1seen = false; // each later top-level heading (an attachment) starts a new page
     blocks(body).forEach(b => {
       if (b.t === 'h') {
