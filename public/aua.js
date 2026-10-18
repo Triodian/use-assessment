@@ -460,7 +460,8 @@ function entryOverlay() {
 const opening = (eb, h1, sub) => `<div class="opening"><div class="eyebrow">${eb}</div><h1 class="h1">${h1}</h1>${sub ? `<p class="sub">${sub}</p>` : ''}</div>`;
 function seqNav() { const i = SEQ.indexOf(UI.screen); return i < 0 ? {} : { prev: SEQ[i - 1], next: SEQ[i + 1] }; }
 function stepbar(g) { const n = seqNav(); return `<div class="stepbar">${n.prev ? `<button class="btn" data-act="go" data-to="${n.prev}">← ${SNAME[n.prev]}</button>` : '<span></span>'}${g || ''}${n.next ? `<button class="btn primary" data-act="go" data-to="${n.next}">${SNAME[n.next]} →</button>` : '<span></span>'}</div>`; }
-function bottombar(g) { if (bp() !== 'phone' || SEQ.indexOf(UI.screen) < 0) return ''; const n = seqNav(); return `<nav class="bottombar" aria-label="Step">${n.prev ? `<button class="btn" data-act="go" data-to="${n.prev}" aria-label="Previous: ${SNAME[n.prev]}">←</button>` : '<span style="width:44px"></span>'}${g || ''}${n.next ? `<button class="btn primary" data-act="go" data-to="${n.next}" aria-label="Next: ${SNAME[n.next]}">→</button>` : '<span style="width:44px"></span>'}</nav>`; }
+function bottombar(g) { if (bp() !== 'phone' || SEQ.indexOf(UI.screen) < 0) return '';
+  if (UI.screen === 'outputs' && UI.outTab) return `<nav class="bottombar" aria-label="Step"><button class="btn" data-act="outList" aria-label="Back to all outputs">←</button>${g || ''}<span style="width:44px"></span></nav>`; const n = seqNav(); return `<nav class="bottombar" aria-label="Step">${n.prev ? `<button class="btn" data-act="go" data-to="${n.prev}" aria-label="Previous: ${SNAME[n.prev]}">←</button>` : '<span style="width:44px"></span>'}${g || ''}${n.next ? `<button class="btn primary" data-act="go" data-to="${n.next}" aria-label="Next: ${SNAME[n.next]}">→</button>` : '<span style="width:44px"></span>'}</nav>`; }
 /* Every path-bound control asks deny() first; the reason is the control's tooltip and is shown beside the card. */
 function fld(label, path, value, o) {
   o = o || {}; const id = 'f_' + path.replace(/[^a-zA-Z0-9]/g, '_'), pt = pathTarget(path), why = o.disabled === true ? 'locked' : deny(pt[0], pt[1]), dis = why ? `disabled title="${esc(why)}"` : '';
@@ -965,7 +966,7 @@ function screenOutputs() {
   ${o.id === 'DL5' ? `<details class="pr" style="margin-bottom:12px"><summary>Method owner's text for each section</summary><div class="stack" style="padding:0 20px 18px">${C.annexOutline.map((t, k) => fld(`${k + 1}. ${t}`, `engagement.annexText.${k + 1}`, (e.annexText || {})[k + 1] || '', { area: true })).join('')}<div class="row">${e.annexSigned.by ? badge('signed · ' + pname(e.annexSigned.by), 'b-green') : `<button class="btn sm" data-act="signAnnex" ${deny('sign') ? 'disabled' : ''}>Sign the annex</button>${whyNote(deny('sign'))}`}</div></div></details>` : ''}
   ${o.id === 'DL6' ? `<div class="row" style="margin-bottom:12px">${e.handBack.by ? badge('accepted · ' + pname(e.handBack.by) + ' · ' + e.handBack.on, 'b-green') : `<button class="btn sm" data-act="acceptHB" ${deny('handBack') ? 'disabled' : ''}>Accept hand-back list</button>${whyNote(deny('handBack'))}`}</div>` : ''}
   ${o.id === 'DL1' ? `<p class="small soft">${T('handback', 'The register extract')} goes to the AI Risk Appetite app for check K10. It holds function, location, tier, consequence and the rung currently received per entry. No facts, sources or client wording.</p>` : ''}
-  <div class="card md" aria-label="Preview">${mdToHtml(md)}</div>${gateCard(7)}${stepbar()}`;
+  <div class="card md" aria-label="Preview">${mdToHtml(md)}</div>${gateCard(7)}<div class="stepbar"><button class="btn" data-act="outList">← All outputs</button><span></span></div>`;
 }
 
 /* ---------- S10 reference ---------- */
