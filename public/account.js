@@ -37,7 +37,7 @@ function header() {
     <span class="vrule" aria-hidden="true"></span><span class="apptitle">${AREA === 'admin' ? 'Admin' : 'Profile'}</span>
     ${tabs.length ? `<nav class="steps area-tabs" aria-label="Admin">${tabs.map(t => `<button data-tab="${t[0]}" ${TAB === t[0] ? 'aria-current="page"' : ''}>${t[1]}</button>`).join('')}</nav>` : ''}
     <div class="hdr-r"><a class="lnk hdr-back" href="/">Back to the assessment</a>${u ? `<a class="avatar-link" href="/profile/" title="${esc(u.name || u.email)}" ${AREA === 'profile' ? 'aria-current="page"' : ''}><span class="avatar" aria-hidden="true">${esc(initials(u.name || u.email))}</span><span class="vh">Your profile</span></a>` : ''}</div>
-  </div></header>${SRV.site ? `<div class="examplebar" style="background:#FDF0E1;color:#8A4B08;border-color:#F0D2AE">${esc(SRV.site)} · for trying things out · not the live assessment</div>` : ''}`;
+  </div></header>${SRV.site ? `<div class="examplebar" style="background:#FDF0E1;color:#8A4B08;border-color:#F0D2AE">${esc(SRV.site)}: a test site for trying things out, not the live assessment</div>` : ''}`;
 }
 const opening = (eb, h1, sub) => `<div class="opening"><div class="eyebrow">${eb}</div><h1 class="h1">${h1}</h1>${sub ? `<p class="sub">${sub}</p>` : ''}</div>`;
 const msg = (title, text) => `<div class="adm-msg"><h1 class="h1" style="font-size:30px">${esc(title)}</h1><p class="soft">${text}</p><p style="margin-top:18px"><a class="btn" href="/">Back to the assessment</a></p></div>`;
@@ -48,7 +48,7 @@ function render() {
   if (!SRV.checked) main = '<p class="soft" style="padding:40px 0">Loading…</p>';
   else if (!SRV.on) main = msg(SRV.code === 'no_access' ? 'No access' : 'Could not connect', esc(SRV.reason) + (SRV.code === 'no_access' ? ' <a href="/cdn-cgi/access/logout">Sign out</a>' : ''));
   else if (AREA === 'profile') main = screenProfile();
-  else if (!SRV.user.isAdmin) main = msg('Administrators only', 'Admin is for administrators. Ask an administrator if you need a user added or a role changed.');
+  else if (!SRV.user.isAdmin) main = msg('Administrators only', 'Only administrators can use Admin. Ask an administrator if you need a user added or a role changed.');
   else main = TAB === 'activity' ? screenActivity() : TAB === 'notifications' ? screenNotifications() : screenUsers();
   document.getElementById('app').innerHTML = header() + `<main id="main" tabindex="-1" class="area-main"><div class="wrap">${main}</div></main>`;
   if (fid) { const el = document.getElementById(fid); if (el) el.focus({ preventScroll: true }); }
@@ -68,11 +68,11 @@ function userForm(u, isNew) {
     <label class="f">Email<input class="in" id="f-email" type="email" autocomplete="off" value="${esc(u.email || '')}"></label>
     <label class="f">Name<input class="in" id="f-name" value="${esc(u.name || '')}"></label>
     <label class="f">Organisation<input class="in" id="f-org" value="${esc(u.organisation || '')}"></label>
-    <fieldset class="adm-roles" style="border:0;padding:0;margin:4px 0 0"><legend class="mini" style="margin-bottom:4px">ROLES IN THE ASSESSMENT · a person may hold more than one</legend>
+    <fieldset class="adm-roles" style="border:0;padding:0;margin:4px 0 0"><legend class="mini" style="margin-bottom:4px">Roles in the assessment (a person may hold more than one)</legend>
       ${ADM.roles.map(r => `<label class="cb small"><input type="checkbox" name="f-role" value="${esc(r.id)}" ${has(r.id) ? 'checked' : ''}> ${esc(r.name)}</label>`).join('')}</fieldset>
-    <div class="acts2"><label class="cb"><input type="checkbox" id="f-admin" ${u.isAdmin ? 'checked' : ''}> Administrator (users and roles; also set-up)</label>
+    <div class="acts2"><label class="cb"><input type="checkbox" id="f-admin" ${u.isAdmin ? 'checked' : ''}> Administrator (can manage users and roles, and change set-up)</label>
       ${isNew ? '' : `<label class="cb"><input type="checkbox" id="f-active" ${u.active !== false ? 'checked' : ''}> Active (can sign in)</label>`}</div>
-    ${u.pendingEmail ? `<p class="small soft acts2">Has asked to change their email to ${esc(u.pendingEmail)} (not yet confirmed).</p>` : ''}
+    ${u.pendingEmail ? `<p class="small soft acts2">This user has asked to change their email to ${esc(u.pendingEmail)}. The change is not yet confirmed.</p>` : ''}
     ${ADM.err ? `<p class="err acts2" role="alert">${esc(ADM.err)}</p>` : ''}
     <div class="acts2"><button class="btn primary sm" type="submit">${isNew ? 'Add user' : 'Save changes'}</button><button class="btn sm" type="button" data-act="cancel">Cancel</button></div>
   </form>`;
@@ -95,15 +95,15 @@ function screenUsers() {
     </tbody></table></div></section>` : '';
   const short = n => n.replace(/ \((Triodian|insurer)\)/, '');
   const perms = `<section class="adm-sec"><h2>Roles and permissions</h2>
-    <p class="small soft" style="margin:4px 0 12px">What each role can change. The server checks every save against these rules, including the ones that depend on who did what.</p>
+    <p class="small soft" style="margin:4px 0 12px">What each role can change. The server checks every save against these rules, including the rules that depend on who did what (for example, a peer reviewer cannot review an entry they classified).</p>
     <div class="tw"><table class="lg perm"><thead><tr><th>Can change</th>${ADM.roles.map(r => `<th class="r">${esc(short(r.name))}</th>`).join('')}</tr></thead><tbody>
     ${ADM.perms.map(p => `<tr><td>${esc(p.what)}</td>${ADM.roles.map(r => p.roles.includes(r.id) ? '<td class="y" aria-label="yes">✓</td>' : '<td class="n" aria-label="no">·</td>').join('')}</tr>`).join('')}
     </tbody></table></div>
-    <p class="small soft" style="margin-top:10px">A user with no role can read the assessment but not change it. Administrators can also keep set-up.</p></section>`;
+    <p class="small soft" style="margin-top:10px">A user with no role can read the assessment but not change it. Administrators can also change set-up.</p></section>`;
   return `${opening('Admin · users', 'Users and roles', '')}
   ${reqs}
   <section class="adm-sec">
-    <div class="row between"><p class="small soft" style="margin:0">${active} active of ${ADM.users.length}. Only active users can open the assessment. Their roles decide what they can change, and everyone with a role appears under People in set-up.</p>
+    <div class="row between"><p class="small soft" style="margin:0">${active} of ${ADM.users.length} users are active. Only active users can open the assessment. Their roles decide what they can change, and everyone with a role is listed under People in set-up.</p>
     ${ADM.adding ? '' : '<button class="btn primary" data-act="add">Add user</button>'}</div>
     ${ADM.adding ? `<div class="card" style="margin:14px 0"><h3 class="sh">New user</h3>${userForm(ADM.draft || { isAdmin: false, roles: [] }, true)}</div>` : ''}
     <div class="tw" style="margin-top:12px"><table class="lg adm-users"><thead><tr><th>Name and email</th><th>Roles</th><th>Admin</th><th>Status</th><th class="adm-hide-sm">Last seen</th><th></th></tr></thead>
@@ -123,19 +123,19 @@ function auditDetail(e) {
 }
 function screenActivity() {
   if (!ADM.loaded) return '<p class="soft" style="padding:40px 0">Loading…</p>';
-  return `${opening('Admin · activity', 'Activity', 'User changes and assessment saves, newest first. Detailed edits are in the assessment’s own history.')}
+  return `${opening('Admin · activity', 'Activity', 'Changes to users, and each save of the assessment, newest first. Each individual edit is recorded in the assessment’s own history.')}
     ${ADM.audit.length ? `<div class="tw"><table class="lg adm-log"><thead><tr><th>When</th><th>Who</th><th>What</th><th class="adm-hide-sm">Details</th></tr></thead><tbody>
     ${ADM.audit.map(e => `<tr><td class="when">${fmtLocal(e.at)}</td><td>${esc(e.actor)}</td><td>${esc(AUDIT_NAME[e.action] || e.action)}</td><td class="adm-hide-sm">${esc(auditDetail(e))}</td></tr>`).join('')}
-    </tbody></table></div>` : '<p class="soft small">Nothing yet.</p>'}`;
+    </tbody></table></div>` : '<p class="soft small">No activity yet.</p>'}`;
 }
 
 function screenNotifications() {
   if (!ADM.loaded) return '<p class="soft" style="padding:40px 0">Loading…</p>';
   const st = { held: ['Held', 'b-grey'], sending: ['Sending', 'b-ochre'], sent: ['Sent', 'b-green'], failed: ['Failed', 'b-red'] };
-  return `${opening('Admin · notifications', 'Notifications', ADM.sending ? 'Emails the app has sent, newest first.' : 'Email sending is switched off. Every message the app would send is held here, newest first, so you can see what people would receive.')}
+  return `${opening('Admin · notifications', 'Notifications', ADM.sending ? 'Emails the app has sent, newest first.' : 'Email sending is switched off. Every message the app would have sent is kept here instead, newest first, so you can see what people would receive.')}
     ${ADM.notes.length ? `<div class="tw"><table class="lg adm-log"><thead><tr><th>When</th><th>To</th><th>Subject</th><th>Status</th></tr></thead><tbody>
     ${ADM.notes.map(n => `<tr><td class="when">${fmtLocal(n.created_at)}</td><td>${esc(n.to_email)}</td><td><button class="lnk" data-act="note" data-id="${n.id}" aria-expanded="${ADM.openNote === n.id}">${esc(n.subject)}</button>${ADM.openNote === n.id ? `<pre class="notebody">${esc(n.body)}</pre>` : ''}</td><td>${badge(...(st[n.status] || [n.status, 'b-grey']))}${n.error ? `<div class="mini">${esc(n.error)}</div>` : ''}</td></tr>`).join('')}
-    </tbody></table></div>` : '<p class="soft small">Nothing yet. Messages appear here when a save gives someone something to do.</p>'}`;
+    </tbody></table></div>` : '<p class="soft small">No messages yet. A message appears here when a save gives someone something to do.</p>'}`;
 }
 
 /* ---------- profile ---------- */
@@ -152,26 +152,26 @@ function screenProfile() {
     </form></section>
   <section class="card"><h2 class="sh">Email address</h2>
     <p>You sign in as <strong>${esc(u.email)}</strong>.</p>
-    ${u.pendingEmail ? `<div class="scope" style="margin-top:12px"><span aria-hidden="true">✉</span><span>You asked to change your email to <strong>${esc(u.pendingEmail)}</strong>. To confirm, <a href="/cdn-cgi/access/logout">sign out</a> and sign in again with the new address; a code is sent there. Until then, keep using ${esc(u.email)}. <button class="lnk" data-act="cancelEmail">Cancel the change</button></span></div>`
+    ${u.pendingEmail ? `<div class="scope" style="margin-top:12px"><span aria-hidden="true">✉</span><span>You asked to change your email to <strong>${esc(u.pendingEmail)}</strong>. To confirm it, <a href="/cdn-cgi/access/logout">sign out</a> and sign in again with the new address. A sign-in code is sent to that address. Until then, keep using ${esc(u.email)}. <button class="lnk" data-act="cancelEmail">Cancel the change</button></span></div>`
     : `<form id="emailForm" class="adm-form" novalidate style="margin-top:12px">
       <label class="f">New email address<input class="in" id="p-email" type="email" autocomplete="email"></label>
       ${PRF.emailErr ? `<p class="err acts2" role="alert">${esc(PRF.emailErr)}</p>` : ''}
-      <div class="acts2"><button class="btn sm" type="submit">Change email</button><span class="small soft">You confirm it by signing in with the new address.</span></div></form>`}
+      <div class="acts2"><button class="btn sm" type="submit">Change email</button><span class="small soft">To confirm the change, you sign in with the new address.</span></div></form>`}
   </section>
   <section class="card"><h2 class="sh">Dates and times</h2>
     <div class="fgrid" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr))">
       <label class="f" for="p-df">Date format<select class="in" id="p-df" data-pref="1">${[['long', '18 October 2026'], ['short', '18 Oct 2026'], ['numeric', '18/10/2026'], ['iso', '2026-10-18']].map(o => `<option value="${o[0]}" ${(u.dateFormat || 'long') === o[0] ? 'selected' : ''}>${o[1]}</option>`).join('')}</select></label>
       <label class="f" for="p-tz">Time zone<select class="in" id="p-tz" data-pref="1"><option value="">Automatic · this device (${esc(Intl.DateTimeFormat().resolvedOptions().timeZone)})</option>${tzList().map(z => `<option value="${esc(z)}" ${u.timeZone === z ? 'selected' : ''}>${esc(z.replace(/_/g, ' '))}</option>`).join('')}</select></label>
     </div>
-    <p class="small soft" style="margin-top:8px">Used on the assessment screens wherever a date or time is shown, for example ${esc(fmtLocal(new Date().toISOString()))}. Outputs always use the full form, such as 18 October 2026.</p>
+    <p class="small soft" style="margin-top:8px">These settings apply wherever the assessment screens show a date or time, for example ${esc(fmtLocal(new Date().toISOString()))}. Outputs always show dates in full, such as 18 October 2026.</p>
     ${PRF.prefMsg ? `<p class="small" style="color:var(--green)" role="status">${esc(PRF.prefMsg)}</p>` : ''}</section>
   <section class="card"><h2 class="sh">Email notifications</h2>
-    <label class="cb" style="align-items:flex-start;gap:10px"><input type="checkbox" id="p-notify" data-pref="1" ${u.notify !== false ? 'checked' : ''}> Email me when something needs me: a question for counsel, a failure consequence to confirm, a tier to re-derive, an R3 difference, or a review point</label>
-    <p class="small soft" style="margin-top:8px">The same items are always listed under My actions in the assessment.</p></section>
+    <label class="cb" style="align-items:flex-start;gap:10px"><input type="checkbox" id="p-notify" data-pref="1" ${u.notify !== false ? 'checked' : ''}> Email me when something needs my action: a question to counsel, a failure consequence to confirm, a tier to re-derive, a difference found in blind re-derivation (R3), or a review point</label>
+    <p class="small soft" style="margin-top:8px">The same items are always listed under My actions in the assessment, whether or not you get emails.</p></section>
   <section class="card"><h2 class="sh">Access</h2>
     <dl class="kv"><dt>Roles</dt><dd>${(u.roles || []).length ? u.roles.map(r => esc(roleLong(r))).join('<br>') : 'None. You can read the assessment but not change it.'}</dd>
     <dt>Administrator</dt><dd>${u.isAdmin ? 'Yes · <a href="/admin/">open Admin</a>' : 'No'}</dd></dl>
-    <p class="small soft" style="margin-top:10px">Roles are given by an administrator.</p></section>
+    <p class="small soft" style="margin-top:10px">An administrator gives roles.</p></section>
   <p><a class="btn ghost" href="/cdn-cgi/access/logout">Sign out</a></p>
   </div>`;
 }
@@ -193,7 +193,7 @@ document.addEventListener('change', async ev => {
   if (!ev.target.closest('[data-pref]')) return;
   const val = id => (document.getElementById(id) || {}).value || '';
   const r = await api('PUT', '/api/me/prefs', { dateFormat: val('p-df') || 'long', timeZone: val('p-tz'), notify: (document.getElementById('p-notify') || {}).checked !== false });
-  if (r.ok) { SRV.user = r.body.user; PRF.prefMsg = 'Saved.'; } else PRF.prefMsg = r.error || 'Could not save.';
+  if (r.ok) { SRV.user = r.body.user; PRF.prefMsg = 'Saved.'; } else PRF.prefMsg = r.error || 'Your settings could not be saved.';
   render();
 });
 document.addEventListener('submit', async e => {
