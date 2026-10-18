@@ -49,6 +49,7 @@ export default {
       const r = await handle({
         method: request.method, path: url.pathname, email: who.email, text: () => request.text(),
         site: env.SITE_LABEL || '', readCalibration: calibrationReader(env),
+        linkMissing: ['APPETITE_URL', 'APPETITE_CLIENT_ID', 'APPETITE_CLIENT_SECRET'].filter(k => !env[k]),
         origin: siteUrl(env, request), sender: emailSender(env), defer: p => ctx.waitUntil(p),
       }, d1Store(env.DB));
       return json(r.body, r.status);
