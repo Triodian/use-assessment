@@ -371,3 +371,11 @@ dl.kv dd{margin:0}
 .actgo{color:var(--ink-faint)}
 .actitem.fail .actdot{background:var(--red)}
 .notebody{white-space:pre-wrap;font:12.5px/1.5 var(--sans);background:var(--parchment-2);padding:10px;border-radius:6px;margin:8px 0 0;max-width:640px}
+/* Header fit: the step navigation scrolls within the header when space is tight; the calibration tag
+   (also shown in the band below and in the menu) gives way first. */
+.hdr .steps{flex:1 1 auto;min-width:0;overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none}
+.hdr .steps::-webkit-scrollbar{display:none}
+.hdr .steps button{flex:0 0 auto}
+.hdr-r{flex:0 0 auto}
+.hdr .checkcount,.hdr .apptitle,.hdr .vrule{display:none}
+.hdr .steps button{padding:6px 8px 5px}
