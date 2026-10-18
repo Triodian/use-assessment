@@ -166,7 +166,7 @@ function screenProfile() {
     <p class="small soft" style="margin-top:8px">These settings apply wherever the assessment screens show a date or time, for example ${esc(fmtLocal(new Date().toISOString()))}. Outputs always show dates in full, such as 18 October 2026.</p>
     ${PRF.prefMsg ? `<p class="small" style="color:var(--green)" role="status">${esc(PRF.prefMsg)}</p>` : ''}</section>
   <section class="card"><h2 class="sh">Email notifications</h2>
-    <label class="cb" style="align-items:flex-start;gap:10px"><input type="checkbox" id="p-notify" data-pref="1" ${u.notify !== false ? 'checked' : ''}> Email me when something needs my action: a question to counsel, a failure consequence to confirm, a tier to re-derive, a difference found in blind re-derivation (R3), or a review point</label>
+    <label class="cb" style="align-items:flex-start;gap:10px"><input type="checkbox" id="p-notify" data-pref="1" ${u.notify !== false ? 'checked' : ''}> Email me when something needs my action: a question to counsel, a failure consequence to confirm, a tier to re-derive, a difference found in blind re-derivation (R3), a review point or a response to one, counsel’s answer to a question, or the independent check (R7) being complete</label>
     <p class="small soft" style="margin-top:8px">The same items are always listed under My actions in the assessment, whether or not you get emails.</p></section>
   <section class="card"><h2 class="sh">Access</h2>
     <dl class="kv"><dt>Roles</dt><dd>${(u.roles || []).length ? u.roles.map(r => esc(roleLong(r))).join('<br>') : 'None. You can read the assessment but not change it.'}</dd>
