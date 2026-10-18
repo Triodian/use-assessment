@@ -409,7 +409,7 @@ function drawer() {
 }
 function footer() {
   return `<footer class="ft"><div class="wrap"><div class="scope" role="note"><span aria-hidden="true">⚠</span><span><strong>Scope.</strong> ${esc(C.banner)}</span></div>
-    <div class="ftrow"><span class="row" style="gap:8px;color:var(--aubergine)">${MARKSVG().replace('<svg', '<svg width="20" height="19"')}<span style="color:var(--ink);font-weight:600">Triodian</span><span class="mono soft">Framework ${esc(C.frameworkDate)}</span></span>
+    <div class="ftrow"><span class="row" style="gap:12px">${LOGO(20)}<span class="mono soft">Framework ${esc(C.frameworkDate)}</span></span>
     <span class="row"><button class="lnk" data-act="go" data-to="reference">Reference</button><span class="mono">${esc(calLabel())}</span></span></div></div></footer>`;
 }
 function appetiteUrl() { return SRV.site ? 'https://risk-appetite-test.triodian.com/' : 'https://risk-appetite.triodian.com/'; }
@@ -423,7 +423,7 @@ function entryStatus() {
 }
 function entryOverlay() {
   return `<div class="overlay" role="dialog" aria-modal="true" aria-labelledby="entry-h"><div class="entry" style="border-top-color:var(--navy)">
-    <div class="row" style="gap:10px;color:var(--aubergine);margin-bottom:22px">${MARKSVG().replace('<svg', '<svg width="30" height="28"')}<span class="wordmark">Triodian</span><span class="vrule"></span><span style="font-weight:600">AI Use Assessment</span></div>
+    <div class="row" style="gap:12px;margin-bottom:22px">${LOGO(26)}<span class="vrule"></span><span style="font-weight:600">AI Use Assessment</span></div>
     <div class="eyebrow">What the documents show, at each boundary</div>
     <h1 id="entry-h" class="h1" style="font-size:32px">Map the AI. Test what evidence can reach the insurer.</h1>
     <p class="soft">Eight phases from set-up to close. One register entry for each place AI acts, seven questions, one obtainability test per rung, one finding per arrangement.</p>
