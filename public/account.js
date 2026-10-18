@@ -5,7 +5,12 @@
 'use strict';
 const AREA = /^\/admin(\/|$)/.test(location.pathname) ? 'admin' : 'profile';
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-const fmtLocal = iso => { if (!iso) return ''; const d = new Date(iso); if (isNaN(d)) return iso; return d.toLocaleString('en-AU', { day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit' }); };
+/* Dates follow the Profile choice of date format and time zone, as on the assessment screens. */
+const DF_OPTS = { long: { day: 'numeric', month: 'short', year: 'numeric' }, short: { day: 'numeric', month: 'short', year: 'numeric' }, numeric: { day: '2-digit', month: '2-digit', year: 'numeric' } };
+const fmtLocal = iso => { if (!iso) return ''; const d = new Date(iso); if (isNaN(d)) return iso; const u = SRV.user || {}, tz = u.timeZone || undefined, df = u.dateFormat || 'long';
+  try { if (df === 'iso') { const p = Object.fromEntries(new Intl.DateTimeFormat('en-CA', { timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(d).map(x => [x.type, x.value])); return `${p.year}-${p.month}-${p.day}, ` + d.toLocaleTimeString('en-AU', { timeZone: tz, hour: '2-digit', minute: '2-digit', hour12: false }); }
+    return d.toLocaleDateString('en-AU', Object.assign({ timeZone: tz }, DF_OPTS[df] || DF_OPTS.long)) + ', ' + d.toLocaleTimeString('en-AU', { timeZone: tz, hour: '2-digit', minute: '2-digit', hour12: false }); } catch (e) { return d.toLocaleString('en-AU'); } };
+const tzList = () => { try { return Intl.supportedValuesOf('timeZone'); } catch (e) { return ['Australia/Brisbane', 'Australia/Sydney', 'Australia/Melbourne', 'Australia/Adelaide', 'Australia/Perth', 'Australia/Hobart', 'Australia/Darwin', 'Pacific/Auckland', 'Asia/Singapore', 'Asia/Hong_Kong', 'Europe/London', 'America/New_York', 'UTC']; } };
 const initials = s => String(s || '?').split(/[\s@.]+/).filter(Boolean).slice(0, 2).map(x => x[0].toUpperCase()).join('');
 const badge = (l, c) => `<span class="badge ${c}">${esc(l)}</span>`;
 function toast(msg) { const t = document.getElementById('toast'); if (!t || !msg) return; t.textContent = msg; t.className = 'toast'; clearTimeout(toast._t); toast._t = setTimeout(() => { t.className = 'vh'; }, 3400); }
@@ -21,7 +26,7 @@ async function api(method, path, body) {
 
 const SRV = { checked: false, on: false, user: null, roles: [], site: '', code: '', reason: '' };
 const ADM = { loaded: false, users: [], roles: [], perms: [], requests: [], audit: [], editing: null, adding: false, draft: null, err: '' };
-const PRF = { err: '', msg: '', emailErr: '' };
+const PRF = { err: '', msg: '', emailErr: '', prefMsg: '' };
 let TAB = (location.hash.slice(1) === 'activity') ? 'activity' : 'users';
 const roleLong = id => ((ADM.roles.length ? ADM.roles : SRV.roles).find(r => r.id === id) || {}).name || id;
 
@@ -143,6 +148,13 @@ function screenProfile() {
       ${PRF.emailErr ? `<p class="err acts2" role="alert">${esc(PRF.emailErr)}</p>` : ''}
       <div class="acts2"><button class="btn sm" type="submit">Change email</button><span class="small soft">You confirm it by signing in with the new address.</span></div></form>`}
   </section>
+  <section class="card"><h2 class="sh">Dates and times</h2>
+    <div class="fgrid" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr))">
+      <label class="f" for="p-df">Date format<select class="in" id="p-df" data-pref="1">${[['long', '18 October 2026'], ['short', '18 Oct 2026'], ['numeric', '18/10/2026'], ['iso', '2026-10-18']].map(o => `<option value="${o[0]}" ${(u.dateFormat || 'long') === o[0] ? 'selected' : ''}>${o[1]}</option>`).join('')}</select></label>
+      <label class="f" for="p-tz">Time zone<select class="in" id="p-tz" data-pref="1"><option value="">Automatic · this device (${esc(Intl.DateTimeFormat().resolvedOptions().timeZone)})</option>${tzList().map(z => `<option value="${esc(z)}" ${u.timeZone === z ? 'selected' : ''}>${esc(z.replace(/_/g, ' '))}</option>`).join('')}</select></label>
+    </div>
+    <p class="small soft" style="margin-top:8px">Used on the assessment screens wherever a date or time is shown, for example ${esc(fmtLocal(new Date().toISOString()))}. Outputs always use the full form, such as 18 October 2026.</p>
+    ${PRF.prefMsg ? `<p class="small" style="color:var(--green)" role="status">${esc(PRF.prefMsg)}</p>` : ''}</section>
   <section class="card"><h2 class="sh">Access</h2>
     <dl class="kv"><dt>Roles</dt><dd>${(u.roles || []).length ? u.roles.map(r => esc(roleLong(r))).join('<br>') : 'None. You can read the assessment but not change it.'}</dd>
     <dt>Administrator</dt><dd>${u.isAdmin ? 'Yes · <a href="/admin/">open Admin</a>' : 'No'}</dd></dl>
@@ -162,6 +174,13 @@ document.addEventListener('click', async ev => {
   else if (a === 'grant') { ADM.adding = true; ADM.editing = null; ADM.err = ''; ADM.draft = { email: d.email, roles: [], isAdmin: false }; render(); window.scrollTo(0, 0); }
   else if (a === 'dismiss') { await api('POST', '/api/admin/access-requests/dismiss', { email: d.email }); loadAdmin(); }
   else if (a === 'cancelEmail') { const r = await api('DELETE', '/api/me/email'); if (r.ok) SRV.user = r.body.user; render(); }
+});
+document.addEventListener('change', async ev => {
+  if (!ev.target.closest('[data-pref]')) return;
+  const val = id => (document.getElementById(id) || {}).value || '';
+  const r = await api('PUT', '/api/me/prefs', { dateFormat: val('p-df') || 'long', timeZone: val('p-tz'), notify: !SRV.user || SRV.user.notify !== false });
+  if (r.ok) { SRV.user = r.body.user; PRF.prefMsg = 'Saved.'; } else PRF.prefMsg = r.error || 'Could not save.';
+  render();
 });
 document.addEventListener('submit', async e => {
   const f = e.target; if (!['userForm', 'profileForm', 'emailForm'].includes(f.id)) return;

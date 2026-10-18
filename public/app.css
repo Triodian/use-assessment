@@ -242,3 +242,17 @@ label.f{display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:60
 .kv{display:grid;grid-template-columns:max-content 1fr;gap:6px 18px;margin:0}.kv dt{color:var(--ink-soft);font-size:13px}.kv dd{margin:0}
 .adm-roles{display:flex;flex-wrap:wrap;gap:2px 14px;grid-column:1/-1}
 .perm th.r{font-size:11px;letter-spacing:.04em;text-transform:none;min-width:70px}
+
+/* Document band: privilege marking and status, always in view (as in the Risk Appetite app). */
+:root{--privilege:#7D1D2C}
+.docband{border-top:1px solid var(--rule-soft);background:var(--card)}
+.docband-in{max-width:1160px;margin:0 auto;padding:0 var(--pad);min-height:30px;display:flex;align-items:center;gap:18px;font-size:13px}
+.docband .priv{font:italic 400 14px/1.3 var(--serif);color:var(--privilege);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.docband .priv.none{color:var(--ink-faint);font-style:normal;font-family:var(--sans);font-size:13px}
+.docband .stat{margin-left:auto;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;text-align:right}
+.docband .stat strong{color:var(--ink);font-weight:600}
+@media (max-width:639px){.docband .stat{display:none}.docband-in{padding:0 16px}}
+@media print{.docband{display:none}}
+/* Centre the modal only when it fits; when taller than the window, start at the top and scroll. */
+.overlay{align-items:flex-start;justify-content:flex-start}
+.overlay>.entry{margin:auto}
