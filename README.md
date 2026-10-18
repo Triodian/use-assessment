@@ -30,13 +30,13 @@ The server design is the same as the AI Risk Appetite app's (`Triodian/risk_appe
 - **My actions** (first in the header, with a count) lists what is waiting for the signed-in person, by their roles:
   facts or classification to finish, a failure consequence to confirm, a blind re-derivation, an R3 difference,
   questions to answer, review points, and sign-offs (R1, R2, R4 to R7, the annex, the hand-back list). Each item opens where the work is.
-- **Email notifications** (`lib/core/notify.js`) are built but switched off. A save that gives someone something to do
+- **Email notifications** (`lib/core/notify.js`) are switched on, sent from notifications@triodian.com through Cloudflare Email Service (`triodian.com` must be onboarded there). A save that gives someone something to do
   writes a message to the notifications table: a question to counsel → counsel; an answer → the method owner; a proposed
   consequence → the arrangement owner; a recorded tier → peer reviewers; an R3 difference → the classifier and method owner;
   a review point → the method owner and delivery manager; a response → the independent reviewer; R7 complete → counsel and the GC.
   Daily at 07:00 Brisbane time, counsel is reminded of questions open for a week or more.
-- While sending is off, messages are held and listed in **Admin → Notifications**. `wrangler.jsonc` explains how to switch
-  sending on. Each person can turn the emails off in Profile. A notification problem never stops a save.
+- Every message is listed in **Admin → Notifications** as Sent, or Failed with the reason (for example while the domain is
+  not yet onboarded). Setting `NOTIFY_SENDING` to "off" in `wrangler.jsonc` holds messages there instead. Each person can turn the emails off in Profile. A notification problem never stops a save.
 - Tests: `node tests/notify.test.mjs`
 
 ## Versions and the redline
