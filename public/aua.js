@@ -385,7 +385,7 @@ const calLabel = () => cal() ? (cal().status === 'approved' ? `Approved appetite
 
 /* ---------- shell ---------- */
 const MARKSVG = () => (C.markSvg || '').replace('<svg', '<svg aria-hidden="true" focusable="false"');
-const badge = (l, c) => `<span class="badge ${c}">${esc(l)}</span>`;
+const badge = (l, c) => { l = String(l == null ? '' : l); return `<span class="badge ${c}">${esc(l.charAt(0).toUpperCase() + l.slice(1))}</span>`; };
 const gate = (ok, t) => `<span class="gate ${ok ? 'ok' : 'no'}" role="status"><i></i>${esc(t)}</span>`;
 const SEQ = ['setup','overview','set','register','classify','counsel','findings','review','outputs'];
 const SNAME = { setup: 'Set-up', overview: 'Overview', set: 'Set', register: 'Register', classify: 'Classify', counsel: 'Counsel', findings: 'Findings', review: 'Review', outputs: 'Outputs', reference: 'Reference' };

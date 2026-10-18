@@ -12,7 +12,7 @@ const fmtLocal = iso => { if (!iso) return ''; const d = new Date(iso); if (isNa
     return d.toLocaleDateString('en-AU', Object.assign({ timeZone: tz }, DF_OPTS[df] || DF_OPTS.long)) + ', ' + d.toLocaleTimeString('en-AU', { timeZone: tz, hour: '2-digit', minute: '2-digit', hour12: false }); } catch (e) { return d.toLocaleString('en-AU'); } };
 const tzList = () => { try { return Intl.supportedValuesOf('timeZone'); } catch (e) { return ['Australia/Brisbane', 'Australia/Sydney', 'Australia/Melbourne', 'Australia/Adelaide', 'Australia/Perth', 'Australia/Hobart', 'Australia/Darwin', 'Pacific/Auckland', 'Asia/Singapore', 'Asia/Hong_Kong', 'Europe/London', 'America/New_York', 'UTC']; } };
 const initials = s => String(s || '?').split(/[\s@.]+/).filter(Boolean).slice(0, 2).map(x => x[0].toUpperCase()).join('');
-const badge = (l, c) => `<span class="badge ${c}">${esc(l)}</span>`;
+const badge = (l, c) => { l = String(l == null ? '' : l); return `<span class="badge ${c}">${esc(l.charAt(0).toUpperCase() + l.slice(1))}</span>`; };
 function toast(msg) { const t = document.getElementById('toast'); if (!t || !msg) return; t.textContent = msg; t.className = 'toast'; clearTimeout(toast._t); toast._t = setTimeout(() => { t.className = 'vh'; }, 3400); }
 async function api(method, path, body) {
   let r;
