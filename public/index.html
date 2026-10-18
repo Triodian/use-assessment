@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AI Use Assessment · Triodian</title>
+<link rel="icon" href="/triodian-mark.svg" type="image/svg+xml">
+<link rel="preload" href="/fonts/source-serif-4-latin-opsz-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/ibm-plex-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/app.css">
+<style>.hdr{border-top-color:var(--navy)}.hdr .dot{background:var(--navy);box-shadow:0 0 0 3px #E3E9EF}.b-slate{color:var(--slate);background:#EBEEF1;border-color:#C9D1DA}@media (max-width:639px){.badge{white-space:normal;max-width:100%;overflow-wrap:anywhere}}</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="poproot"></div>
+<div id="sheetroot"></div>
+<div id="toast" class="hidden" aria-live="polite"></div>
+<input type="file" id="calIn" accept=".json,application/json" class="vh" tabindex="-1" aria-hidden="true">
+<script src="/aua-content.js"></script>
+<script type="module">import { merge3 } from "/shared/merge.js"; window.RAFMerge = { merge3 };</script>
+<script src="/aua.js"></script>
+</body>
+</html>

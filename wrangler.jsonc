@@ -1,0 +1,41 @@
+// Cloudflare Worker configuration for the AI Use Assessment. Cloudflare reads this file on every deploy from GitHub.
+{
+  "name": "use-assessment",
+  "main": "src/worker.js",
+  "compatibility_date": "2026-10-01",
+  "assets": { "directory": "./public", "binding": "ASSETS" },
+
+  // Only reachable at the custom domain (behind Cloudflare Access sign-in).
+  // The default workers.dev address and preview addresses are switched off.
+  "workers_dev": false,
+  "preview_urls": false,
+  "routes": [{ "pattern": "use-assessment.triodian.com", "custom_domain": true }],
+
+  "d1_databases": [
+    { "binding": "DB", "database_name": "use-assessment-db", "database_id": "e7e9a50f-cfda-4ddd-938e-2ae38b4e6553" }
+  ],
+  "observability": { "enabled": true },
+
+  // The "Load from the Risk Appetite app" button reads the issued calibration set from
+  // APPETITE_URL/api/calibration-set using a Cloudflare Access service token. The token's two halves are
+  // secrets, set in Cloudflare (Worker → Settings → Variables and secrets), never in this file:
+  //   APPETITE_CLIENT_ID, APPETITE_CLIENT_SECRET
+  // Until both are set the button explains that the link is not set up, and a file can be loaded instead.
+  "vars": { "APPETITE_URL": "https://risk-appetite.triodian.com" },
+
+  // Test copy: use-assessment-test.triodian.com, with its own database. It reads the Risk Appetite test site.
+  // Deployed with `npx wrangler deploy --env test` (see docs/test-site.md).
+  "env": {
+    "test": {
+      "name": "use-assessment-test",
+      "workers_dev": false,
+      "preview_urls": false,
+      "routes": [{ "pattern": "use-assessment-test.triodian.com", "custom_domain": true }],
+      "d1_databases": [
+        { "binding": "DB", "database_name": "use-assessment-test-db", "database_id": "8da15baa-c86e-4134-9bee-7412e064dc98" }
+      ],
+      "vars": { "SITE_LABEL": "Test site", "APPETITE_URL": "https://risk-appetite-test.triodian.com" },
+      "observability": { "enabled": true }
+    }
+  }
+}
