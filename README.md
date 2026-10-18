@@ -39,6 +39,27 @@ The server design is the same as the AI Risk Appetite app's (`Triodian/risk_appe
   sending on. Each person can turn the emails off in Profile. A notification problem never stops a save.
 - Tests: `node tests/notify.test.mjs`
 
+## Versions and the redline
+- A version is kept at each sign-off: the set agreed (R1), counsel review recorded (R6), the independent check complete (R7),
+  the annex signed and the hand-back list accepted. The server adds them (`lib/core/versions.js`); a browser cannot add,
+  change or remove one. Each keeps every entry's field values, each arrangement's finding and the arrangement names.
+- Outputs → **Compare versions** compares any version with a later one, or with the assessment now: old values struck
+  through, new values beside them, and who last changed each field.
+- The register (DL1) and the technical annex (DL5) end with **Changes since** the latest version.
+- Tests: `node tests/versions.test.mjs`
+
+## The next annual assessment
+- Once an assessment is closed (R7 complete and the hand-back list accepted), an administrator or the method owner can
+  **Start the next assessment** from Set-up. The closed one is kept read only (`engagement_archive` table) and listed under
+  **Earlier assessments** in the menu. Nothing can be changed or saved there.
+- The new assessment keeps set-up, people, the set and each entry's facts (fields 1 to 14, with sources) as a starting point,
+  marked "carried over" until someone confirms or changes them. Classification, evidence, questions, reviews, sign-offs,
+  versions and history start afresh (`lib/core/review.js`).
+- Tests: `node tests/review.test.mjs`
+
+## User guide
+`/user-guide/` — linked from the start screen, the footer, the menu and the account menu.
+
 ## Calibration set from the Risk Appetite app
 "Load from the Risk Appetite app" (Set-up → Calibration set) reads `/api/calibration-set` from the Risk Appetite app
 using a Cloudflare Access service token. Set-up: `docs/calibration-link.md`. Loading from a file still works.
