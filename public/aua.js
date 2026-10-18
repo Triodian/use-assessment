@@ -4,7 +4,7 @@
 (function () {
 'use strict';
 let C = null, S = null;
-const UI = { screen: 'entry', personId: '', drawer: false, pop: null, sheet: null, entryId: null, tab: 'facts', step: 1, outTab: 'DL1', cnTab: 'log', filt: { arr: '', b: '', f: '', flag: '', nk: false }, refQ: '', present: false, dirty: false, err: {}, hist: null, ask: null, expanded: {}, qOpen: null };
+const UI = { screen: 'entry', personId: '', drawer: false, pop: null, sheet: null, entryId: null, tab: 'facts', step: 1, outTab: '', cnTab: 'log', filt: { arr: '', b: '', f: '', flag: '', nk: false }, refQ: '', present: false, dirty: false, err: {}, hist: null, ask: null, expanded: {}, qOpen: null };
 const AT = ['A1','A2','A3','A4','A5','A6'], CO = ['C1','C2','C3','C4','C5'], EV = ['E0','E1','E2','E3','E4','E5','E6'], CONF = ['low','medium','high'], PRI = ['Low','Medium','High'];
 const TRI = ['methodOwner','assessor','peer','validation','delivery'], MARKS = ['Accepted', 'Escalate', 'Not accepted'], BANDS = ['b12', 'b3', 'b45'], TESTS = ['T1', 'T2', 'T3', 'T4', 'T5'];
 const IDRE = /^[A-Za-z0-9_.:-]{1,64}$/;
@@ -932,15 +932,32 @@ function genCM() {
 }
 function genDR() { return mdHead(O('DR')) + (S.diffReports.length ? S.diffReports.slice().reverse().map(d => `## ${d.from} → ${d.to} · ${fmtAt(d.at)}\n\nParameters changed: ${(d.changedParameters || []).join(', ') || 'none'}. Facts, classifications, test results and counsel's determinations are unchanged.\n\n` + (d.changes.length ? tbl(['Item', 'What', 'From', 'To', 'Why'], d.changes.map(c => [c.item, c.what, c.from, c.to, c.why])) : 'No result changed.\n\n')).join('') : 'No calibration version change recorded.\n'); }
 function withMode(mode, fn) { FORCE = mode; try { return fn(); } finally { FORCE = ''; } }
+/* Outputs open on a list of documents with their status; each opens on its own page with a way back. */
+const outDesc = o => ((C.deliverables || []).find(d => d.id === o.id) || {}).contents || ({ QS: 'Every question put to counsel, with its status and the response.', RP: 'What the independent reviewer needs to test the assessment.', CM: 'The measures that close the assessment.', DR: 'What changed between versions of the assessment.' })[o.id] || '';
+function outStatusInfo(o) {
+  const e = S.engagement, why = finalWhy(o);
+  if (o.id === 'DL5' && e.annexSigned.by) return [why ? 'draft · signed' : 'final · signed', why ? 'b-ochre' : 'b-green', why];
+  if (o.id === 'DL6' && e.handBack.by) return ['accepted', 'b-green', ''];
+  if (o.id === 'DR' && !S.diffReports.length) return ['none yet', 'b-grey', 'No difference reports have been made.'];
+  return why ? ['draft', 'b-grey', why] : ['final', 'b-green', ''];
+}
+function outputsList() {
+  const rows = OUTS.map(o => { const [l, c, why] = outStatusInfo(o); return `<button class="outrow" data-act="outTab" data-t="${o.id}"><span class="outname"><strong>${esc(o.name)}</strong><span class="small soft">${esc(outDesc(o))}</span></span><span class="outstat">${badge(l, c)}${why ? `<span class="mini">${esc(why)}</span>` : ''}</span><span class="outgo" aria-hidden="true">→</span></button>`; }).join('');
+  const nFinal = OUTS.filter(o => !finalWhy(o)).length;
+  return `${opening('Phase 7 · outputs and close', 'Outputs', 'Every output carries the privilege marking, the calibration status and version, draft or final, and the date. Open one to read it or download it.')}
+  <p class="small soft" style="margin:-6px 0 12px">${nFinal} of ${OUTS.length} ready as final. The rest download marked draft until their gate is met.</p>
+  <div class="outlist">${rows}</div>${gateCard(7)}${stepbar()}`;
+}
 function screenOutputs() {
   const bl = blindEntries();
   if (bl.length) return `${opening('Phase 7 · outputs and close', 'Outputs', '')}<div class="card"><p style="margin:0">Outputs carry every classification, so they are hidden until you record your R3 tier for ${esc(bl.map(e => e.id).join(', '))}.</p></div>${stepbar()}`;
+  if (!UI.outTab || !OUTS.some(x => x.id === UI.outTab)) return outputsList();
   const o = O(UI.outTab), md = outText(o), fwhy = finalWhy(o), e = S.engagement, b3 = S.entries.filter(x => fv(x, 3) === 'B3');
   const dl = inFrame ? '<span class="small soft">Downloads are not available in this viewer. Use Copy, or open the file directly in a browser.</span>'
     : `<button class="btn sm primary" id="out-docx" data-act="dlDocx" title="${fwhy ? 'Draft: ' + esc(fwhy) : 'Final'}">Download Word</button><button class="btn sm" id="out-pdf" data-act="dlPdf" title="Opens the print dialog. Choose Save as PDF.">Download PDF</button><button class="btn sm ghost" id="out-md" data-act="dlOut" data-m="${fwhy ? 'draft' : 'final'}">Download .md</button>${o.id === 'DL1' ? '<button class="btn sm" id="out-csv" data-act="dlCsv">Download .csv</button><button class="btn sm aub" id="out-ext" data-act="dlExtract">Register extract (.json)</button>' : ''}`;
-  return `${opening('Phase 7 · outputs and close', 'Outputs', 'Every output carries the privilege marking, the calibration status and version, draft or final, and the date.')}
-  <div class="tabs" role="tablist">${OUTS.map(x => `<button role="tab" id="otab-${x.id}" aria-selected="${o.id === x.id}" data-act="outTab" data-t="${x.id}">${x.id}</button>`).join('')}</div>
-  <div class="row between" style="margin-bottom:12px"><div class="row"><strong>${esc(o.name)}</strong>${badge(fwhy ? 'draft' : 'final', fwhy ? 'b-grey' : 'b-green')}${fwhy ? `<span class="small" style="color:var(--red)">Final export blocked: ${esc(fwhy)} ${T('legalline', 'Why')}</span>` : ''}</div>
+  return `<div class="outback"><button class="btn sm ghost" id="out-back" data-act="outList">← All outputs</button></div>
+  ${opening('Phase 7 · outputs', esc(o.name), esc(outDesc(o)))}
+  <div class="row between" style="margin-bottom:12px"><div class="row">${badge(fwhy ? 'draft' : 'final', fwhy ? 'b-grey' : 'b-green')}${fwhy ? `<span class="small" style="color:var(--red)">Final export blocked: ${esc(fwhy)} ${T('legalline', 'Why')}</span>` : ''}</div>
     <div class="row">${dl}<button class="btn sm ghost" id="out-copy" data-act="copyOut">Copy markdown</button>${o.id === 'DL1' ? '<button class="btn sm ghost" id="out-cpx" data-act="cpExtract">Copy extract</button>' : ''}</div></div>
   <p class="small soft" style="margin:-4px 0 12px">${fwhy ? 'Downloads are marked draft until the gate is met.' : 'Downloads are marked final.'} The privilege marking is printed at the top of every page.</p>
   ${o.id === 'DL3' ? `<details class="pr" style="margin-bottom:12px"><summary>Categories of rule for each B3 entry</summary><div class="stack" style="padding:0 20px 18px">${b3.length ? b3.map(x => { const i = eIdx(x); return `<div><div class="mini">${esc(x.id)} · ${esc(fv(x, 7))}</div>${(x.dl3Rows || []).map((r, j) => `<div class="fgrid" style="margin-top:6px">${fld('Category of rule', `entries.${i}.dl3Rows.${j}.category`, r.category)}${fld('Record it would produce', `entries.${i}.dl3Rows.${j}.record`, r.record)}</div>`).join('')}<button class="btn sm" style="margin-top:6px" data-act="addDl3" data-id="${esc(x.id)}" ${deny('tri') ? 'disabled title="' + esc(deny('tri')) + '"' : ''}>Add category</button></div>`; }).join('') : '<p class="small soft">No B3 entries.</p>'}${whyNote(deny('tri'))}</div></details>` : ''}
@@ -1223,7 +1240,7 @@ function onClick(ev) {
   const gateOf = { addPerson: 'setup', rmPerson: 'setup', addDoc: 'setup', addIv: 'setup', loadCal: 'setup', loadCalApp: 'setup', addArr: 'set', rmArr: 'set', addEntry: 'facts', rmEntry: 'facts', addQ: 'ask', askFrom: 'ask', runR2: 'r2', recR4: 'r4', recR6: 'r6', recR7: 'r7', clearHit: 'r5', addExc: 'tri', addIR: 'irLog', signAnnex: 'sign', acceptHB: 'handBack', agreeGC: 'agreeGC', agreeCounsel: 'agreeCounsel', confirmCons: 'consequence', addDl3: 'tri', answerQ: 'answer', applyDet: 'answer', openOwner: 'answer' }[a];
   if (gateOf) { const why = deny(gateOf, a === 'rmEntry' ? ent(d.id) : null); if (why) return toast(why); }
   const A = {
-    go: () => go(d.to), drawer: () => { UI.drawer = !UI.drawer; UI.acct = false; render(); },
+    go: () => { if (d.to === 'outputs') UI.outTab = ''; go(d.to); }, drawer: () => { UI.drawer = !UI.drawer; UI.acct = false; render(); },
     acct: () => { UI.acct = !UI.acct; render(); },
     saveChip: async () => { if (SRV.state === 'conflict') { if (confirm('Someone else changed the same item. Load the latest saved version? Your unsaved change will be lost; you can then make it again.')) { const keep = { screen: UI.screen, entryId: UI.entryId, tab: UI.tab }; await loadReal(); Object.assign(UI, keep); render(); } } else if (SRV.state === 'error') saveNow(); else toast(saveLabel()[2]); },
     loadCal: () => document.getElementById('calIn').click(),
@@ -1274,7 +1291,8 @@ function onClick(ev) {
     addExc: () => { S.exceptions.push({ ref: 'EX-' + String(S.exceptions.length + 1).padStart(2, '0'), departure: '', reason: '', approvedBy: '', on: today() }); log('addException', 'exceptions'); render(); },
     addIR: () => { S.independentReviewPoints.push({ ref: 'IR-' + String(S.independentReviewPoints.length + 1).padStart(2, '0'), output: '', section: '', point: '', response: '', status: 'open' }); log('addReviewPoint', 'IR'); render(); },
     addDl3: () => { const x = ent(d.id); x.dl3Rows = x.dl3Rows || []; x.dl3Rows.push({ category: '', record: '' }); log('addDl3', x.id); render(); },
-    outTab: () => { UI.outTab = d.t; if (UI.screen !== 'outputs') go('outputs'); else render(); },
+    outTab: () => { UI.outTab = d.t; if (UI.screen !== 'outputs') go('outputs'); else { render(); window.scrollTo(0, 0); } },
+    outList: () => { UI.outTab = ''; render(); window.scrollTo(0, 0); },
     copyOut: () => copyText(outText(O(UI.outTab))),
     dlDocx: () => { if (!window.RAFExport) return toast('Word export did not load. Reload the page.'); const o = O(UI.outTab), m = finalWhy(o) ? 'draft' : 'final', name = `AUA-${slug(S.engagement.insurer)}-${o.id}-${m}`;
       toast('Preparing the Word document…'); RAFExport.toDocx(withMode(m, () => o.gen()), { insurer: S.engagement.insurer, reference: S.engagement.reference, creator: 'Triodian AI Use Assessment' }).then(blob => { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name + '.docx'; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500); toast('Word document downloaded'); }, () => toast('The Word document could not be made. Try again, or use Download PDF.')); },
