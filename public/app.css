@@ -360,3 +360,14 @@ dl.kv dd{margin:0}
 @media (max-width:1199px){
 #savechip{padding:6px}
 }
+/* My actions */
+.navcount{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;margin-left:4px;border-radius:9px;background:var(--aubergine);color:#fff;font:600 11px/1 var(--sans)}
+.actitem{display:flex;align-items:center;gap:14px;width:100%;text-align:left;background:var(--card);border:1px solid var(--rule);border-radius:10px;padding:14px 18px;cursor:pointer;font:inherit;color:var(--ink)}
+.actitem:hover{border-color:var(--aubergine);box-shadow:0 2px 10px rgba(23,32,43,.06)}
+.actdot{flex:0 0 auto;width:9px;height:9px;border-radius:50%;background:var(--aubergine)}
+.actitem.overdue .actdot{background:var(--red)}.actitem.due .actdot{background:var(--ochre)}
+.acttext{flex:1 1 auto;display:flex;flex-direction:column;gap:3px;min-width:0}
+.acttext strong{font-weight:600}
+.actgo{color:var(--ink-faint)}
+.actitem.fail .actdot{background:var(--red)}
+.notebody{white-space:pre-wrap;font:12.5px/1.5 var(--sans);background:var(--parchment-2);padding:10px;border-radius:6px;margin:8px 0 0;max-width:640px}

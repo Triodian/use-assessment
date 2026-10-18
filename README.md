@@ -26,6 +26,19 @@ The server design is the same as the AI Risk Appetite app's (`Triodian/risk_appe
 - Two people editing at once: their changes are merged; only a change to the very same item by both is refused, naming the item.
 - The worked example runs in the browser only and is never saved.
 
+## My actions and email notifications
+- **My actions** (first in the header, with a count) lists what is waiting for the signed-in person, by their roles:
+  facts or classification to finish, a failure consequence to confirm, a blind re-derivation, an R3 difference,
+  questions to answer, review points, and sign-offs (R1, R2, R4 to R7, the annex, the hand-back list). Each item opens where the work is.
+- **Email notifications** (`lib/core/notify.js`) are built but switched off. A save that gives someone something to do
+  writes a message to the notifications table: a question to counsel → counsel; an answer → the method owner; a proposed
+  consequence → the arrangement owner; a recorded tier → peer reviewers; an R3 difference → the classifier and method owner;
+  a review point → the method owner and delivery manager; a response → the independent reviewer; R7 complete → counsel and the GC.
+  Daily at 07:00 Brisbane time, counsel is reminded of questions open for a week or more.
+- While sending is off, messages are held and listed in **Admin → Notifications**. `wrangler.jsonc` explains how to switch
+  sending on. Each person can turn the emails off in Profile. A notification problem never stops a save.
+- Tests: `node tests/notify.test.mjs`
+
 ## Calibration set from the Risk Appetite app
 "Load from the Risk Appetite app" (Set-up → Calibration set) reads `/api/calibration-set` from the Risk Appetite app
 using a Cloudflare Access service token. Set-up: `docs/calibration-link.md`. Loading from a file still works.

@@ -388,7 +388,7 @@ const MARKSVG = () => (C.markSvg || '').replace('<svg', '<svg aria-hidden="true"
 const badge = (l, c) => { l = String(l == null ? '' : l); return `<span class="badge ${c}">${esc(l.charAt(0).toUpperCase() + l.slice(1))}</span>`; };
 const gate = (ok, t) => `<span class="gate ${ok ? 'ok' : 'no'}" role="status"><i></i>${esc(t)}</span>`;
 const SEQ = ['setup','overview','set','register','classify','counsel','findings','review','outputs'];
-const SNAME = { setup: 'Set-up', overview: 'Overview', set: 'Set', register: 'Register', classify: 'Classify', counsel: 'Counsel', findings: 'Findings', review: 'Review', outputs: 'Outputs', reference: 'Reference' };
+const SNAME = { actions: 'My actions', setup: 'Set-up', overview: 'Overview', set: 'Set', register: 'Register', classify: 'Classify', counsel: 'Counsel', findings: 'Findings', review: 'Review', outputs: 'Outputs', reference: 'Reference' };
 function calBadge() { const c = cal(); return c ? badge(c.status === 'approved' ? 'approved v' + c.version : c.status === 'working' ? 'working v' + c.version : 'default v' + c.version, c.status === 'approved' ? 'b-green' : 'b-ochre') : badge('uncalibrated', 'b-grey'); }
 function personSelect(id) { return `<select id="${id}" data-act="person" aria-label="Acting as"><option value="">Choose person</option>${S.people.map(p => `<option value="${esc(p.id)}" ${UI.personId === p.id ? 'selected' : ''}>${esc(p.name || 'Unnamed')} · ${esc(p.roles.map(r => roleName(r).replace(/ \(.*\)/, '')).join(', ') || 'no role')}</option>`).join('')}</select>`; }
 /* Document band under the header: the privilege marking counsel directs, and which assessment this is. */
@@ -400,12 +400,51 @@ function docband() {
   const stat = e.insurer ? `<span class="stat"><strong>${esc(e.insurer)}</strong>${e.reference ? ' · ' + esc(e.reference) : ''}</span>` : '';
   return `<div class="docband"><div class="docband-in">${priv}${stat}</div></div>`;
 }
+/* ---------- My actions: what is waiting for the signed-in person (or the person being practised as) ---------- */
+function myActions() {
+  const p = me(); if (!S || !p) return [];
+  const r = k => p.roles.includes(k), out = [], G = gates(), tri = TRI.some(r);
+  const add = (title, detail, nav, tone) => out.push({ title, detail, nav, tone: tone || '' });
+  const missing = (e, ns) => ns.filter(k => !fieldDone(e, k)).length;
+  if ((r('methodOwner') || r('delivery')) && !G[0].ok) add('Finish set-up', 'Still open: ' + G[0].items.filter(i => !i[1]).map(i => i[0]).join('; ') + '.', { act: 'go', to: 'setup' });
+  if (r('gc') && S.arrangements.length && !S.setAgreed.gcBy) add('Agree the representative set (R1)', S.arrangements.length + ' arrangements are waiting for the GC’s agreement.', { act: 'go', to: 'set' });
+  if (r('counsel') && S.arrangements.length && !S.setAgreed.counselBy) add('Agree the representative set (R1)', 'Counsel records its own agreement to the set.', { act: 'go', to: 'set' });
+  S.entries.forEach(e => {
+    if (blindFor(e)) return;
+    if ((r('assessor') || r('methodOwner')) && !deny('facts', e)) { const m = missing(e, FACTS_N); if (m) add(`Record the facts for ${e.id}`, `${m} of 12 fields still to record or mark not known · ${e.arrangementId}`, { act: 'openEntry', id: e.id, t: 'facts' }); }
+    if ((r('assessor') || r('methodOwner')) && !deny('classify', e) && !missing(e, FACTS_N)) { const m = missing(e, CLASS_N) + missing(e, EVID_N); if (m) add(`Classify ${e.id}`, `${m} of fields 15 to 22 still to complete · ${e.arrangementId}`, { act: 'openEntry', id: e.id, t: missing(e, CLASS_N) ? 'classify' : 'evidence' }); }
+    if (r('owner') && fv(e, 16) && !e.consequenceConfirmedBy) add(`Confirm the failure consequence for ${e.id}`, `Proposed ${codeOpt(fv(e, 16))} · ${e.arrangementId}`, { act: 'classifyEntry', id: e.id, step: 2 });
+    if (r('peer') && fv(e, 15) && !e.peerReview.tier && e.classifiedBy !== p.id && (!e.peerReview.personId || e.peerReview.personId === p.id)) add(`Re-derive the tier for ${e.id} (R3)`, 'Blind: from fields 11 to 13 alone.', { act: 'classifyEntry', id: e.id, step: 5 });
+    if ((r('assessor') || r('methodOwner')) && e.peerReview.differs && !String(e.peerReview.resolution || '').trim() && e.peerReview.personId !== p.id) add(`Resolve the R3 difference on ${e.id}`, `Classifier ${codeOpt(fv(e, 15))}, peer reviewer ${codeOpt(e.peerReview.tier)}.`, { act: 'classifyEntry', id: e.id, step: 5 }, 'due');
+  });
+  if (r('counsel')) S.questions.filter(q => q.status !== 'answered').forEach(q => add(`Answer question ${q.ref}`, String(q.question || '').slice(0, 160), { act: 'go', to: 'counsel' }, 'due'));
+  if (r('delivery') && G[2].items[0][1] && rev('R2').result !== 'passed') add('Run the register completeness check (R2)', 'Fields 1 to 14 complete or not known, and every value sourced.', { act: 'go', to: 'review' });
+  if (r('validation') && G[3].items[0][1] && !rev('R4').result && !deny('r4')) add('Record validation (R4)', 'Rules applied consistently; every adjustment has a reason.', { act: 'go', to: 'review' });
+  if (r('methodOwner')) { const open = legalHits().filter(h => !h.cleared).length; if (open) add('Clear legal-line hits (R5)', `${open} ${open === 1 ? 'hit is' : 'hits are'} open. Final export stays blocked until each is cleared.`, { act: 'go', to: 'review' }, 'due'); }
+  if (r('counsel') && G[5].items[0][1] && !rev('R6').on) add('Record counsel review (R6)', 'Draft seen by counsel first; determinations transcribed accurately.', { act: 'go', to: 'review' });
+  S.independentReviewPoints.filter(x => x.status === 'open').forEach(x => {
+    if (tri && !String(x.response || '').trim()) add(`Respond to review point ${x.ref}`, String(x.point || x.section || '').slice(0, 160), { act: 'go', to: 'review' }, 'due');
+    if (r('ir') && String(x.response || '').trim()) add(`Close or disclose review point ${x.ref}`, 'Triodian has responded.', { act: 'go', to: 'review' });
+  });
+  if (G[5].ok && !deny('r7') && rev('R7').result !== 'complete' && !S.independentReviewPoints.some(x => x.status === 'open')) add('Confirm the independent check (R7)', 'No review points are open.', { act: 'go', to: 'review' });
+  if (r('methodOwner') && G[5].ok && !S.engagement.annexSigned.by) add('Sign the technical annex', 'The method owner signs the annex before it goes to counsel.', { act: 'outTab', t: 'DL5' });
+  if (r('owner') && G[2].ok && !S.engagement.handBack.by) add('Accept the hand-back list', 'AI uses found that are not on the insurer’s inventory.', { act: 'outTab', t: 'DL6' });
+  return out.sort((a, b) => (b.tone === 'due') - (a.tone === 'due'));
+}
+function screenActions() {
+  const list = myActions(), p = me();
+  const who = p ? `${esc(p.name)}${p.roles && p.roles.length ? ' · ' + esc(p.roles.map(roleName).join(', ')) : ''}` : 'Choose who is acting under “Acting as”.';
+  const navAttrs = n => Object.entries(n).map(([k, v]) => k === 'act' ? `data-act="${esc(v)}"` : `data-${k}="${esc(v)}"`).join(' ');
+  return `${opening('My actions', 'What is waiting for you', who)}
+  ${list.length ? `<div class="stack actlist" style="gap:10px">${list.map(a => `<button class="actitem ${a.tone}" ${navAttrs(a.nav)}><span class="actdot" aria-hidden="true"></span><span class="acttext"><strong>${esc(a.title)}</strong><span class="small soft">${esc(a.detail)}</span></span>${a.tone === 'due' ? badge('Now', 'b-ochre') : ''}<span class="actgo" aria-hidden="true">→</span></button>`).join('')}</div>`
+    : `<div class="card"><p style="margin:0"><strong>Nothing is waiting for you.</strong></p><p class="small soft" style="margin:6px 0 0">Items appear here when an entry needs your facts, classification, confirmation or re-derivation, when a question or review point needs your answer, or when a phase needs you to sign off.</p></div>`}`;
+}
 function header() {
-  const b = bp(), steps = ['setup','set','register','classify','counsel','findings','review','outputs'];
+  const b = bp(), steps = ['setup','set','register','classify','counsel','findings','review','outputs'], nAct = S ? myActions().length : 0;
   return `<header class="hdr"><div class="hdr-in">
     <button class="brand" data-act="go" data-to="overview" aria-label="Triodian · go to overview">${b !== 'phone' ? LOGO(22) : MARKSVG()}</button>
     ${b !== 'phone' ? '<span class="vrule" aria-hidden="true"></span>' : ''}<span class="apptitle">AI Use Assessment</span>
-    ${b === 'desk' ? `<nav class="steps" aria-label="Steps">${steps.map(s => `<button data-act="go" data-to="${s}" ${UI.screen === s ? 'aria-current="page"' : ''}>${SNAME[s]}</button>`).join('')}</nav>` : ''}
+    ${b === 'desk' ? `<nav class="steps" aria-label="Steps">${S && (SRV.user || practice()) ? `<button data-act="go" data-to="actions" ${UI.screen === 'actions' ? 'aria-current="page"' : ''}>My actions${nAct ? ` <span class="navcount">${nAct}</span>` : ''}</button>` : ''}${steps.map(s => `<button data-act="go" data-to="${s}" ${UI.screen === s ? 'aria-current="page"' : ''}>${SNAME[s]}</button>`).join('')}</nav>` : ''}
     <div class="hdr-r">${saveChip()}
       ${b !== 'phone' ? `<button class="checkcount" style="border:0;padding:0" data-act="go" data-to="setup" aria-label="Calibration status">${calBadge()}</button>` : ''}
       ${b !== 'phone' && (practice() || !SRV.user) ? `<label class="chip" title="Practice only: choose whose view to try"><span aria-hidden="true">⌾</span>${personSelect('who-hdr')}</label>` : ''}
@@ -420,7 +459,7 @@ function drawer() {
   const it = (to, label) => `<button class="item" data-act="go" data-to="${to}" ${UI.screen === to ? 'aria-current="page"' : ''}>${label}</button>`;
   return `<div class="drawer-bg" data-act="drawer"></div><aside class="drawer" role="dialog" aria-label="Menu">
     <div class="row between"><strong>Menu</strong><button class="iconbtn" data-act="drawer" aria-label="Close menu">✕</button></div>
-    <div class="grp">Steps</div>${SEQ.map(s => it(s, SNAME[s])).join('')}${it('reference', 'Reference')}
+    ${S && (SRV.user || practice()) ? it('actions', 'My actions' + (myActions().length ? ` <span class="navcount">${myActions().length}</span>` : '')) : ''}<div class="grp">Steps</div>${SEQ.map(s => it(s, SNAME[s])).join('')}${it('reference', 'Reference')}
     ${practice() || !SRV.user ? `<div class="grp">Acting as · practice</div><label class="chip" style="width:100%"><span aria-hidden="true">⌾</span>${personSelect('who-drw')}</label>` : ''}
     <div class="row" style="margin-top:8px">${calBadge()}</div>
     <div class="grp">Practice</div>
@@ -1057,7 +1096,7 @@ function doRender() {
   if (S && !practice()) applyIdentity();
   const ae = document.activeElement, fid = ae && ae.id, fkey = !fid ? dsKey(ae) : null; let sel = null; try { if (ae && ae.selectionStart != null) sel = [ae.selectionStart, ae.selectionEnd]; } catch (e) {}
   const s = UI.screen, G = gates(), gi = { setup: 0, set: 1, register: 2, classify: 3, counsel: 4, findings: 5, review: 6, outputs: 7 }[s];
-  const scr = { setup: screenSetup, overview: screenOverview, set: screenSet, register: screenRegister, classify: screenClassify, counsel: screenCounsel, findings: screenFindings, review: screenReview, outputs: screenOutputs, reference: screenReference }[s] || screenOverview;
+  const scr = { actions: screenActions, setup: screenSetup, overview: screenOverview, set: screenSet, register: screenRegister, classify: screenClassify, counsel: screenCounsel, findings: screenFindings, review: screenReview, outputs: screenOutputs, reference: screenReference }[s] || screenOverview;
   app.innerHTML = header() + `<main id="main" tabindex="-1"><div class="wrap">${scr()}</div></main>` + footer() + bottombar(gi != null ? gate(G[gi].ok, G[gi].ok ? 'Gate met' : 'Gate open') : '') + drawer();
   renderSheet();
   let el = fid ? document.getElementById(fid) : null;

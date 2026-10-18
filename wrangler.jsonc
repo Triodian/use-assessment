@@ -16,6 +16,14 @@
   ],
   "observability": { "enabled": true },
 
+  // Daily at 07:00 Brisbane time: remind counsel about questions open for a week or more (lib/core/notify.js).
+  "triggers": { "crons": ["0 21 * * *"] },
+
+  // Email notifications are built but switched off, as in the Risk Appetite app. To switch them on: onboard
+  // triodian.com in Cloudflare Email Service, add  "send_email": [{ "name": "EMAIL" }]  here, and set the variables
+  // NOTIFY_SENDING = "on" and NOTIFY_FROM = "notifications@triodian.com". Until then messages are held and
+  // listed in Admin → Notifications.
+
   // The "Load from the Risk Appetite app" button reads the issued calibration set from
   // APPETITE_URL/api/calibration-set using a Cloudflare Access service token. The token's two halves are
   // secrets, set in Cloudflare (Worker → Settings → Variables and secrets), never in this file:
@@ -34,7 +42,8 @@
       "d1_databases": [
         { "binding": "DB", "database_name": "use-assessment-test-db", "database_id": "8da15baa-c86e-4134-9bee-7412e064dc98" }
       ],
-      "vars": { "SITE_LABEL": "Test site", "APPETITE_URL": "https://risk-appetite-test.triodian.com" },
+      "vars": { "SITE_LABEL": "Test site", "SITE_URL": "https://use-assessment-test.triodian.com", "APPETITE_URL": "https://risk-appetite-test.triodian.com" },
+      "triggers": { "crons": ["0 21 * * *"] },
       "observability": { "enabled": true }
     }
   }

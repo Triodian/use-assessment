@@ -25,13 +25,13 @@ async function api(method, path, body) {
 }
 
 const SRV = { checked: false, on: false, user: null, roles: [], site: '', code: '', reason: '' };
-const ADM = { loaded: false, users: [], roles: [], perms: [], requests: [], audit: [], editing: null, adding: false, draft: null, err: '' };
+const ADM = { notes: [], sending: false, openNote: null, loaded: false, users: [], roles: [], perms: [], requests: [], audit: [], editing: null, adding: false, draft: null, err: '' };
 const PRF = { err: '', msg: '', emailErr: '', prefMsg: '' };
-let TAB = (location.hash.slice(1) === 'activity') ? 'activity' : 'users';
+let TAB = ['activity', 'notifications'].includes(location.hash.slice(1)) ? location.hash.slice(1) : 'users';
 const roleLong = id => ((ADM.roles.length ? ADM.roles : SRV.roles).find(r => r.id === id) || {}).name || id;
 
 function header() {
-  const u = SRV.user, tabs = AREA === 'admin' && u && u.isAdmin ? [['users', 'Users and roles'], ['activity', 'Activity']] : [];
+  const u = SRV.user, tabs = AREA === 'admin' && u && u.isAdmin ? [['users', 'Users and roles'], ['activity', 'Activity'], ['notifications', 'Notifications']] : [];
   return `<header class="hdr"><div class="hdr-in">
     <a class="brand" href="/" aria-label="Triodian · back to the assessment" style="text-decoration:none"><img class="logo" src="/triodian-logo.svg" alt="Triodian" style="height:22px;width:auto;display:block"></a>
     <span class="vrule" aria-hidden="true"></span><span class="apptitle">${AREA === 'admin' ? 'Admin' : 'Profile'}</span>
@@ -49,7 +49,7 @@ function render() {
   else if (!SRV.on) main = msg(SRV.code === 'no_access' ? 'No access' : 'Could not connect', esc(SRV.reason) + (SRV.code === 'no_access' ? ' <a href="/cdn-cgi/access/logout">Sign out</a>' : ''));
   else if (AREA === 'profile') main = screenProfile();
   else if (!SRV.user.isAdmin) main = msg('Administrators only', 'Admin is for administrators. Ask an administrator if you need a user added or a role changed.');
-  else main = TAB === 'activity' ? screenActivity() : screenUsers();
+  else main = TAB === 'activity' ? screenActivity() : TAB === 'notifications' ? screenNotifications() : screenUsers();
   document.getElementById('app').innerHTML = header() + `<main id="main" tabindex="-1" class="area-main"><div class="wrap">${main}</div></main>`;
   if (fid) { const el = document.getElementById(fid); if (el) el.focus({ preventScroll: true }); }
   else if (ADM.adding || ADM.editing) { const f = document.getElementById('f-email'); if (f) f.focus(); }
@@ -57,7 +57,8 @@ function render() {
 
 /* ---------- admin ---------- */
 async function loadAdmin() {
-  const [u, a] = await Promise.all([api('GET', '/api/admin/users'), api('GET', '/api/admin/audit')]);
+  const [u, a, n] = await Promise.all([api('GET', '/api/admin/users'), api('GET', '/api/admin/audit'), api('GET', '/api/admin/notifications')]);
+  ADM.notes = n.ok ? n.body.entries : []; ADM.sending = n.ok && n.body.sending;
   if (u.ok) { ADM.users = u.body.users; ADM.roles = u.body.roles; ADM.perms = u.body.permissions; ADM.requests = u.body.accessRequests || []; } else ADM.err = u.error;
   ADM.audit = a.ok ? a.body.entries : []; ADM.loaded = true; render();
 }
@@ -128,6 +129,15 @@ function screenActivity() {
     </tbody></table></div>` : '<p class="soft small">Nothing yet.</p>'}`;
 }
 
+function screenNotifications() {
+  if (!ADM.loaded) return '<p class="soft" style="padding:40px 0">Loading…</p>';
+  const st = { held: ['Held', 'b-grey'], sending: ['Sending', 'b-ochre'], sent: ['Sent', 'b-green'], failed: ['Failed', 'b-red'] };
+  return `${opening('Admin · notifications', 'Notifications', ADM.sending ? 'Emails the app has sent, newest first.' : 'Email sending is switched off. Every message the app would send is held here, newest first, so you can see what people would receive.')}
+    ${ADM.notes.length ? `<div class="tw"><table class="lg adm-log"><thead><tr><th>When</th><th>To</th><th>Subject</th><th>Status</th></tr></thead><tbody>
+    ${ADM.notes.map(n => `<tr><td class="when">${fmtLocal(n.created_at)}</td><td>${esc(n.to_email)}</td><td><button class="lnk" data-act="note" data-id="${n.id}" aria-expanded="${ADM.openNote === n.id}">${esc(n.subject)}</button>${ADM.openNote === n.id ? `<pre class="notebody">${esc(n.body)}</pre>` : ''}</td><td>${badge(...(st[n.status] || [n.status, 'b-grey']))}${n.error ? `<div class="mini">${esc(n.error)}</div>` : ''}</td></tr>`).join('')}
+    </tbody></table></div>` : '<p class="soft small">Nothing yet. Messages appear here when a save gives someone something to do.</p>'}`;
+}
+
 /* ---------- profile ---------- */
 function screenProfile() {
   const u = SRV.user;
@@ -155,6 +165,9 @@ function screenProfile() {
     </div>
     <p class="small soft" style="margin-top:8px">Used on the assessment screens wherever a date or time is shown, for example ${esc(fmtLocal(new Date().toISOString()))}. Outputs always use the full form, such as 18 October 2026.</p>
     ${PRF.prefMsg ? `<p class="small" style="color:var(--green)" role="status">${esc(PRF.prefMsg)}</p>` : ''}</section>
+  <section class="card"><h2 class="sh">Email notifications</h2>
+    <label class="cb" style="align-items:flex-start;gap:10px"><input type="checkbox" id="p-notify" data-pref="1" ${u.notify !== false ? 'checked' : ''}> Email me when something needs me: a question for counsel, a failure consequence to confirm, a tier to re-derive, an R3 difference, or a review point</label>
+    <p class="small soft" style="margin-top:8px">The same items are always listed under My actions in the assessment.</p></section>
   <section class="card"><h2 class="sh">Access</h2>
     <dl class="kv"><dt>Roles</dt><dd>${(u.roles || []).length ? u.roles.map(r => esc(roleLong(r))).join('<br>') : 'None. You can read the assessment but not change it.'}</dd>
     <dt>Administrator</dt><dd>${u.isAdmin ? 'Yes · <a href="/admin/">open Admin</a>' : 'No'}</dd></dl>
@@ -173,12 +186,13 @@ document.addEventListener('click', async ev => {
   else if (a === 'cancel') { ADM.editing = null; ADM.adding = false; ADM.draft = null; ADM.err = ''; render(); }
   else if (a === 'grant') { ADM.adding = true; ADM.editing = null; ADM.err = ''; ADM.draft = { email: d.email, roles: [], isAdmin: false }; render(); window.scrollTo(0, 0); }
   else if (a === 'dismiss') { await api('POST', '/api/admin/access-requests/dismiss', { email: d.email }); loadAdmin(); }
+  else if (a === 'note') { ADM.openNote = ADM.openNote === +d.id ? null : +d.id; render(); }
   else if (a === 'cancelEmail') { const r = await api('DELETE', '/api/me/email'); if (r.ok) SRV.user = r.body.user; render(); }
 });
 document.addEventListener('change', async ev => {
   if (!ev.target.closest('[data-pref]')) return;
   const val = id => (document.getElementById(id) || {}).value || '';
-  const r = await api('PUT', '/api/me/prefs', { dateFormat: val('p-df') || 'long', timeZone: val('p-tz'), notify: !SRV.user || SRV.user.notify !== false });
+  const r = await api('PUT', '/api/me/prefs', { dateFormat: val('p-df') || 'long', timeZone: val('p-tz'), notify: (document.getElementById('p-notify') || {}).checked !== false });
   if (r.ok) { SRV.user = r.body.user; PRF.prefMsg = 'Saved.'; } else PRF.prefMsg = r.error || 'Could not save.';
   render();
 });
