@@ -24,7 +24,7 @@ function calibrationReader(env) {
     });
     const text = await r.text();
     let body = null; try { body = JSON.parse(text); } catch (e) { /* not JSON: usually the Access sign-in page */ }
-    if (!r.ok || !body) return { error: body && body.error ? body.error : `The Risk Appetite app answered ${r.status}. Check the service token and its policy.` };
+    if (!r.ok || !body) return { status: r.status, error: body && body.error ? body.error : `The Risk Appetite app answered ${r.status}. Check the service token and its policy.` };
     return body;
   };
 }

@@ -379,3 +379,5 @@ dl.kv dd{margin:0}
 .hdr-r{flex:0 0 auto}
 .hdr .checkcount,.hdr .apptitle,.hdr .vrule{display:none}
 .hdr .steps button{padding:6px 8px 5px}
+/* Admin and profile header on a phone: the tabs take the free width and scroll, so none is hidden behind the avatar. */
+@media (max-width:639px){body:has(.area-tabs) .hdr-in .apptitle,body:has(.area-tabs) .hdr-in .vrule{display:none}.area-tabs{flex:1 1 auto;min-width:0}.area-tabs button{padding-left:8px;padding-right:8px}}
