@@ -67,7 +67,7 @@ function newAssessment() {
     arrangements: [], setAgreed: { gcBy: '', gcOn: '', counselBy: '', counselOn: '', on: '' },
     entries: [], questions: [], findings: [],
     reviews: C.reviews.map(r => ({ point: r.id, by: '', on: '', result: '', notes: '' })),
-    exceptions: [], independentReviewPoints: [], r5Cleared: {}, diffReports: [], versions: [], history: []
+    exceptions: [], independentReviewPoints: [], r5Cleared: {}, diffReports: [], versions: [], previous: null, history: []
   };
 }
 function newEntry(arrId, id) {
@@ -77,7 +77,7 @@ function newEntry(arrId, id) {
 function log(action, target, from, to) { REV++; S.history.push({ at: nowISO(), by: pname(UI.personId) || 'unknown', action, target, from: from === undefined ? null : from, to: to === undefined ? null : to }); UI.dirty = true; autosave(); }
 function setFieldVal(e, n, patch) {
   const f = e.fields[n] || { value: '', source: '', notKnown: false, by: '', on: '' }, from = f.notKnown ? 'not known' : (patch.source !== undefined && patch.value === undefined ? 'source: ' + (f.source || '') : patch.detail !== undefined ? f.detail || '' : f.value);
-  Object.assign(f, patch, { by: UI.personId, on: today() }); e.fields[n] = f;
+  Object.assign(f, patch, { by: UI.personId, on: today() }); delete f.carried; e.fields[n] = f;
   log('field ' + n, e.id, from, f.notKnown ? 'not known' : (patch.value !== undefined ? patch.value : patch.source !== undefined ? 'source: ' + patch.source : patch.detail !== undefined ? patch.detail : null));
 }
 function fieldDone(e, n) {
@@ -96,6 +96,7 @@ const notKnownCount = e => Object.values(e.fields).filter(f => f && f.notKnown).
 /* ---------- permissions ---------- */
 /* One gate for every editable control and action. Returns '' when allowed, otherwise the reason shown beside the disabled control. */
 function deny(target, x) {
+  if (UI.archived) return 'This is an earlier assessment. It is kept read only.';
   const p = me(); if (!p) return practice() || !SRV.user ? 'Choose who is acting under "Acting as" in the header.' : 'Your account has no role in this assessment. An administrator gives roles in Admin.';
   if (practice() === false && SRV.user && SRV.user.isAdmin && target === 'setup') return '';
   const r = k => p.roles.includes(k), tri = TRI.some(r);
@@ -394,6 +395,7 @@ function personSelect(id) { return `<select id="${id}" data-act="person" aria-la
 /* Document band under the header: the privilege marking counsel directs, and which assessment this is. */
 function docband() {
   if (!S) return '';
+  if (UI.archived) return `<div class="docband practice"><div class="docband-in"><span class="priv none" style="color:var(--ochre)"><strong>Earlier assessment · ${esc(UI.archived.label)} · read only</strong></span><span class="stat"><button class="lnk" data-act="leaveArchive">Back to the current assessment</button></span></div></div>`;
   const e = S.engagement, canSet = !deny('setup');
   const priv = String(e.privilegeMarking || '').trim() ? `<span class="priv" title="Privilege marking · printed as the first line of every output">${esc(e.privilegeMarking)}</span>`
     : `<span class="priv none">No privilege marking set.${canSet ? ' <button class="lnk" data-act="go" data-to="setup">Set it in set-up</button>' : ' Counsel directs the marking.'}</span>`;
@@ -402,7 +404,7 @@ function docband() {
 }
 /* ---------- My actions: what is waiting for the signed-in person (or the person being practised as) ---------- */
 function myActions() {
-  const p = me(); if (!S || !p) return [];
+  const p = me(); if (!S || !p || UI.archived) return [];
   const r = k => p.roles.includes(k), out = [], G = gates(), tri = TRI.some(r);
   const add = (title, detail, nav, tone) => out.push({ title, detail, nav, tone: tone || '' });
   const missing = (e, ns) => ns.filter(k => !fieldDone(e, k)).length;
@@ -462,6 +464,7 @@ function drawer() {
     ${S && (SRV.user || practice()) ? it('actions', 'My actions' + (myActions().length ? ` <span class="navcount">${myActions().length}</span>` : '')) : ''}<div class="grp">Steps</div>${SEQ.map(s => it(s, SNAME[s])).join('')}${it('reference', 'Reference')}
     ${practice() || !SRV.user ? `<div class="grp">Acting as · practice</div><label class="chip" style="width:100%"><span aria-hidden="true">⌾</span>${personSelect('who-drw')}</label>` : ''}
     <div class="row" style="margin-top:8px">${calBadge()}</div>
+    ${(SRV.archives || []).length ? `<div class="grp">Earlier assessments</div>${SRV.archives.map(a => `<button class="item" data-act="openArchive" data-id="${a.id}">${esc(a.label)}<span class="small soft" style="margin-left:auto">read only</span></button>`).join('')}` : ''}
     <div class="grp">Practice</div>
     ${practice() ? (SRV.on ? '<button class="item" data-act="leaveExample">Leave the worked example</button>' : '') : '<button class="item" data-act="example">Open the worked example</button>'}
     <p class="small soft" style="padding:0 10px">The worked example is fictional and runs in this browser only. Nothing in it is saved.</p>
@@ -523,9 +526,20 @@ function gateChips(n, label) {
 const gateCard = (n) => { const g = gates()[n]; return `<section class="card" style="margin-top:18px"><h2 class="sh">Phase ${n} exit gate</h2><div class="stack" style="gap:6px">${g.items.map(i => gate(i[1], i[0]) + (i[1] ? '' : gateChips(n, i[0]))).join('')}</div></section>`; };
 
 /* ---------- S1 set-up ---------- */
+/* ---------- The next annual assessment ---------- */
+const isClosed = () => rev('R7').result === 'complete' && !!S.engagement.handBack.by;
+function nextAssessmentCard() {
+  const prev = S.previous && S.previous.label ? `<p class="small soft" style="margin:0 0 8px">Started from the last assessment: ${esc(S.previous.label)}. Its facts carried over as a starting point; classification, questions, reviews and sign-offs started afresh.</p>` : '';
+  if (practice() || UI.archived || !SRV.user) return prev ? `<section class="card" style="margin-top:18px"><h2 class="sh">The previous assessment</h2>${prev}</section>` : '';
+  const can = SRV.user.isAdmin || (SRV.user.roles || []).includes('methodOwner');
+  if (!isClosed()) return prev ? `<section class="card" style="margin-top:18px"><h2 class="sh">The previous assessment</h2>${prev}</section>` : '';
+  return `<section class="card" style="margin-top:18px"><h2 class="sh">Start the next assessment</h2>${prev}
+    <p class="small" style="margin:0 0 10px">This assessment is closed: the independent check is complete and the hand-back list is accepted. Starting the next one keeps this assessment read only under “Earlier assessments” in the menu. The new one keeps set-up, people, the set and each entry's facts with their sources as a starting point. Classification, evidence, questions to counsel, reviews, sign-offs and versions start afresh.</p>
+    ${can ? '<button class="btn primary sm" data-act="nextAssessment">Start the next assessment</button>' : '<p class="small soft" style="margin:0">An administrator or the method owner starts it.</p>'}</section>`;
+}
 function screenSetup() {
   const e = S.engagement, b = bp(), c = cal(), why = deny('setup'), fs = why ? 'disabled' : '';
-  const people = savesHere() ? S.people.map(p => `<div class="panel2" style="padding:12px 16px"><strong>${esc(p.name || 'Unnamed')}</strong>${p.organisation ? ` <span class="soft">· ${esc(p.organisation)}</span>` : ''}<div class="small soft" style="margin-top:4px">${esc(p.roles.map(roleName).join(', '))}</div></div>`).join('') : S.people.map((p, i) => `<div class="panel2" style="padding:14px 16px"><div class="fgrid">${fld('Name', `people.${i}.name`, p.name)}${fld('Organisation', `people.${i}.organisation`, p.organisation)}</div>
+  const people = savesHere() || UI.archived ? S.people.map(p => `<div class="panel2" style="padding:12px 16px"><strong>${esc(p.name || 'Unnamed')}</strong>${p.organisation ? ` <span class="soft">· ${esc(p.organisation)}</span>` : ''}<div class="small soft" style="margin-top:4px">${esc(p.roles.map(roleName).join(', '))}</div></div>`).join('') : S.people.map((p, i) => `<div class="panel2" style="padding:14px 16px"><div class="fgrid">${fld('Name', `people.${i}.name`, p.name)}${fld('Organisation', `people.${i}.organisation`, p.organisation)}</div>
     <div class="mini" style="margin:10px 0 4px">ROLES · one person may hold more than one Triodian role</div><div class="row" style="gap:4px 14px">${C.roles.map(r => `<label class="cb small"><input type="checkbox" id="role-${i}-${r.id}" data-arrchk="people.${i}.roles" value="${r.id}" ${p.roles.includes(r.id) ? 'checked' : ''} ${fs}>${esc(r.name)}</label>`).join('')}</div>
     <div class="row" style="justify-content:flex-end"><button class="btn sm ghost" data-act="rmPerson" data-i="${i}" ${fs}>Remove</button></div></div>`).join('');
   const st = [['', '—'], ['requested', 'Requested'], ['received', 'Received'], ['notHeld', 'Not held']], refs = [['', '—'], ...C.documents.map(x => [x.ref, x.ref])];
@@ -539,7 +553,7 @@ function screenSetup() {
   <section class="card"><h2 class="sh">1 · Engagement</h2><div class="fgrid">${fld('Insurer', 'engagement.insurer', e.insurer)}${fld('Reference', 'engagement.reference', e.reference)}${fld('Counsel firm', 'engagement.counselFirm', e.counselFirm)}${fld('Start date', 'engagement.startDate', e.startDate, { type: 'date' })}</div>
     <div style="margin-top:14px">${fld(T('privilege', 'Privilege marking') + ' · as counsel directs, printed on every output', 'engagement.privilegeMarking', e.privilegeMarking, { raw: true })}</div>
     <div class="fgrid" style="margin-top:14px">${fld('Brief confirmed by (GC)', 'engagement.briefConfirmed.by', e.briefConfirmed.by, { select: peopleOpts('gc') })}${fld('Confirmed on', 'engagement.briefConfirmed.on', e.briefConfirmed.on, { type: 'date' })}${fld('Brief reference', 'engagement.briefConfirmed.ref', e.briefConfirmed.ref)}${fld('Document request issued', 'engagement.documentsRequestedOn', e.documentsRequestedOn, { type: 'date' })}</div></section>
-  <section class="card"><div class="row between"><h2 class="sh" style="margin:0">2 · People</h2>${savesHere() ? (SRV.user && SRV.user.isAdmin ? '<a class="btn sm" href="/admin/">Manage in Admin</a>' : '') : `<button class="btn sm" data-act="addPerson" ${fs}>Add person</button>`}</div><p class="small soft" style="margin:8px 0 12px">${savesHere() ? 'Everyone with a role in this assessment. An administrator adds people and gives roles in Admin. What each person can do follows from their roles, and separation of duties is enforced by person, on the server as well as here.' : 'Practice: the person chosen in the header sets what the app permits. Separation of duties is enforced by person, not by role.'}</p><div class="stack" style="gap:10px">${people || '<p class="small soft">No one recorded yet.</p>'}</div></section>
+  <section class="card"><div class="row between"><h2 class="sh" style="margin:0">2 · People</h2>${UI.archived ? '' : savesHere() ? (SRV.user && SRV.user.isAdmin ? '<a class="btn sm" href="/admin/">Manage in Admin</a>' : '') : `<button class="btn sm" data-act="addPerson" ${fs}>Add person</button>`}</div><p class="small soft" style="margin:8px 0 12px">${UI.archived ? 'The people with a role in this assessment.' : savesHere() ? 'Everyone with a role in this assessment. An administrator adds people and gives roles in Admin. What each person can do follows from their roles, and separation of duties is enforced by person, on the server as well as here.' : 'Practice: the person chosen in the header sets what the app permits. Separation of duties is enforced by person, not by role.'}</p><div class="stack" style="gap:10px">${people || '<p class="small soft">No one recorded yet.</p>'}</div></section>
   <section class="card"><h2 class="sh">3 · ${T('ir', 'Independent reviewer')}</h2><p class="small soft">Reviews the assessment on behalf of the CRO. The app shows the role, never the firm.</p><div class="fgrid">${fld('Person', 'engagement.irPersonId', e.irPersonId, { select: peopleOpts('ir') })}${fld('Organisation filling the role', 'engagement.irOrganisation', e.irOrganisation)}${fld('Reporting line', 'engagement.independentReviewerReportsTo', line, { select: [['counsel', 'Through counsel'], ['cro', 'Directly to the CRO']] })}${fld('CRO', 'engagement.croPersonId', e.croPersonId, { select: peopleOpts('cro', S.people.some(p => p.roles.includes('cro')) ? '—' : 'Add a person with the CRO role') })}</div>
     <p class="small" style="margin-top:10px">Review pack addressed to <strong>${line === 'cro' ? esc(cro || 'the CRO') : esc(e.counselFirm || 'counsel')}</strong>. R7 confirmed by ${line === 'cro' ? 'the CRO' + (cro ? ' (' + esc(cro) + ')' : '') : 'the independent reviewer, through counsel'}.</p></section>
   <section class="card"><div class="row between"><h2 class="sh" style="margin:0">4 · ${T('calibration', 'Calibration set')}</h2><div class="row">${calBadge()}<button class="btn sm aub" data-act="loadCalApp" ${fs} title="Read the issued calibration set from the AI Risk Appetite app">Load from the Risk Appetite app</button><button class="btn sm" data-act="loadCal" ${fs}>Load from a file</button></div></div>
@@ -548,7 +562,7 @@ function screenSetup() {
   <section class="card"><div class="row between"><h2 class="sh" style="margin:0">5 · Documents D1 to D10</h2><button class="btn sm" data-act="addDoc" ${fs}>Add document</button></div><p class="small soft" style="margin:8px 0 12px">Each received document gets a short ID used in source references, for example <span class="mono">D5-ARR02 p.14</span>.</p>
     ${b === 'phone' ? `<div class="stack" style="gap:10px">${docs}</div>` : `<div class="tw"><table class="lg"><thead><tr><th>ID</th><th style="width:96px">Ref</th><th>Document</th><th style="width:150px">Status</th><th style="width:160px">Date</th></tr></thead><tbody>${docs}</tbody></table></div>`}</section>
   <section class="card"><div class="row between"><h2 class="sh" style="margin:0">6 · Interviews</h2><button class="btn sm" data-act="addIv" ${fs}>Add interview</button></div><div class="stack" style="gap:8px;margin-top:12px">${S.interviews.map((v, i) => `<div class="fgrid" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr))">${fld(v.id, `interviews.${i}.who`, v.who)}${fld('Date held', `interviews.${i}.date`, v.date, { type: 'date' })}${fld('Notes reference', `interviews.${i}.notesRef`, v.notesRef)}</div>`).join('')}</div></section>
-  </div>${gateCard(0)}${stepbar(gate(gates()[0].ok, gates()[0].ok ? 'Phase 0 met' : 'Phase 0 open'))}`;
+  </div>${nextAssessmentCard()}${gateCard(0)}${stepbar(gate(gates()[0].ok, gates()[0].ok ? 'Phase 0 met' : 'Phase 0 open'))}`;
 }
 
 /* ---------- S2 overview ---------- */
@@ -637,7 +651,7 @@ function fieldRow(e, n) {
       <div class="stack" style="gap:6px"><input class="in mono${!nk && n <= 14 && f.value && String(f.value).trim() && !(f.source || '').trim() ? ' fails' : ''}" list="srcs" id="${base}-src" data-fs="${n}" value="${esc(f.source || '')}" placeholder="Source: D5 p.14" aria-label="Field ${n} source reference" ${!nk && n <= 14 && f.value && String(f.value).trim() && !(f.source || '').trim() ? 'title="Every value needs a source (R2)"' : ''} ${dis}>
         <div class="row" style="gap:10px"><label class="cb small"><input type="checkbox" id="${base}-nk" data-fnk="${n}" ${nk ? 'checked' : ''} ${ed ? '' : 'disabled'}>${T('notKnown', 'Not known')}</label><button class="lnk mono" id="${base}-hist" data-act="hist" data-k="${esc(e.id)}.${n}" aria-expanded="${!!hist}">history</button>${ok('ask') ? `<button class="lnk mono" id="${base}-ask" data-act="askFrom" data-id="${esc(e.id)}" data-n="${n}">ask counsel</button>` : ''}</div></div></div>
     ${hist ? `<div class="mini" style="margin-top:6px">${hist.length ? hist.map(h => `${esc(fmtAt(h.at))} · ${esc(h.by)} · ${esc(h.from == null ? '—' : h.from)} → ${esc(h.to == null ? '—' : h.to)}`).join('<br>') : 'No changes recorded.'}</div>` : ''}
-    ${f.by ? `<div class="mini" style="margin-top:4px">${esc(pname(f.by))} · ${esc(dAU(f.on))}</div>` : ''}</div>`;
+    ${f.carried ? '<div class="mini" style="margin-top:4px;color:var(--ochre)">Carried over from the last assessment. Check it still holds, then confirm or change it.</div>' : ''}${f.by ? `<div class="mini" style="margin-top:4px">${esc(pname(f.by))} · ${esc(dAU(f.on))}</div>` : ''}</div>`;
 }
 function entryEditor(e) {
   const a = arr(e.arrangementId), bl = blindFor(e), tabs = bl ? [['facts', 'Facts · 1–14']] : [['facts', 'Facts · 1–14'], ['classify', 'Classify · 15–17'], ['evidence', 'Evidence · 18–22'], ['counsel', 'Counsel · 23–25'], ['finding', 'Finding · 26']], t = bl ? 'facts' : UI.tab, i = eIdx(e), why = deny('facts', e), ed = !why;
@@ -1196,7 +1210,7 @@ async function api(method, path, body) {
   return { ok: true, status: r.status, body: j };
 }
 function practice() { return !!(S && S.engagement.example); }
-const savesHere = () => SRV.on && S && !practice();
+const savesHere = () => SRV.on && S && !practice() && !UI.archived;
 const canSetup = () => !!(SRV.user && (SRV.user.isAdmin || (SRV.user.roles || []).some(r => r === 'methodOwner' || r === 'delivery')));
 function applyIdentity() { if (!SRV.user || practice()) return; UI.personId = SRV.user.id; }
 function autosave() { if (!savesHere() || SRV.state === 'conflict') return; SRV.state = 'pending'; clearTimeout(SRV.timer); SRV.timer = setTimeout(saveNow, 1200); paintSave(); }
@@ -1233,6 +1247,7 @@ async function flushSave() { if (!savesHere()) return true; if (SRV.state === 'p
 function saveLabel() {
   if (!S) return null;
   if (practice()) return ['b-ochre', 'Practice · not saved', 'The worked example is for practice. Nothing here is saved.'];
+  if (UI.archived) return ['b-grey', 'Read only', 'An earlier assessment. Nothing here can be changed.'];
   if (!SRV.on) return ['b-ochre', 'Not saved', 'The server is not reachable.'];
   return { saved: ['b-green', 'Saved', SRV.lastAt ? 'Saved ' + fmtAt(SRV.lastAt) + ' by ' + SRV.lastBy : 'Saved'], pending: ['b-grey', 'Saving…', 'Changes will be saved in a moment'], saving: ['b-grey', 'Saving…', 'Saving'], error: ['b-red', 'Not saved', SRV.err], conflict: ['b-red', 'Changed elsewhere', SRV.err] }[SRV.state] || ['b-grey', '', ''];
 }
@@ -1247,6 +1262,7 @@ async function loadReal(quiet) {
   else S = null;
   return true;
 }
+async function loadArchives() { const r = await api('GET', '/api/archive'); SRV.archives = r.ok ? r.body.entries || [] : []; }
 async function refreshIfQuiet() {
   if (!savesHere() || SRV.state !== 'saved' || SRV.inflight || UI.pop || UI.sheet) return;
   const ae = document.activeElement; if (ae && (/TEXTAREA|SELECT/.test(ae.tagName) || (ae.tagName === 'INPUT' && !/checkbox|radio|button|submit/.test(ae.type)))) return;
@@ -1370,6 +1386,19 @@ function onClick(ev) {
     agreeGC: () => { Object.assign(S.setAgreed, { gcBy: m.id, gcOn: today(), on: today() }); log('R1', 'set', null, 'GC agreed: ' + m.name); render(); },
     agreeCounsel: () => { Object.assign(S.setAgreed, { counselBy: m.id, counselOn: today(), on: today() }); log('R1', 'set', null, 'counsel agreed: ' + m.name); render(); },
     addEntry: () => { const x = newEntry(document.getElementById('newEntryArr').value); S.entries.push(x); log('addEntry', x.id); UI.entryId = x.id; UI.tab = 'facts'; render(); window.scrollTo(0, 0); },
+    nextAssessment: async () => {
+      if (!confirm('Start the next assessment? This one is kept read only under Earlier assessments, and the new one starts from its facts.')) return;
+      if (SRV.state !== 'saved') return toast('Wait until your changes are saved.');
+      const r = await api('POST', '/api/next-assessment', { revision: SRV.rev }); if (!r.ok) return toast(r.error);
+      await loadReal(); await loadArchives(); UI.screen = 'setup'; render(); window.scrollTo(0, 0); toast('The next assessment has started. The last one is under Earlier assessments.');
+    },
+    openArchive: async () => {
+      if (savesHere() && SRV.state !== 'saved') return toast('Wait until your changes are saved.');
+      const r = await api('GET', '/api/archive/' + encodeURIComponent(d.id)); if (!r.ok) return toast(r.error);
+      try { S = hydrate(r.body.data); } catch (er) { return toast('That earlier assessment could not be read: ' + er.message); }
+      UI.archived = { id: r.body.id, label: r.body.label }; UI.drawer = false; UI.outTab = ''; UI.entryId = null; REV++; go('overview');
+    },
+    leaveArchive: async () => { UI.archived = null; UI.entryId = null; UI.outTab = ''; await loadReal(); REV++; go('overview'); },
     toggleDone: () => { UI.showDone = !UI.showDone; render(); },
     openEntry: () => { UI.entryId = d.id; UI.tab = d.t || 'facts'; if (UI.screen !== 'register') go('register'); else { render(); window.scrollTo(0, 0); } },
     closeEntry: () => { UI.entryId = null; render(); }, tab: () => { UI.tab = d.t; render(); },
@@ -1472,7 +1501,7 @@ function boot() {
 async function connect() {
   const r = await api('GET', '/api/me');
   SRV.checked = true;
-  if (r.ok) { SRV.on = true; SRV.user = r.body.user; SRV.site = r.body.site || ''; await loadReal(); if (S) { const h = location.hash.slice(1); UI.screen = h && SNAME[h] ? h : 'overview'; } }
+  if (r.ok) { SRV.on = true; SRV.user = r.body.user; SRV.site = r.body.site || ''; await loadReal(); await loadArchives(); if (S) { const h = location.hash.slice(1); UI.screen = h && SNAME[h] ? h : 'overview'; } }
   else { SRV.on = false; SRV.code = r.code || ''; SRV.reason = r.error; }
   render();
 }
