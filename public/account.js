@@ -46,7 +46,7 @@ function render() {
   const ae = document.activeElement, fid = ae && ae.id;
   let main;
   if (!SRV.checked) main = '<p class="soft" style="padding:40px 0">Loading…</p>';
-  else if (!SRV.on) main = msg(SRV.code === 'no_access' ? 'No access' : 'Could not connect', esc(SRV.reason) + (SRV.code === 'no_access' ? ' <a href="/cdn-cgi/access/logout">Sign out</a>' : ''));
+  else if (!SRV.on) main = msg(SRV.code === 'no_access' ? 'No access' : 'Could not connect', esc(SRV.reason) + (SRV.code === 'no_access' ? ' <a href="/auth/logout">Sign out</a>' : ''));
   else if (AREA === 'profile') main = screenProfile();
   else if (!SRV.user.isAdmin) main = msg('Administrators only', 'Only administrators can use Admin. Ask an administrator if you need a user added or a role changed.');
   else main = TAB === 'activity' ? screenActivity() : TAB === 'notifications' ? screenNotifications() : screenUsers();
@@ -152,7 +152,7 @@ function screenProfile() {
     </form></section>
   <section class="card"><h2 class="sh">Email address</h2>
     <p>You sign in as <strong>${esc(u.email)}</strong>.</p>
-    ${u.pendingEmail ? `<div class="scope" style="margin-top:12px"><span aria-hidden="true">✉</span><span>You asked to change your email to <strong>${esc(u.pendingEmail)}</strong>. To confirm it, <a href="/cdn-cgi/access/logout">sign out</a> and sign in again with the new address. A sign-in code is sent to that address. Until then, keep using ${esc(u.email)}. <button class="lnk" data-act="cancelEmail">Cancel the change</button></span></div>`
+    ${u.pendingEmail ? `<div class="scope" style="margin-top:12px"><span aria-hidden="true">✉</span><span>You asked to change your email to <strong>${esc(u.pendingEmail)}</strong>. To confirm it, <a href="/auth/logout">sign out</a> and sign in again with the new address. A sign-in code is sent to that address. Until then, keep using ${esc(u.email)}. <button class="lnk" data-act="cancelEmail">Cancel the change</button></span></div>`
     : `<form id="emailForm" class="adm-form" novalidate style="margin-top:12px">
       <label class="f">New email address<input class="in" id="p-email" type="email" autocomplete="email"></label>
       ${PRF.emailErr ? `<p class="err acts2" role="alert">${esc(PRF.emailErr)}</p>` : ''}
@@ -172,7 +172,7 @@ function screenProfile() {
     <dl class="kv"><dt>Roles</dt><dd>${(u.roles || []).length ? u.roles.map(r => esc(roleLong(r))).join('<br>') : 'None. You can read the assessment but not change it.'}</dd>
     <dt>Administrator</dt><dd>${u.isAdmin ? 'Yes · <a href="/admin/">open Admin</a>' : 'No'}</dd></dl>
     <p class="small soft" style="margin-top:10px">Only an administrator can give or change roles.</p></section>
-  <p><a class="btn ghost" href="/cdn-cgi/access/logout">Sign out</a></p>
+  <p><a class="btn ghost" href="/auth/logout">Sign out</a></p>
   </div>`;
 }
 
