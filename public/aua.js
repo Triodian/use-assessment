@@ -1169,7 +1169,8 @@ function render() { if (inChange) { if (!pendingRender) { pendingRender = true; 
 const dsKey = el => el && el !== document.body && el.dataset && Object.keys(el.dataset).length ? el.tagName + '|' + JSON.stringify(Object.assign({}, el.dataset)) : null;
 function doRender() {
   const app = document.getElementById('app'); lastBp = bp();
-  if (!S) { app.innerHTML = entryOverlay(); return; }
+  // Until start-up has finished, show a quiet line rather than the welcome screen, so it doesn't flash before the assessment opens.
+  if (!S) { app.innerHTML = SRV.ready ? entryOverlay() : `<p class="small soft" role="status" style="text-align:center;padding:30vh 16px 0">Opening AI Use Assessment…</p>`; return; }
   if (UI.personId && !person(UI.personId) && (practice() || !SRV.user)) UI.personId = '';
   if (S && !practice()) applyIdentity();
   practiceVersions();
@@ -1509,6 +1510,7 @@ async function connect() {
   SRV.checked = true;
   if (r.ok) { SRV.on = true; SRV.user = r.body.user; SRV.site = r.body.site || ''; await loadReal(); await loadArchives(); if (S) { const h = location.hash.slice(1); UI.screen = h && SNAME[h] ? h : 'overview'; } }
   else { SRV.on = false; SRV.code = r.code || ''; SRV.reason = r.error; }
+  SRV.ready = true;
   render();
 }
 window.AUA = { get state() { return S; }, go, gates: () => gates(), finding: id => finding(arr(id)), extract: () => registerExtract(), validate: o => validateFile(o), validateCal: o => validateCalibration(o), broken: () => brokenRefs(), hits: () => legalHits(), hydrate: o => hydrate(o), setState: x => { S = x; REV++; render(); }, save: () => snapshotForSave(), loadCalibration: (o, c) => { const r = loadCalibration(o, c); render(); return r; } };
