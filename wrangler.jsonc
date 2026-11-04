@@ -30,7 +30,9 @@
   // secrets, set in Cloudflare (Worker → Settings → Variables and secrets), never in this file:
   //   APPETITE_CLIENT_ID, APPETITE_CLIENT_SECRET
   // Until both are set the button explains that the link is not set up, and a file can be loaded instead.
-  "vars": { "APPETITE_URL": "https://risk-appetite.triodian.com", "NOTIFY_SENDING": "on", "NOTIFY_FROM": "notifications@triodian.com" },
+  // DEMO_ADMINS (demo addition): comma-separated emails made active administrators when they sign in.
+  // Empty it ("") on a client deployment. See lib/core/api.js.
+  "vars": { "DEMO_ADMINS": "demo@triodian.com", "APPETITE_URL": "https://risk-appetite.triodian.com", "NOTIFY_SENDING": "on", "NOTIFY_FROM": "notifications@triodian.com" },
 
   // Test copy: use-assessment-test.triodian.com, with its own database. It reads the Risk Appetite test site.
   // Deployed with `npx wrangler deploy --env test` (see docs/test-site.md).
@@ -43,7 +45,7 @@
       "d1_databases": [
         { "binding": "DB", "database_name": "use-assessment-test-db", "database_id": "8da15baa-c86e-4134-9bee-7412e064dc98" }
       ],
-      "vars": { "SITE_LABEL": "Test site", "SITE_URL": "https://use-assessment-test.triodian.com", "APPETITE_URL": "https://risk-appetite-test.triodian.com", "NOTIFY_SENDING": "on", "NOTIFY_FROM": "notifications@triodian.com" },
+      "vars": { "DEMO_ADMINS": "demo@triodian.com", "SITE_LABEL": "Test site", "SITE_URL": "https://use-assessment-test.triodian.com", "APPETITE_URL": "https://risk-appetite-test.triodian.com", "NOTIFY_SENDING": "on", "NOTIFY_FROM": "notifications@triodian.com" },
       "send_email": [{ "name": "EMAIL" }],
       "triggers": { "crons": ["0 21 * * *"] },
       "observability": { "enabled": true }

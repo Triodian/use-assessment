@@ -471,7 +471,8 @@ function drawer() {
     ${practice() ? (SRV.on ? '<button class="item" data-act="leaveExample">Leave the worked example</button>' : '') : '<button class="item" data-act="example">Open the worked example</button>'}
     <p class="small soft" style="padding:0 10px">The worked example is fictional and runs in this browser only. Nothing in it is saved.</p>
     <div class="grp">Apps</div>
-    <a class="item" href="${appetiteUrl()}" style="text-decoration:none"><span class="appic" style="background:var(--aubergine-bg);color:var(--aubergine)">RA</span><span>AI Risk Appetite<br><span class="small soft">Sets the calibration set this app reads</span></span></a>
+    <a class="item" href="${SRV.site ? 'https://obligations-atlas-test.triodian.com/?suite=1' : 'https://obligations-atlas.triodian.com/?suite=1'}" style="text-decoration:none"><span class="appic" style="background:#E3E9EF;color:var(--navy)">OA</span><span>AI Obligations Atlas<br><span class="small soft">Obligations by jurisdiction, tier and use case</span></span></a>
+    <a class="item" href="${appetiteUrl()}?suite=1" style="text-decoration:none"><span class="appic" style="background:var(--aubergine-bg);color:var(--aubergine)">RA</span><span>AI Risk Appetite<br><span class="small soft">Sets the calibration set this app reads</span></span></a>
     <div class="item" aria-current="page"><span class="appic" style="background:#E3E9EF;color:var(--navy)">UA</span><span>AI Use Assessment<br><span class="small soft">Register, tests and findings</span></span><span class="badge b-green" style="margin-left:auto">now</span></div>
   </aside>`;
 }
