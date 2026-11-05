@@ -454,7 +454,7 @@ function header() {
       ${b !== 'phone' && (practice() || !SRV.user) ? `<label class="chip" title="Practice only: choose whose view to try"><span aria-hidden="true">⌾</span>${personSelect('who-hdr')}</label>` : ''}
       ${account()}<button class="iconbtn" data-act="drawer" aria-label="Menu" aria-expanded="${UI.drawer}">☰</button></div></div>${docband()}</header>
     ${SRV.site ? `<div class="examplebar" style="background:#FDF0E1;color:#8A4B08;border-color:#F0D2AE">${esc(SRV.site)}: a test site for trying things out, not the live assessment</div>` : ''}
-    ${S.engagement.example ? `<div class="examplebar">Worked example: a fictional insurer and arrangements, for practice only. Nothing is saved.${SRV.on ? ' <button class="lnk" data-act="leaveExample">Back to the assessment</button>' : ''}</div>` : ''}
+    ${S.engagement.example ? `<div class="examplebar">Worked example: a fictional insurer, Corvane, and its providers, for practice only. Nothing is saved. <button class="lnk" data-act="leaveExample">Leave the worked example</button></div>` : ''}
     ${cal() ? '' : '<div class="examplebar" style="background:var(--grey-bg);color:var(--grey);border-color:var(--rule)">Uncalibrated: no calibration set is loaded, so the framework defaults apply</div>'}
     ${blindEntries().length ? `<div class="examplebar" style="background:var(--aubergine-bg);color:var(--aubergine);border-color:#D9CFE0">Blind re-derivation (R3): the classifier’s work on ${esc(blindEntries().map(e => e.id).join(', '))} is hidden until you record your own tier</div>` : ''}`;
 }
@@ -468,7 +468,7 @@ function drawer() {
     <div class="row" style="margin-top:8px">${calBadge()}</div>
     ${(SRV.archives || []).length ? `<div class="grp">Earlier assessments</div>${SRV.archives.map(a => `<button class="item" data-act="openArchive" data-id="${a.id}">${esc(a.label)}<span class="small soft" style="margin-left:auto">read only</span></button>`).join('')}` : ''}
     <div class="grp">Practice</div>
-    ${practice() ? (SRV.on ? '<button class="item" data-act="leaveExample">Leave the worked example</button>' : '') : '<button class="item" data-act="example">Open the worked example</button>'}
+    ${practice() ? '<button class="item" data-act="leaveExample">Leave the worked example</button>' : '<button class="item" data-act="example">Open the worked example</button>'}
     <p class="small soft" style="padding:0 10px">The worked example is fictional and runs in this browser only. Nothing in it is saved.</p>
     <div class="grp">Apps</div>
     <a class="item" href="${SRV.site ? 'https://obligations-atlas-test.triodian.com/?suite=1' : 'https://obligations-atlas.triodian.com/?suite=1'}" style="text-decoration:none"><span class="appic" style="background:#E3E9EF;color:var(--navy)">OA</span><span>AI Obligations Atlas<br><span class="small soft">Obligations by jurisdiction, tier and use case</span></span></a>
@@ -558,7 +558,7 @@ function screenSetup() {
   <section class="card"><h2 class="sh">1 · Engagement</h2><div class="fgrid">${fld('Insurer', 'engagement.insurer', e.insurer)}${fld('Reference', 'engagement.reference', e.reference)}${fld('Counsel firm', 'engagement.counselFirm', e.counselFirm)}${fld('Start date', 'engagement.startDate', e.startDate, { type: 'date' })}</div>
     <div style="margin-top:14px">${fld(T('privilege', 'Privilege marking') + ' (as counsel directs; printed on every output)', 'engagement.privilegeMarking', e.privilegeMarking, { raw: true })}</div>
     <div class="fgrid" style="margin-top:14px">${fld('GC who confirmed the brief (recorded by Triodian)', 'engagement.briefConfirmed.by', e.briefConfirmed.by, { select: peopleOpts('gc') })}${fld('Confirmed on', 'engagement.briefConfirmed.on', e.briefConfirmed.on, { type: 'date' })}${fld('Brief reference', 'engagement.briefConfirmed.ref', e.briefConfirmed.ref)}${fld('Document request issued', 'engagement.documentsRequestedOn', e.documentsRequestedOn, { type: 'date' })}</div></section>
-  <section class="card"><div class="row between"><h2 class="sh" style="margin:0">2 · People</h2>${UI.archived ? '' : savesHere() ? (SRV.user && SRV.user.isAdmin ? '<a class="btn sm" href="/admin/">Manage in Admin</a>' : '') : `<button class="btn sm" data-act="addPerson" ${fs}>Add person</button>`}</div><p class="small soft" style="margin:8px 0 12px">${UI.archived ? 'The people with a role in this assessment.' : savesHere() ? 'Everyone with a role in this assessment. An administrator adds people and gives roles in Admin. What each person can do depends on their roles. Separation of duties is checked person by person, by the server as well as on this screen.' : 'Practice mode: the person chosen under “Acting as” in the header decides what the app allows. Separation of duties is checked person by person, not role by role.'}</p><div class="stack" style="gap:10px">${people || '<p class="small soft">No one recorded yet.</p>'}</div></section>
+  <section class="card"><div class="row between"><h2 class="sh" style="margin:0">2 · People</h2>${UI.archived ? '' : savesHere() ? (SRV.user && SRV.user.isAdmin ? '<a class="btn sm" href="/admin/">Manage in Admin</a>' : '') : `<button class="btn sm" data-act="addPerson" ${fs}>Add person</button>`}</div><p class="small soft" style="margin:8px 0 12px">${UI.archived ? 'The people with a role in this assessment.' : savesHere() ? 'Everyone with a role in this assessment. An administrator adds people and gives roles in Admin. What each person can do depends on their roles. Separation of duties is checked person by person, by the server as well as on this screen.' : 'Worked example: the person chosen under “Acting as” in the header decides what the app allows. Separation of duties is checked person by person, not role by role.'}</p><div class="stack" style="gap:10px">${people || '<p class="small soft">No one recorded yet.</p>'}</div></section>
   <section class="card"><h2 class="sh">3 · ${T('ir', 'Independent reviewer')}</h2><p class="small soft">The independent reviewer reviews the assessment on behalf of the CRO. Screens refer to the role, never to the firm.</p><div class="fgrid">${fld('Person', 'engagement.irPersonId', e.irPersonId, { select: peopleOpts('ir') })}${fld('Organisation filling the role', 'engagement.irOrganisation', e.irOrganisation)}${fld('Reporting line', 'engagement.independentReviewerReportsTo', line, { select: [['counsel', 'Through counsel'], ['cro', 'Directly to the CRO']] })}${fld('CRO', 'engagement.croPersonId', e.croPersonId, { select: peopleOpts('cro', S.people.some(p => p.roles.includes('cro')) ? '—' : 'Add a person with the CRO role') })}</div>
     <p class="small" style="margin-top:10px">The review pack is addressed to <strong>${line === 'cro' ? esc(cro || 'the CRO') : esc(e.counselFirm || 'counsel')}</strong>. R7 (independent check) is confirmed by ${line === 'cro' ? 'the CRO' + (cro ? ' (' + esc(cro) + ')' : '') : 'the independent reviewer, through counsel'}.</p></section>
   <section class="card"><div class="row between"><h2 class="sh" style="margin:0">4 · ${T('calibration', 'Calibration set')}</h2><div class="row">${calBadge()}<button class="btn sm aub" data-act="loadCalApp" ${fs} title="Read the issued calibration set from the AI Risk Appetite app">Load from the Risk Appetite app</button><button class="btn sm" data-act="loadCal" ${fs}>Load from a file</button></div></div>
@@ -1382,8 +1382,8 @@ function onClick(ev) {
     loadCalApp: async () => { toast('Reading the calibration set from the Risk Appetite app…'); const r = await api('GET', '/api/calibration-from-appetite'); if (!r.ok) return toast(r.code === 'not_linked' ? r.error : 'Could not load: ' + r.error); if (loadCalibration(r.body.calibrationSet || r.body)) { render(); const lv = r.body.laterVersion; toast('Calibration loaded: ' + calLabel() + (lv ? '. Version ' + lv.version + ' is agreed in the Risk Appetite app and waits for board approval; it is read once approved.' : '')); } },
     new: async () => { if (!SRV.on) return toast('The server could not be reached.'); if (!canSetup()) return toast('Only the method owner, the delivery manager or an administrator can start the assessment.'); const r = await api('GET', '/api/engagement'); if (r.ok && r.body.exists) { await loadReal(); go('overview'); return toast((r.body.updatedBy || 'Someone else') + ' has already started the assessment.'); }
       S = newAssessment(); S.people = SRV.people || []; applyIdentity(); UI.entryId = null; log('mobilise', 'engagement', null, 'started'); go('setup'); },
-    example: () => { if (savesHere() && SRV.state !== 'saved') return toast('Wait until your changes are saved.'); S = buildExample(); seedExampleVersion(); UI.personId = 'p5'; UI.entryId = null; UI.dirty = false; go('overview'); toast('Worked example open. Corvane and its providers are fictional. Nothing here is saved.'); },
-    leaveExample: async () => { S = null; UI.entryId = null; await loadReal(); UI.screen = 'overview'; render(); },
+    example: () => { if (savesHere() && SRV.state !== 'saved') return toast('Wait until your changes are saved.'); markExampleLeft(false); openExample(); },
+    leaveExample: async () => { S = null; UI.entryId = null; UI.drawer = false; markExampleLeft(true); await loadReal(); UI.screen = S ? 'overview' : 'entry'; render(); },
     addPerson: () => { S.people.push({ id: 'p' + uid(), name: '', organisation: '', roles: [] }); log('addPerson', 'people'); render(); },
     rmPerson: () => { const p = S.people[+d.i]; if (confirm('Remove ' + (p.name || 'this person') + '?')) { S.people.splice(+d.i, 1); if (UI.personId === p.id) UI.personId = ''; log('removePerson', 'people', p.name, null); render(); } },
     addDoc: () => { S.documents.push({ id: 'D' + (S.documents.length + 1), ref: '', title: '', status: '', date: '' }); log('addDocument', 'documents'); render(); },
@@ -1491,6 +1491,12 @@ function onKey(ev) {
   if (ev.key === 'Escape' && UI.acct) { UI.acct = false; render(); return; }
   if (ev.key === 'Escape') { if (UI.pop) { closePop(); return; } if (UI.sheet) { UI.sheet = null; renderSheet(); return; } if (UI.drawer) { UI.drawer = false; render(); return; } }
 }
+/* The worked example opens by default. Leaving it is remembered for this browser session, so a reload stays out.
+   A link to My actions (from an email) opens the real engagement. Same in all Triodian apps. */
+const EX_LEFT = 'triodian.example.left';
+const exampleLeft = () => { try { return sessionStorage.getItem(EX_LEFT) === '1'; } catch (e) { return false; } };
+const markExampleLeft = left => { try { if (left) sessionStorage.setItem(EX_LEFT, '1'); else sessionStorage.removeItem(EX_LEFT); } catch (e) {} };
+const openExampleByDefault = () => !exampleLeft() && location.hash !== '#actions';
 function boot() {
   C = window.AUA_CONTENT;
   if (!C) { document.getElementById('app').innerHTML = '<p style="padding:40px">The app content (aua-content.js) could not be loaded. Reload the page.</p>'; return; }
@@ -1507,11 +1513,14 @@ function boot() {
   render();
   connect();
 }
+/* Opens the worked example: a fictional insurer and its providers, never saved. */
+function openExample() { S = buildExample(); seedExampleVersion(); UI.personId = 'p5'; UI.entryId = null; UI.dirty = false; UI.drawer = false; go('overview'); }
 async function connect() {
   const r = await api('GET', '/api/me');
   SRV.checked = true;
   if (r.ok) { SRV.on = true; SRV.user = r.body.user; SRV.site = r.body.site || ''; await loadReal(); await loadArchives(); if (S) { const h = location.hash.slice(1); UI.screen = h && SNAME[h] ? h : 'overview'; } }
   else { SRV.on = false; SRV.code = r.code || ''; SRV.reason = r.error; }
+  if (SRV.code !== 'no_access' && openExampleByDefault()) { SRV.ready = true; openExample(); return; }
   SRV.ready = true;
   render();
 }
