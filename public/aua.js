@@ -944,7 +944,8 @@ const OUTS = [
   { id: 'DL3', name: "Control-library shape for the insurer's own AI boundary", gate: 5, gen: genDL3 }, { id: 'DL4', name: 'Technical schedule, tolerance and trigger design', gate: 5, gen: genDL4 },
   { id: 'DL5', name: 'Technical annex', gate: 6, gen: genDL5 }, { id: 'DL6', name: 'Hand-back list', gate: 2, gen: genDL6 },
   { id: 'QS', name: 'Question set to counsel', gate: 3, gen: genQS }, { id: 'RP', name: 'Review pack for the independent reviewer', gate: 5, gen: genRP },
-  { id: 'CM', name: 'Closing measures', gate: 7, gen: genCM }, { id: 'DR', name: 'Difference report', gate: 0, gen: genDR }
+  { id: 'CM', name: 'Closing measures', gate: 7, gen: genCM }, { id: 'DR', name: 'Difference report', gate: 0, gen: genDR },
+  { id: 'EP', name: 'Engagement plan', gate: 0, gen: genEP }
 ];
 const O = id => OUTS.find(o => o.id === id) || OUTS[0];
 function fieldOut(e, n) {
@@ -970,6 +971,37 @@ function dl1Csv() {
   const head = ['Entry', 'Arrangement', ...C.fields.map(d => d.n + ' ' + FLD(d.n).name), ...C.fields.map(d => d.n + ' source'), 'Flags', 'Not known'];
   return [[S.engagement.privilegeMarking || '[Privilege marking not recorded]'], [calLabel()], [outStatus(o) + ' · ' + dDoc(today())], [(S.engagement.insurer || '[Insurer]') + ' · ' + (S.engagement.reference || '')], ...(bothRoles() ? [[bothRoles().trim()]] : []), [],
     head, ...S.entries.map(e => [e.id, e.arrangementId, ...C.fields.map(d => fieldOut(e, d.n)), ...C.fields.map(d => fieldSrc(e, d.n)), flags(e).map(x => x.label).join('; '), notKnownCount(e)])].map(r => r.map(q).join(',')).join('\n');
+}
+/* ---------- engagement plan (development plan task 0.7) ----------
+   The phases come from the framework's own workplan (section 5.1), so the plan says what the method says. Sessions are
+   the framework's interviews, with the dates set-up records; attendees by role come from the people list; inputs are
+   the documents the insurer is asked for; sign-off points are the review points R1 to R7, with where each stands. */
+function fwTable(heading) {
+  const m = C.frameworkMarkdown || '', i = m.indexOf(heading); if (i < 0) return [];
+  const lines = m.slice(i).split('\n').slice(1).filter((l, k, a) => l.startsWith('|') || (k < 3 && !l.trim()));
+  const rows = []; for (const l of lines) { if (!l.startsWith('|')) { if (rows.length) break; continue; } rows.push(l.replace(/^\|\s*|\s*\|$/g, '').split(/\s*\|\s*/)); }
+  return rows.filter(r => !r.every(c => /^-+$/.test(c))).slice(1);
+}
+function genEP() {
+  // RAW: the legal-line check (R5) is scanning every output's wording; the gates run that check, so skip them here.
+  const G = RAW ? [] : gates(), e = S.engagement;
+  let m = mdHead(O('EP'));
+  m += `This plan follows the framework’s workplan. It is for everyone taking part: what happens when, who attends, what the insurer is asked to provide, and where each sign-off stands.\n\n`;
+  const ph = fwTable('### 5.1 Phases');
+  m += `## Phases\n\n` + tbl(['Phase', 'When', 'Activities', 'Exit gate', 'Where it stands'], ph.map((r, n) => [r[0], r[1], r[2], r[4] || '', G[n] ? (G[n].ok ? 'Met' : 'Open') : ''])) + '\n';
+  m += `## Sessions\n\n` + tbl(['Session', 'Who', 'Purpose', 'Length', 'Date'], C.interviews.map((v, i) => { const iv = S.interviews.find(x => x.who === v.who) || S.interviews[i] || {}; return [iv.id || 'IV-' + (i + 1), v.who, v.purpose, v.length, iv.date ? dDoc(iv.date) : 'To be set']; }))
+    + `\nTriodian’s assessor attends every interview. Counsel convenes the opening briefing and receives every draft first.\n\n`;
+  const named = id => S.people.filter(p => p.roles.includes(id)).map(p => p.name + (p.organisation ? ' (' + p.organisation + ')' : '')).join('; ');
+  m += `## Attendees by role\n\n` + tbl(['Role', 'Named'], C.roles.map(r => [r.name, named(r.id) || 'Not yet named'])) + '\n';
+  if (bothRoles()) m += bothRoles();
+  const docStatus = ref => { const ds = S.documents.filter(d => d.ref === ref); if (!ds.length) return 'Not yet requested'; const st = ds.map(d => d.status || 'listed'); return ds.length === 1 ? st[0].replace(/^\w/, c => c.toUpperCase()) : `${ds.length} documents: ${[...new Set(st)].join(', ')}`; };
+  m += `## Documents needed from the insurer\n\n` + tbl(['Ref', 'Document', 'Used for', 'Status'], C.documents.map(d => [d.ref, d.name, d.usedFor, docStatus(d.ref)]))
+    + `\n${e.documentsRequestedOn ? 'The document request was issued on ' + dDoc(e.documentsRequestedOn) + '. ' : ''}No document needs to hold personal information; counsel directs how documents are handled.\n\n`;
+  const sa = S.setAgreed, r1 = sa.gcBy && sa.counselBy ? `Agreed ${dDoc(sa.counselOn || sa.on)}` : sa.gcBy || sa.counselBy ? 'One of the two agreements recorded' : 'Not yet';
+  const st = x => x.id === 'R1' ? r1 : rev(x.id).result || rev(x.id).on ? `${String(rev(x.id).result || 'Recorded').replace(/^\w/, c => c.toUpperCase())}${rev(x.id).on ? ' ' + dDoc(rev(x.id).on) : ''}` : 'Not yet';
+  m += `## Sign-off points\n\n` + tbl(['Point', 'Review', 'When', 'Reviewer', 'Where it stands'], C.reviews.map(x => [x.id, x.name, x.when, x.id === 'R1' && e.gcActsAsCounsel ? 'GC and the second approver' : x.reviewer, st(x)]))
+    + `\nThe technical annex is signed by the method owner once the phase 5 gate is met, and the insurer’s arrangement owner accepts the hand-back list at close.\n`;
+  return m;
 }
 function genDL2() { return mdHead(O('DL2')) + `## Summary\n\n` + summaryTable() + `## Worksheets\n\n` + S.arrangements.map(a => worksheetMd(a)).join(''); }
 function genDL3() {
@@ -1065,7 +1097,7 @@ function redlineMd() {
   return `## Changes since ${v.id} · ${v.label} (${dDoc(String(v.at).slice(0, 10))})\n\n` + (rows.length ? tbl(['Entry', 'What changed', 'Was', 'Now'], rows.map(r => [r.entry, r.what, r.was ? '~~' + showVal(r.was) + '~~' : '', r.now ? showVal(r.now) : ''])) : 'No changes since this version.\n\n');
 }
 /* Outputs open on a list of documents with their status; each opens on its own page with a way back. */
-const outDesc = o => ((C.deliverables || []).find(d => d.id === o.id) || {}).contents || ({ QS: 'Every question put to counsel, with its status and the response.', RP: 'What the independent reviewer needs to test the assessment.', CM: 'The measures that close the assessment.', DR: 'What changed between versions of the assessment.' })[o.id] || '';
+const outDesc = o => ((C.deliverables || []).find(d => d.id === o.id) || {}).contents || ({ EP: 'The phases with their timing, the sessions and who attends, the documents needed from the insurer, and the sign-off points, with where each stands.', QS: 'Every question put to counsel, with its status and the response.', RP: 'What the independent reviewer needs to test the assessment.', CM: 'The measures that close the assessment.', DR: 'What changed between versions of the assessment.' })[o.id] || '';
 function outStatusInfo(o) {
   const e = S.engagement, why = finalWhy(o);
   if (o.id === 'DL5' && e.annexSigned.by) return [why ? 'draft · signed' : 'final · signed', why ? 'b-ochre' : 'b-green', why];
