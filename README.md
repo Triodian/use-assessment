@@ -72,3 +72,8 @@ A separate copy at `use-assessment-test.triodian.com` with its own database, dep
 npx wrangler dev --local-upstream localhost --var LOCAL_DEV_NO_SIGNIN_EMAIL:you@example.com
 ```
 `LOCAL_DEV_NO_SIGNIN_EMAIL` only works on localhost. Locally, an `X-Dev-User` header picks a different user for testing.
+
+## Licence
+
+AI Use Assessment is open source under the [Apache License, Version 2.0](LICENSE). Copyright 2026 Triodian Pty Ltd.
+Third-party components bundled with it keep their own licences; see [`NOTICE`](NOTICE).
