@@ -5,7 +5,7 @@
 //   storage   → lib/store/d1.js (Cloudflare D1)
 //   calibration → the AI Risk Appetite app's /api/calibration-set, read with a Cloudflare Access service token
 //   email     → Cloudflare Email Service binding EMAIL, only when NOTIFY_SENDING is "on" (off by default)
-import { whoIs, handleAuth, gate } from '../lib/identity/session.js';
+import { whoIs, handleAuth, gate, markDemo } from '../lib/identity/session.js';
 import { d1Store } from '../lib/store/d1.js';
 import { handle } from '../lib/core/api.js';
 import { dueReminders, deliver } from '../lib/core/notify.js';
@@ -44,7 +44,7 @@ export default {
     const url = new URL(request.url);
     // Sign-in: /login (a static page), /auth/* (lib/identity/session.js). Pages need a session; assets do not.
     if (url.pathname.startsWith('/auth/')) return (await handleAuth(request, env)) || new Response('Not found', { status: 404 });
-    if (!url.pathname.startsWith('/api/')) return (await gate(request, env)) || env.ASSETS.fetch(request);
+    if (!url.pathname.startsWith('/api/')) return (await gate(request, env)) || markDemo(await env.ASSETS.fetch(request), env);
 
     const who = await whoIs(request, env);
     if (!who.email) return json({ error: who.error }, who.status || 401);

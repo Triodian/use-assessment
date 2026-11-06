@@ -35,9 +35,10 @@
   // Empty it ("") on a client deployment. See lib/core/api.js.
   // DEMO_LOGIN (demo addition): username sign-in for the shared demo account, password held only as a PBKDF2 hash;
   // anyCharAt [3] accepts any character in place of the £ in trio_demo's password.
-  // DEMO_SESSION_KEY signs the demo sign-in cookie, shared across triodian.com; it must be the same in both apps and
-  // is only ever accepted for the demo account's own email. See lib/identity/session.js.
-  "vars": { "DEMO_LOGIN": "[{\"username\": \"trio_demo\", \"email\": \"demo@triodian.com\", \"hash\": \"pbkdf2-sha256$100000$ae_ndll6YbjpSddRDhFBLg$HAVf7tKSohiJck-ohKQ1KYft_e1YpCuWF8xcJgmjNqM\", \"anyCharAt\": [3]}]", "DEMO_SESSION_KEY": "Whrq7Fk0ZTbydyKV_pwzm3bO9lxn9-AfRmwGXnPpd3Q", "DEMO_ADMINS": "demo@triodian.com", "APPETITE_URL": "https://risk-appetite.triodian.com", "NOTIFY_SENDING": "on", "NOTIFY_FROM": "notifications@triodian.com" },
+  // DEMO_SESSION_KEY (a Worker secret, not set here; development plan task 0.1) signs the demo sign-in cookie, shared
+  // across triodian.com; it must be the same in every app and is only accepted for the demo account's own email.
+  // SUITE_DEMO "on" shows the demo band and app switcher (task 0.3). See lib/identity/session.js.
+  "vars": { "SUITE_DEMO": "on", "DEMO_LOGIN": "[{\"username\": \"trio_demo\", \"email\": \"demo@triodian.com\", \"hash\": \"pbkdf2-sha256$100000$ae_ndll6YbjpSddRDhFBLg$HAVf7tKSohiJck-ohKQ1KYft_e1YpCuWF8xcJgmjNqM\", \"anyCharAt\": [3]}]", "DEMO_ADMINS": "demo@triodian.com", "APPETITE_URL": "https://risk-appetite.triodian.com", "NOTIFY_SENDING": "on", "NOTIFY_FROM": "notifications@triodian.com" },
 
   // Test copy: use-assessment-test.triodian.com, with its own database. It reads the Risk Appetite test site.
   // Deployed with `npx wrangler deploy --env test` (see docs/test-site.md).
@@ -50,7 +51,27 @@
       "d1_databases": [
         { "binding": "DB", "database_name": "use-assessment-test-db", "database_id": "8da15baa-c86e-4134-9bee-7412e064dc98" }
       ],
-      "vars": { "DEMO_LOGIN": "[{\"username\": \"trio_demo\", \"email\": \"demo@triodian.com\", \"hash\": \"pbkdf2-sha256$100000$ae_ndll6YbjpSddRDhFBLg$HAVf7tKSohiJck-ohKQ1KYft_e1YpCuWF8xcJgmjNqM\", \"anyCharAt\": [3]}]", "DEMO_SESSION_KEY": "Whrq7Fk0ZTbydyKV_pwzm3bO9lxn9-AfRmwGXnPpd3Q", "DEMO_ADMINS": "demo@triodian.com", "SITE_LABEL": "Test site", "SITE_URL": "https://use-assessment-test.triodian.com", "APPETITE_URL": "https://risk-appetite-test.triodian.com", "NOTIFY_SENDING": "on", "NOTIFY_FROM": "notifications@triodian.com" },
+      "vars": { "SUITE_DEMO": "on", "DEMO_LOGIN": "[{\"username\": \"trio_demo\", \"email\": \"demo@triodian.com\", \"hash\": \"pbkdf2-sha256$100000$ae_ndll6YbjpSddRDhFBLg$HAVf7tKSohiJck-ohKQ1KYft_e1YpCuWF8xcJgmjNqM\", \"anyCharAt\": [3]}]", "DEMO_ADMINS": "demo@triodian.com", "SITE_LABEL": "Test site", "SITE_URL": "https://use-assessment-test.triodian.com", "APPETITE_URL": "https://risk-appetite-test.triodian.com", "NOTIFY_SENDING": "on", "NOTIFY_FROM": "notifications@triodian.com" },
+      "send_email": [{ "name": "EMAIL" }],
+      "triggers": { "crons": ["0 21 * * *"] },
+      "observability": { "enabled": true }
+    },
+
+    // CLIENT DEPLOYMENT PROFILE (development plan task 0.2): a copy of AI Use Assessment for one client, with no demonstration
+    // parts. No demo sign-in (DEMO_LOGIN empty), no demo administrators, no demo band or app switcher (SUITE_DEMO off),
+    // and DEMO_SESSION_KEY is not set as a secret. To deploy one: replace the CLIENT placeholders, create the client's
+    // D1 database and put its id below, create the client's Access application for /auth/email and set its tag as
+    // the ACCESS_AUD secret (the team domain is in lib/config.js), then run `npx wrangler deploy --env client`.
+    // Email stays held (NOTIFY_SENDING off) until the client's sender is set up.
+    "client": {
+      "name": "use-assessment-client",
+      "workers_dev": false,
+      "preview_urls": false,
+      "routes": [{ "pattern": "use-assessment.CLIENT-DOMAIN.example", "custom_domain": true }],
+      "d1_databases": [
+        { "binding": "DB", "database_name": "use-assessment-client-db", "database_id": "REPLACE-WITH-THE-CLIENT-DATABASE-ID" }
+      ],
+      "vars": { "SUITE_DEMO": "off", "DEMO_LOGIN": "", "DEMO_ADMINS": "", "SITE_URL": "https://use-assessment.CLIENT-DOMAIN.example", "APPETITE_URL": "https://risk-appetite.CLIENT-DOMAIN.example", "NOTIFY_SENDING": "off", "NOTIFY_FROM": "" },
       "send_email": [{ "name": "EMAIL" }],
       "triggers": { "crons": ["0 21 * * *"] },
       "observability": { "enabled": true }
