@@ -59,7 +59,7 @@ const optL = v => C.optLabels[v] || v;
 function newAssessment() {
   return {
     schema: 'triodian.aua.v1',
-    engagement: { id: uid(), insurer: '', reference: '', counselFirm: '', privilegeMarking: '', startDate: '', briefConfirmed: { by: '', on: '', ref: '' }, documentsRequestedOn: '', independentReviewerReportsTo: 'counsel', irPersonId: '', irOrganisation: '', croPersonId: '', example: false, autosave: false, legalPhrases: C.legalPhrases.slice(), annexText: {}, annexSigned: { by: '', on: '' }, handBack: { by: '', on: '' } },
+    engagement: { id: uid(), insurer: '', reference: '', counselFirm: '', gcActsAsCounsel: false, secondApproverId: '', privilegeMarking: '', startDate: '', briefConfirmed: { by: '', on: '', ref: '' }, documentsRequestedOn: '', independentReviewerReportsTo: 'counsel', irPersonId: '', irOrganisation: '', croPersonId: '', example: false, autosave: false, legalPhrases: C.legalPhrases.slice(), annexText: {}, annexSigned: { by: '', on: '' }, handBack: { by: '', on: '' } },
     people: [],
     calibration: { loaded: false, status: 'default', version: 0, date: '', approvedBy: '', agreedBy: '', privilegeMarking: '', minuteRef: '', fellBack: [], parameters: {} },
     documents: C.documents.map(d => ({ id: d.ref, ref: d.ref, title: d.name, status: '', date: '' })),
@@ -95,6 +95,7 @@ function fieldDone(e, n) {
 const notKnownCount = e => Object.values(e.fields).filter(f => f && f.notKnown).length;
 
 /* ---------- permissions ---------- */
+const BOTH_AGREEMENTS = 'You recorded the other agreement to the set. One person cannot give both: if the GC also acts as counsel, tick “The GC also acts as counsel” in set-up and name a second approver, who gives the second agreement.';
 /* One gate for every editable control and action. Returns '' when allowed, otherwise the reason shown beside the disabled control. */
 function deny(target, x) {
   if (UI.archived) return 'This is an earlier assessment. It can be read but not changed.';
@@ -105,8 +106,11 @@ function deny(target, x) {
   switch (target) {
     case 'setup': return r('methodOwner') || r('delivery') ? '' : 'Only the method owner or the delivery manager can change set-up and the people list.';
     case 'set': return r('methodOwner') || r('assessor') || r('delivery') ? '' : 'Only the method owner, an assessor or the delivery manager can record arrangements.';
-    case 'agreeGC': return r('gc') ? '' : 'Only the GC can record the GC’s agreement to the set.';
-    case 'agreeCounsel': return r('counsel') ? '' : 'Only counsel can record counsel’s agreement to the set.';
+    case 'agreeGC': if (!r('gc')) return 'Only the GC can record the GC’s agreement to the set.'; if (!S.engagement.gcActsAsCounsel && S.setAgreed.counselBy && S.setAgreed.counselBy === p.id) return BOTH_AGREEMENTS; return '';
+    case 'agreeCounsel':
+      // Where the GC also acts as counsel (development plan task 0.5), the second agreement comes from the second approver named in set-up.
+      if (S.engagement.gcActsAsCounsel) { if (!S.engagement.secondApproverId) return 'The GC also acts as counsel. Name the second approver in set-up first.'; return S.engagement.secondApproverId === p.id && r('executive') ? '' : 'The GC also acts as counsel, so the second agreement to the set comes from the second approver named in set-up.'; }
+      if (!r('counsel')) return 'Only counsel can record counsel’s agreement to the set.'; if (S.setAgreed.gcBy && S.setAgreed.gcBy === p.id) return BOTH_AGREEMENTS; return '';
     case 'facts': if (!(r('assessor') || r('methodOwner'))) return 'Only an assessor or the method owner can enter facts.'; if (x && x.peerReview && x.peerReview.personId === p.id) return 'You are the peer reviewer of this entry, so you cannot edit it.'; return '';
     case 'classify': if (!(r('assessor') || r('methodOwner'))) return 'Only an assessor or the method owner can classify an entry.'; if (rev('R4').by === p.id && rev('R4').result) return 'You recorded R4 (validation), so you cannot classify entries in this assessment.'; if (x && x.peerReview && x.peerReview.personId === p.id) return 'You are the peer reviewer of this entry, so you cannot classify it.'; if (x && blindFor(x)) return 'Record your own tier for this entry first (R3, classification review).'; return '';
     case 'consequence': return r('owner') ? '' : 'Only the arrangement owner can confirm the failure consequence.';
@@ -412,7 +416,8 @@ function myActions() {
   const missing = (e, ns) => ns.filter(k => !fieldDone(e, k)).length;
   if ((r('methodOwner') || r('delivery')) && !G[0].ok) add('Finish set-up', 'Still open: ' + G[0].items.filter(i => !i[1]).map(i => i[0]).join('; ') + '.', { act: 'go', to: 'setup' });
   if (r('gc') && S.arrangements.length && !S.setAgreed.gcBy) add('Agree the representative set (R1)', S.arrangements.length + ' arrangements are waiting for the GC’s agreement.', { act: 'go', to: 'set' });
-  if (r('counsel') && S.arrangements.length && !S.setAgreed.counselBy) add('Agree the representative set (R1)', 'Counsel records its own agreement to the set.', { act: 'go', to: 'set' });
+  if (r('counsel') && !S.engagement.gcActsAsCounsel && S.arrangements.length && !S.setAgreed.counselBy) add('Agree the representative set (R1)', 'Counsel records its own agreement to the set.', { act: 'go', to: 'set' });
+  if (r('executive') && S.engagement.gcActsAsCounsel && S.engagement.secondApproverId === p.id && S.arrangements.length && !S.setAgreed.counselBy) add('Agree the representative set (R1)', 'The GC also acts as counsel, so you give the second agreement to the set.', { act: 'go', to: 'set' });
   S.entries.forEach(e => {
     if (blindFor(e)) return;
     if ((r('assessor') || r('methodOwner')) && !deny('facts', e)) { const m = missing(e, FACTS_N); if (m) add(`Record the facts for ${e.id}`, `${m} of 12 fields still to record or mark not known · ${e.arrangementId}`, { act: 'openEntry', id: e.id, t: 'facts' }); }
@@ -557,6 +562,8 @@ function screenSetup() {
   <div class="stack">
   <section class="card"><h2 class="sh">1 · Engagement</h2><div class="fgrid">${fld('Insurer', 'engagement.insurer', e.insurer)}${fld('Reference', 'engagement.reference', e.reference)}${fld('Counsel firm', 'engagement.counselFirm', e.counselFirm)}${fld('Start date', 'engagement.startDate', e.startDate, { type: 'date' })}</div>
     <div style="margin-top:14px">${fld(T('privilege', 'Privilege marking') + ' (as counsel directs; printed on every output)', 'engagement.privilegeMarking', e.privilegeMarking, { raw: true })}</div>
+    <div style="margin-top:14px"><label class="cb"><input type="checkbox" id="e-gcac" data-path="engagement.gcActsAsCounsel" ${e.gcActsAsCounsel ? 'checked' : ''} ${fs}> The GC also acts as counsel</label><p class="small soft" style="margin:4px 0 0">When one person holds both roles, the second agreement to the set (R1) comes from a named second approver, and every output records that the GC held both roles.</p>
+      ${e.gcActsAsCounsel ? `<div class="fgrid" style="margin-top:8px">${fld('Second approver (a company executive with the second approver role)', 'engagement.secondApproverId', e.secondApproverId, { select: peopleOpts('executive') })}</div>${!peopleOpts('executive').some(o => o[0]) ? '<p class="small" style="color:var(--ochre)">No one has the second approver role yet. Give it to the executive in the people list.</p>' : ''}` : ''}</div>
     <div class="fgrid" style="margin-top:14px">${fld('GC who confirmed the brief (recorded by Triodian)', 'engagement.briefConfirmed.by', e.briefConfirmed.by, { select: peopleOpts('gc') })}${fld('Confirmed on', 'engagement.briefConfirmed.on', e.briefConfirmed.on, { type: 'date' })}${fld('Brief reference', 'engagement.briefConfirmed.ref', e.briefConfirmed.ref)}${fld('Document request issued', 'engagement.documentsRequestedOn', e.documentsRequestedOn, { type: 'date' })}</div></section>
   <section class="card"><div class="row between"><h2 class="sh" style="margin:0">2 · People</h2>${UI.archived ? '' : savesHere() ? (SRV.user && SRV.user.isAdmin ? '<a class="btn sm" href="/admin/">Manage in Admin</a>' : '') : `<button class="btn sm" data-act="addPerson" ${fs}>Add person</button>`}</div><p class="small soft" style="margin:8px 0 12px">${UI.archived ? 'The people with a role in this assessment.' : savesHere() ? 'Everyone with a role in this assessment. An administrator adds people and gives roles in Admin. What each person can do depends on their roles. Separation of duties is checked person by person, by the server as well as on this screen.' : 'Worked example: the person chosen under “Acting as” in the header decides what the app allows. Separation of duties is checked person by person, not role by role.'}</p><div class="stack" style="gap:10px">${people || '<p class="small soft">No one recorded yet.</p>'}</div></section>
   <section class="card"><h2 class="sh">3 · ${T('ir', 'Independent reviewer')}</h2><p class="small soft">The independent reviewer reviews the assessment on behalf of the CRO. Screens refer to the role, never to the firm.</p><div class="fgrid">${fld('Person', 'engagement.irPersonId', e.irPersonId, { select: peopleOpts('ir') })}${fld('Organisation filling the role', 'engagement.irOrganisation', e.irOrganisation)}${fld('Reporting line', 'engagement.independentReviewerReportsTo', line, { select: [['counsel', 'Through counsel'], ['cro', 'Directly to the CRO']] })}${fld('CRO', 'engagement.croPersonId', e.croPersonId, { select: peopleOpts('cro', S.people.some(p => p.roles.includes('cro')) ? '—' : 'Add a person with the CRO role') })}</div>
@@ -607,7 +614,7 @@ function screenSet() {
   <div class="calstrip"><div class="row"><span class="sh" style="margin:0">Coverage</span>${['B1', 'B2', 'B3'].map(x => badge(x + (cv[x] ? ' ✓' : ' missing'), cv[x] ? 'b-green' : 'b-ochre')).join('')}${badge('authority spread' + (spread ? ' ✓' : ' not yet'), spread ? 'b-green' : 'b-grey')}</div><button class="btn sm" data-act="addArr" ${fs}>Add arrangement</button></div>
   ${whyNote(why)}
   <div class="stack" style="gap:12px">${S.arrangements.map(card).join('') || `<div class="soft"><p style="margin:0 0 6px">No arrangements yet. ${T('set', 'The representative set')} is chosen in this order:</p><ol style="margin:0;padding-left:22px;line-height:1.7">${C.criteria.slice(0, 5).map(t => `<li>${esc(t)}</li>`).join('')}</ol></div>`}</div>
-  <section class="card" style="margin-top:18px"><h2 class="sh">Agree the set (R1)</h2><p class="small soft">The GC and counsel each record their own agreement.</p><div class="grid2">${ag(S.setAgreed.gcBy, S.setAgreed.gcOn, 'agreeGC', 'Record GC agreement')}${ag(S.setAgreed.counselBy, S.setAgreed.counselOn, 'agreeCounsel', 'Record counsel agreement')}</div>
+  <section class="card" style="margin-top:18px"><h2 class="sh">Agree the set (R1)</h2><p class="small soft">${S.engagement.gcActsAsCounsel ? 'The GC also acts as counsel, so the GC and the second approver named in set-up each record their own agreement.' : 'The GC and counsel each record their own agreement.'}</p><div class="grid2">${ag(S.setAgreed.gcBy, S.setAgreed.gcOn, 'agreeGC', 'Record GC agreement')}${ag(S.setAgreed.counselBy, S.setAgreed.counselOn, 'agreeCounsel', S.engagement.gcActsAsCounsel ? 'Record second approver agreement' : 'Record counsel agreement')}</div>
     <p class="small soft" style="margin-top:8px">If the set does not cover a boundary type, record it in the exceptions log on the Review screen, naming its code (B1, B2 or B3).</p></section>
   ${gateCard(1)}${stepbar(gate(gates()[1].ok, gates()[1].ok ? 'Phase 1 met' : 'Phase 1 open'))}`;
 }
@@ -923,9 +930,14 @@ const FREQ = { E0: 'n/a', E1: 'On change, or annually', E2: 'Per reporting perio
 const finalWhy = o => !r5Clear() ? 'Some R5 (legal-line check) hits are still open.' : !gates()[5].ok ? 'The phase 5 gate is not met.' : !gates()[o.gate].ok ? `The phase ${o.gate} gate is not met.` : '';
 const outFinal = o => !finalWhy(o);
 const outStatus = o => FORCE === 'draft' ? 'Draft' : FORCE === 'final' ? 'Final' : outFinal(o) ? 'Final' : 'Draft';
+/* Development plan task 0.5: every output records that the GC held both roles, and who gave the second agreement. */
+function bothRoles() {
+  const e = S.engagement; if (!e.gcActsAsCounsel) return '';
+  return `The GC also acted as counsel in this assessment. The second agreement to the set (R1) was given by the second approver${e.secondApproverId ? ', ' + (pname(e.secondApproverId) || e.secondApproverId) : ''}.\n\n`;
+}
 function mdHead(o) {
   const e = S.engagement, st = RAW ? '' : outStatus(o);
-  return `${e.privilegeMarking || '[Privilege marking not recorded in set-up]'}\n\n# ${o.id} · ${o.name}\n\n**${calLabel()}**${st ? ' · ' + st : ''} · ${dDoc(today())}${e.example ? ' · WORKED EXAMPLE, FICTIONAL' : ''}\n\n${e.insurer || '[Insurer]'} · ${e.reference || '[reference]'}\n\n`;
+  return `${e.privilegeMarking || '[Privilege marking not recorded in set-up]'}\n\n# ${o.id} · ${o.name}\n\n**${calLabel()}**${st ? ' · ' + st : ''} · ${dDoc(today())}${e.example ? ' · WORKED EXAMPLE, FICTIONAL' : ''}\n\n${e.insurer || '[Insurer]'} · ${e.reference || '[reference]'}\n\n${bothRoles()}`;
 }
 const OUTS = [
   { id: 'DL1', name: 'AI dependency register', gate: 3, gen: genDL1 }, { id: 'DL2', name: 'Evidence obtainable at each boundary', gate: 5, gen: genDL2 },
@@ -956,7 +968,7 @@ function genDL1() {
 function dl1Csv() {
   const q = v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"', o = O('DL1');
   const head = ['Entry', 'Arrangement', ...C.fields.map(d => d.n + ' ' + FLD(d.n).name), ...C.fields.map(d => d.n + ' source'), 'Flags', 'Not known'];
-  return [[S.engagement.privilegeMarking || '[Privilege marking not recorded]'], [calLabel()], [outStatus(o) + ' · ' + dDoc(today())], [(S.engagement.insurer || '[Insurer]') + ' · ' + (S.engagement.reference || '')], [],
+  return [[S.engagement.privilegeMarking || '[Privilege marking not recorded]'], [calLabel()], [outStatus(o) + ' · ' + dDoc(today())], [(S.engagement.insurer || '[Insurer]') + ' · ' + (S.engagement.reference || '')], ...(bothRoles() ? [[bothRoles().trim()]] : []), [],
     head, ...S.entries.map(e => [e.id, e.arrangementId, ...C.fields.map(d => fieldOut(e, d.n)), ...C.fields.map(d => fieldSrc(e, d.n)), flags(e).map(x => x.label).join('; '), notKnownCount(e)])].map(r => r.map(q).join(',')).join('\n');
 }
 function genDL2() { return mdHead(O('DL2')) + `## Summary\n\n` + summaryTable() + `## Worksheets\n\n` + S.arrangements.map(a => worksheetMd(a)).join(''); }
@@ -1391,7 +1403,7 @@ function onClick(ev) {
     addArr: () => { let n = S.arrangements.length + 1; while (S.arrangements.some(x => x.id === 'ARR-' + String(n).padStart(2, '0'))) n++; S.arrangements.push({ id: 'ARR-' + String(n).padStart(2, '0'), name: '', parties: '', boundaries: [], criteria: [], reason: '', nextContracting: '', function: '', findingOwner: '' }); log('addArrangement', 'set'); render(); },
     rmArr: () => { const x = S.arrangements[+d.i]; if (S.entries.some(y => y.arrangementId === x.id)) return toast('Delete its register entries first.'); S.arrangements.splice(+d.i, 1); log('removeArrangement', x.id); render(); },
     agreeGC: () => { Object.assign(S.setAgreed, { gcBy: m.id, gcOn: today(), on: today() }); log('R1', 'set', null, 'GC agreed: ' + m.name); render(); },
-    agreeCounsel: () => { Object.assign(S.setAgreed, { counselBy: m.id, counselOn: today(), on: today() }); log('R1', 'set', null, 'counsel agreed: ' + m.name); render(); },
+    agreeCounsel: () => { Object.assign(S.setAgreed, { counselBy: m.id, counselOn: today(), on: today() }); log('R1', 'set', null, (S.engagement.gcActsAsCounsel ? 'second approver agreed: ' : 'counsel agreed: ') + m.name); render(); },
     addEntry: () => { const x = newEntry(document.getElementById('newEntryArr').value); S.entries.push(x); log('addEntry', x.id); UI.entryId = x.id; UI.tab = 'facts'; render(); window.scrollTo(0, 0); },
     nextAssessment: async () => {
       if (!confirm('Start the next assessment? This one is kept read only under Earlier assessments, and the new one starts from its facts.')) return;

@@ -42,6 +42,10 @@
     {
       "id": "cro",
       "name": "CRO (insurer)"
+    },
+    {
+      "id": "executive",
+      "name": "Second approver (company executive)"
     }
   ],
   "boundaries": [
