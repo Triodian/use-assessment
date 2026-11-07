@@ -15,6 +15,13 @@
   "d1_databases": [
     { "binding": "DB", "database_name": "use-assessment-db", "database_id": "e7e9a50f-cfda-4ddd-938e-2ae38b4e6553" }
   ],
+  // IDENTITY (development plan tasks 1B.2 and 1B.3): the suite's shared identity database, one per environment, bound to
+  // all four engagement apps. With it, people are added once, roles are kept per app, and one sign-in covers every app
+  // on SUITE_COOKIE_DOMAIN (the cookie SUITE_SESSION_COOKIE; the test sites use their own name so live and test stay apart).
+  // Each app copies its own users in the first time it starts with the binding. Create the databases once:
+  //   npx wrangler d1 create triodian-identity      and      npx wrangler d1 create triodian-identity-test
+  // then add, here and in the test env with the test database:
+  //   { "binding": "IDENTITY", "database_name": "triodian-identity", "database_id": "<id from the create command>" }
   "observability": { "enabled": true },
 
   // Daily at 07:00 Brisbane time: remind counsel about questions open for a week or more (lib/core/notify.js).
@@ -38,7 +45,7 @@
   // DEMO_SESSION_KEY (a Worker secret, not set here; development plan task 0.1) signs the demo sign-in cookie, shared
   // across triodian.com; it must be the same in every app and is only accepted for the demo account's own email.
   // SUITE_DEMO "on" shows the demo band and app switcher (task 0.3). See lib/identity/session.js.
-  "vars": { "SUITE_DEMO": "on", "DEMO_LOGIN": "[{\"username\": \"trio_demo\", \"email\": \"demo@triodian.com\", \"hash\": \"pbkdf2-sha256$100000$ae_ndll6YbjpSddRDhFBLg$HAVf7tKSohiJck-ohKQ1KYft_e1YpCuWF8xcJgmjNqM\", \"anyCharAt\": [3]}]", "DEMO_ADMINS": "demo@triodian.com", "APPETITE_URL": "https://risk-appetite.triodian.com", "NOTIFY_SENDING": "on", "NOTIFY_FROM": "notifications@triodian.com" },
+  "vars": { "SUITE_DEMO": "on", "SUITE_COOKIE_DOMAIN": "triodian.com", "SUITE_SESSION_COOKIE": "tri_suite", "DEMO_LOGIN": "[{\"username\": \"trio_demo\", \"email\": \"demo@triodian.com\", \"hash\": \"pbkdf2-sha256$100000$ae_ndll6YbjpSddRDhFBLg$HAVf7tKSohiJck-ohKQ1KYft_e1YpCuWF8xcJgmjNqM\", \"anyCharAt\": [3]}]", "DEMO_ADMINS": "demo@triodian.com", "APPETITE_URL": "https://risk-appetite.triodian.com", "NOTIFY_SENDING": "on", "NOTIFY_FROM": "notifications@triodian.com" },
 
   // Test copy: use-assessment-test.triodian.com, with its own database. It reads the Risk Appetite test site.
   // Deployed with `npx wrangler deploy --env test` (see docs/test-site.md).
@@ -51,7 +58,7 @@
       "d1_databases": [
         { "binding": "DB", "database_name": "use-assessment-test-db", "database_id": "8da15baa-c86e-4134-9bee-7412e064dc98" }
       ],
-      "vars": { "SUITE_DEMO": "on", "DEMO_LOGIN": "[{\"username\": \"trio_demo\", \"email\": \"demo@triodian.com\", \"hash\": \"pbkdf2-sha256$100000$ae_ndll6YbjpSddRDhFBLg$HAVf7tKSohiJck-ohKQ1KYft_e1YpCuWF8xcJgmjNqM\", \"anyCharAt\": [3]}]", "DEMO_ADMINS": "demo@triodian.com", "SITE_LABEL": "Test site", "SITE_URL": "https://use-assessment-test.triodian.com", "APPETITE_URL": "https://risk-appetite-test.triodian.com", "NOTIFY_SENDING": "on", "NOTIFY_FROM": "notifications@triodian.com" },
+      "vars": { "SUITE_DEMO": "on", "SUITE_COOKIE_DOMAIN": "triodian.com", "SUITE_SESSION_COOKIE": "tri_suite_test", "DEMO_LOGIN": "[{\"username\": \"trio_demo\", \"email\": \"demo@triodian.com\", \"hash\": \"pbkdf2-sha256$100000$ae_ndll6YbjpSddRDhFBLg$HAVf7tKSohiJck-ohKQ1KYft_e1YpCuWF8xcJgmjNqM\", \"anyCharAt\": [3]}]", "DEMO_ADMINS": "demo@triodian.com", "SITE_LABEL": "Test site", "SITE_URL": "https://use-assessment-test.triodian.com", "APPETITE_URL": "https://risk-appetite-test.triodian.com", "NOTIFY_SENDING": "on", "NOTIFY_FROM": "notifications@triodian.com" },
       "send_email": [{ "name": "EMAIL" }],
       "triggers": { "crons": ["0 21 * * *"] },
       "observability": { "enabled": true }
@@ -71,7 +78,7 @@
       "d1_databases": [
         { "binding": "DB", "database_name": "use-assessment-client-db", "database_id": "REPLACE-WITH-THE-CLIENT-DATABASE-ID" }
       ],
-      "vars": { "SUITE_DEMO": "off", "DEMO_LOGIN": "", "DEMO_ADMINS": "", "SITE_URL": "https://use-assessment.CLIENT-DOMAIN.example", "APPETITE_URL": "https://risk-appetite.CLIENT-DOMAIN.example", "NOTIFY_SENDING": "off", "NOTIFY_FROM": "" },
+      "vars": { "SUITE_DEMO": "off", "SUITE_COOKIE_DOMAIN": "CLIENT-DOMAIN.example", "SUITE_SESSION_COOKIE": "tri_suite", "DEMO_LOGIN": "", "DEMO_ADMINS": "", "SITE_URL": "https://use-assessment.CLIENT-DOMAIN.example", "APPETITE_URL": "https://risk-appetite.CLIENT-DOMAIN.example", "NOTIFY_SENDING": "off", "NOTIFY_FROM": "" },
       "send_email": [{ "name": "EMAIL" }],
       "triggers": { "crons": ["0 21 * * *"] },
       "observability": { "enabled": true }
