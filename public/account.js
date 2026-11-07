@@ -28,6 +28,8 @@ const SRV = { checked: false, on: false, user: null, roles: [], site: '', code: 
 const ADM = { notes: [], sending: false, openNote: null, loaded: false, users: [], roles: [], perms: [], requests: [], audit: [], editing: null, adding: false, draft: null, err: '' };
 const PRF = { err: '', msg: '', emailErr: '', prefMsg: '' };
 let TAB = ['activity', 'notifications'].includes(location.hash.slice(1)) ? location.hash.slice(1) : 'users';
+/* With the shared identity (plan task 1B.2): the person's roles in the other Triodian apps, shown under this app's. */
+const otherApps = u => ((ADM.others || {})[u.id] || []).map(o => `<div class="small soft" style="margin-top:4px">${esc(o.name)}: ${o.roleNames.length ? o.roleNames.map(esc).join(', ') : 'no role'}${o.isAdmin ? ' · admin' : ''}${o.active ? '' : ' · inactive'}</div>`).join('');
 const roleLong = id => ((ADM.roles.length ? ADM.roles : SRV.roles).find(r => r.id === id) || {}).name || id;
 
 function header() {
@@ -59,7 +61,7 @@ function render() {
 async function loadAdmin() {
   const [u, a, n] = await Promise.all([api('GET', '/api/admin/users'), api('GET', '/api/admin/audit'), api('GET', '/api/admin/notifications')]);
   ADM.notes = n.ok ? n.body.entries : []; ADM.sending = n.ok && n.body.sending;
-  if (u.ok) { ADM.users = u.body.users; ADM.roles = u.body.roles; ADM.perms = u.body.permissions; ADM.requests = u.body.accessRequests || []; } else ADM.err = u.error;
+  if (u.ok) { ADM.users = u.body.users; ADM.roles = u.body.roles; ADM.perms = u.body.permissions; ADM.requests = u.body.accessRequests || []; ADM.others = u.body.otherApps || {}; } else ADM.err = u.error;
   ADM.audit = a.ok ? a.body.entries : []; ADM.loaded = true; render();
 }
 function userForm(u, isNew) {
@@ -82,7 +84,7 @@ function screenUsers() {
   const me = SRV.user, active = ADM.users.filter(u => u.active).length;
   const rows = ADM.users.map(u => ADM.editing === u.id ? `<tr class="adm-edit"><td colspan="6">${userForm(ADM.draft || u, false)}</td></tr>` : `<tr class="${u.active ? '' : 'off'}">
       <td><strong>${esc(u.name || '—')}</strong>${u.id === me.id ? ' ' + badge('you', 'b-aub') : ''}<div class="em">${esc(u.email)}</div>${u.organisation ? `<div class="small soft">${esc(u.organisation)}</div>` : ''}</td>
-      <td>${(u.roles || []).length ? u.roles.map(r => esc(roleLong(r))).join('<br>') : '<span class="soft">None</span>'}</td>
+      <td>${(u.roles || []).length ? u.roles.map(r => esc(roleLong(r))).join('<br>') : '<span class="soft">None</span>'}${otherApps(u)}</td>
       <td>${u.isAdmin ? badge('Admin', 'b-aub') : ''}</td>
       <td>${u.active ? badge('Active', 'b-green') : badge('Inactive', 'b-grey')}</td>
       <td class="adm-hide-sm small soft">${u.lastSeenAt ? fmtLocal(u.lastSeenAt) : 'Never'}</td>
