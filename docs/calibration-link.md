@@ -1,62 +1,41 @@
-# Reading the calibration set from the Risk Appetite app
+# The calibration link to the AI Risk Appetite app
 
-The Risk Appetite app publishes the issued calibration set at `/api/calibration-set`: the latest version the board
-approved, or before any approval the latest the CRO agreed. That site is behind Cloudflare Access, so this app reads it
-with a **service token** (a machine sign-in) rather than a person's sign-in. A service token has no email address; its
-Client ID identifies it. The Risk Appetite Worker lets exactly one service token, the one whose Client ID it is given,
-read that one address and nothing else.
+The **Load from the Risk Appetite app** button in Use Assessment reads the calibration set the Risk Appetite app has
+issued. Since development plan task 1B.4 it does this through a Cloudflare **service binding**: a direct call from
+the Use Assessment Worker to the Risk Appetite Worker inside the same Cloudflare account. There is no public URL, no
+service token and no secret to create or rotate.
 
-All of these steps are in the Cloudflare dashboard (one.dash.cloudflare.com for Zero Trust, dash.cloudflare.com for Workers).
+## How it is set up
 
-## 1. Create the service token (Zero Trust)
+Nothing to do by hand. `wrangler.jsonc` binds each environment to its own Risk Appetite Worker:
 
-Zero Trust → Access controls → Service credentials → Service tokens → **Create service token**.
+| Use Assessment Worker | Binds to | Entrypoint |
+| --- | --- | --- |
+| `use-assessment` | `risk-appetite` | `AppetiteService` |
+| `use-assessment-test` | `risk-appetite-test` | `AppetiteService` |
+| `use-assessment-client` | `risk-appetite-client` | `AppetiteService` |
 
-- Name: `use-assessment`.
-- Duration: a year is a sensible choice; put a reminder in the calendar a month before it expires. (Non-expiring also works.)
-- After you create it, Cloudflare shows the **Client ID** (ends in `.access`) and the **Client Secret** once. Copy both
-  somewhere safe now. If you lose the secret, create a new token.
+The Risk Appetite app exports `AppetiteService` from `src/service.js`. It offers one method, `calibrationSet()`, which
+returns the issued set and nothing else. Deploy the Risk Appetite app first, so the entrypoint exists when Use
+Assessment is deployed.
 
-## 2. Let the token through Access to the Risk Appetite app (Zero Trust)
+Both Workers must be in the same Cloudflare account.
 
-Zero Trust → Access controls → Applications → the **Risk Appetite** application → Policies → **Add a policy**:
+## After the binding works
 
-- Name: `Use Assessment service token`
-- Action: **Service Auth** (not Allow; Allow is for people and would send the token to a sign-in page)
-- Include: **Service Token** = `use-assessment`
-- Save. Check the policy list shows it alongside the existing people policy.
+The older link used an Access service token. Once **Load from the Risk Appetite app** works on live and test:
 
-If the test site (`risk-appetite-test.triodian.com`) is a separate Access application, add the same policy there too.
+1. On `use-assessment` and `use-assessment-test`, delete the secrets `APPETITE_CLIENT_ID` and `APPETITE_CLIENT_SECRET`.
+2. On `risk-appetite` and `risk-appetite-test`, delete the secret `CALIBRATION_CLIENT_ID`.
+3. In Zero Trust, revoke the `Use Assessment service token` and remove its Service Auth policy from the Risk Appetite
+   Access application.
 
-## 3. Tell the Risk Appetite Worker which token may read the set (Workers)
+The service-token code stays for one release so a site without the binding keeps working, then goes.
 
-Workers & Pages → `risk-appetite` → Settings → Variables and secrets → **Add** → type **Secret**:
+## If it fails
 
-- `CALIBRATION_CLIENT_ID` = the Client ID from step 1 (the whole value, including `.access`).
-
-Use a secret, not a plain variable: plain variables set in the dashboard are replaced by `wrangler.jsonc` on the next
-deploy, and secrets are kept. Do the same on `risk-appetite-test` if you want the test sites linked.
-
-## 4. Give this app the token (Workers)
-
-Workers & Pages → `use-assessment` → Settings → Variables and secrets → **Add** two secrets:
-
-- `APPETITE_CLIENT_ID` = the Client ID from step 1
-- `APPETITE_CLIENT_SECRET` = the Client Secret from step 1
-
-Do the same on `use-assessment-test`. `APPETITE_URL` is already set in `wrangler.jsonc`: the live site reads the live
-Risk Appetite site, and the test site reads its test site.
-
-## 5. Try it
-
-In this app: Set-up → Calibration set → **Load from the Risk Appetite app**.
-
-| What you see | What it means |
-|---|---|
-| The calibration set loads, with its version and status | Done. |
-| "The link to the Risk Appetite app is not set up on this site yet" | Step 4 is missing on this Worker. |
-| "No calibration set has been issued yet" | The link works. The CRO has not yet agreed a working appetite in the Risk Appetite app. |
-| "This service token is not allowed to read the calibration set" | Step 3 is missing, or `CALIBRATION_CLIENT_ID` does not match the Client ID exactly. |
-| "The Risk Appetite app answered 302/403. Check the service token and its policy." | Access did not accept the token: step 2 is missing or uses Allow instead of Service Auth, or the secret in step 4 is wrong. |
-
-Until the link is set up, the set can still be loaded from a file (Set-up → Calibration set → Load from a file).
+| Message | Cause |
+| --- | --- |
+| "could not be reached through the APPETITE service binding" | The Risk Appetite Worker named in the binding is not deployed in this account, or was deployed before `AppetiteService` existed. Deploy it again. |
+| "No calibration set has been issued yet" | The CRO has not agreed the working appetite in the Risk Appetite app. |
+| "The link to the Risk Appetite app is not set up on this site yet" | The Worker has no `APPETITE` binding. Check `wrangler.jsonc`, or load the calibration set from a file. |

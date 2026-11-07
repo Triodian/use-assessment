@@ -3,7 +3,8 @@
 // All the app logic is in lib/core (cloud-neutral); this file only connects it to Cloudflare:
 //   identity  → lib/identity/cloudflare-access.js (Cloudflare Access sign-in)
 //   storage   → lib/store/d1.js (Cloudflare D1); users from lib/identity/people.js when IDENTITY is bound
-//   calibration → the AI Risk Appetite app's /api/calibration-set, read with a Cloudflare Access service token
+//   calibration → the AI Risk Appetite app's issued calibration set, through the APPETITE service binding
+//                 (plan task 1B.4); the older Access service token still works where no binding is set
 //   email     → Cloudflare Email Service binding EMAIL, only when NOTIFY_SENDING is "on" (off by default)
 import { whoIs, handleAuth, gate, markDemo } from '../lib/identity/session.js';
 import { d1Store } from '../lib/store/d1.js';
@@ -15,8 +16,17 @@ const json = (obj, status = 200) => new Response(JSON.stringify(obj), {
   status, headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' },
 });
 
-/** Reads the issued calibration set from the Risk Appetite app, or null while that link is not configured. */
-function calibrationReader(env) {
+/** Reads the issued calibration set from the Risk Appetite app, or null while that link is not configured.
+ *  First choice: the APPETITE service binding to the app's AppetiteService entrypoint (no URL, no secret).
+ *  Kept for one release: APPETITE_URL with an Access service token, for a site that has no binding yet. */
+export function calibrationReader(env) {
+  if (env.APPETITE && typeof env.APPETITE.calibrationSet === 'function') return async () => {
+    let r;
+    try { r = await env.APPETITE.calibrationSet(); }
+    catch (e) { console.error(e); return { status: 503, error: 'The Risk Appetite app could not be reached through the APPETITE service binding. Check that the binding names the Risk Appetite Worker deployed in this account.' }; }
+    if (!r || r.status !== 200) return { status: (r && r.status) || 502, error: (r && r.body && r.body.error) || 'The Risk Appetite app did not return a calibration set.' };
+    return r.body;
+  };
   if (!env.APPETITE_URL || !env.APPETITE_CLIENT_ID || !env.APPETITE_CLIENT_SECRET) return null;
   return async () => {
     const r = await fetch(env.APPETITE_URL.replace(/\/$/, '') + '/api/calibration-set', {
@@ -62,7 +72,7 @@ export default {
         demoAdmins: demoAdmins(env),
         firstAdmins: String(env.FIRST_ADMINS || '').split(',').map(e => e.trim().toLowerCase()).filter(Boolean),
         site: env.SITE_LABEL || '', readCalibration: calibrationReader(env),
-        linkMissing: ['APPETITE_URL', 'APPETITE_CLIENT_ID', 'APPETITE_CLIENT_SECRET'].filter(k => !env[k]),
+        linkMissing: env.APPETITE ? [] : ['the APPETITE service binding'],
         origin: siteUrl(env, request), sender: emailSender(env), defer: p => ctx.waitUntil(p),
       }, storeFor(env));
       return json(r.body, r.status);
