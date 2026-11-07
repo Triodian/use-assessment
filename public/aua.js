@@ -59,7 +59,7 @@ const optL = v => C.optLabels[v] || v;
 function newAssessment() {
   return {
     schema: 'triodian.aua.v1',
-    engagement: { id: uid(), insurer: '', reference: '', counselFirm: '', privilegeMarking: '', startDate: '', briefConfirmed: { by: '', on: '', ref: '' }, documentsRequestedOn: '', independentReviewerReportsTo: 'counsel', irPersonId: '', irOrganisation: '', croPersonId: '', example: false, autosave: false, legalPhrases: C.legalPhrases.slice(), annexText: {}, annexSigned: { by: '', on: '' }, handBack: { by: '', on: '' } },
+    engagement: { id: uid(), insurer: '', reference: '', counselFirm: '', gcActsAsCounsel: false, secondApproverId: '', privilegeMarking: '', startDate: '', briefConfirmed: { by: '', on: '', ref: '' }, documentsRequestedOn: '', independentReviewerReportsTo: 'counsel', irPersonId: '', irOrganisation: '', croPersonId: '', example: false, autosave: false, legalPhrases: C.legalPhrases.slice(), annexText: {}, annexSigned: { by: '', on: '' }, handBack: { by: '', on: '' } },
     people: [],
     calibration: { loaded: false, status: 'default', version: 0, date: '', approvedBy: '', agreedBy: '', privilegeMarking: '', minuteRef: '', fellBack: [], parameters: {} },
     documents: C.documents.map(d => ({ id: d.ref, ref: d.ref, title: d.name, status: '', date: '' })),
@@ -95,6 +95,7 @@ function fieldDone(e, n) {
 const notKnownCount = e => Object.values(e.fields).filter(f => f && f.notKnown).length;
 
 /* ---------- permissions ---------- */
+const BOTH_AGREEMENTS = 'You recorded the other agreement to the set. One person cannot give both: if the GC also acts as counsel, tick “The GC also acts as counsel” in set-up and name a second approver, who gives the second agreement.';
 /* One gate for every editable control and action. Returns '' when allowed, otherwise the reason shown beside the disabled control. */
 function deny(target, x) {
   if (UI.archived) return 'This is an earlier assessment. It can be read but not changed.';
@@ -105,8 +106,11 @@ function deny(target, x) {
   switch (target) {
     case 'setup': return r('methodOwner') || r('delivery') ? '' : 'Only the method owner or the delivery manager can change set-up and the people list.';
     case 'set': return r('methodOwner') || r('assessor') || r('delivery') ? '' : 'Only the method owner, an assessor or the delivery manager can record arrangements.';
-    case 'agreeGC': return r('gc') ? '' : 'Only the GC can record the GC’s agreement to the set.';
-    case 'agreeCounsel': return r('counsel') ? '' : 'Only counsel can record counsel’s agreement to the set.';
+    case 'agreeGC': if (!r('gc')) return 'Only the GC can record the GC’s agreement to the set.'; if (!S.engagement.gcActsAsCounsel && S.setAgreed.counselBy && S.setAgreed.counselBy === p.id) return BOTH_AGREEMENTS; return '';
+    case 'agreeCounsel':
+      // Where the GC also acts as counsel (development plan task 0.5), the second agreement comes from the second approver named in set-up.
+      if (S.engagement.gcActsAsCounsel) { if (!S.engagement.secondApproverId) return 'The GC also acts as counsel. Name the second approver in set-up first.'; return S.engagement.secondApproverId === p.id && r('executive') ? '' : 'The GC also acts as counsel, so the second agreement to the set comes from the second approver named in set-up.'; }
+      if (!r('counsel')) return 'Only counsel can record counsel’s agreement to the set.'; if (S.setAgreed.gcBy && S.setAgreed.gcBy === p.id) return BOTH_AGREEMENTS; return '';
     case 'facts': if (!(r('assessor') || r('methodOwner'))) return 'Only an assessor or the method owner can enter facts.'; if (x && x.peerReview && x.peerReview.personId === p.id) return 'You are the peer reviewer of this entry, so you cannot edit it.'; return '';
     case 'classify': if (!(r('assessor') || r('methodOwner'))) return 'Only an assessor or the method owner can classify an entry.'; if (rev('R4').by === p.id && rev('R4').result) return 'You recorded R4 (validation), so you cannot classify entries in this assessment.'; if (x && x.peerReview && x.peerReview.personId === p.id) return 'You are the peer reviewer of this entry, so you cannot classify it.'; if (x && blindFor(x)) return 'Record your own tier for this entry first (R3, classification review).'; return '';
     case 'consequence': return r('owner') ? '' : 'Only the arrangement owner can confirm the failure consequence.';
@@ -412,7 +416,8 @@ function myActions() {
   const missing = (e, ns) => ns.filter(k => !fieldDone(e, k)).length;
   if ((r('methodOwner') || r('delivery')) && !G[0].ok) add('Finish set-up', 'Still open: ' + G[0].items.filter(i => !i[1]).map(i => i[0]).join('; ') + '.', { act: 'go', to: 'setup' });
   if (r('gc') && S.arrangements.length && !S.setAgreed.gcBy) add('Agree the representative set (R1)', S.arrangements.length + ' arrangements are waiting for the GC’s agreement.', { act: 'go', to: 'set' });
-  if (r('counsel') && S.arrangements.length && !S.setAgreed.counselBy) add('Agree the representative set (R1)', 'Counsel records its own agreement to the set.', { act: 'go', to: 'set' });
+  if (r('counsel') && !S.engagement.gcActsAsCounsel && S.arrangements.length && !S.setAgreed.counselBy) add('Agree the representative set (R1)', 'Counsel records its own agreement to the set.', { act: 'go', to: 'set' });
+  if (r('executive') && S.engagement.gcActsAsCounsel && S.engagement.secondApproverId === p.id && S.arrangements.length && !S.setAgreed.counselBy) add('Agree the representative set (R1)', 'The GC also acts as counsel, so you give the second agreement to the set.', { act: 'go', to: 'set' });
   S.entries.forEach(e => {
     if (blindFor(e)) return;
     if ((r('assessor') || r('methodOwner')) && !deny('facts', e)) { const m = missing(e, FACTS_N); if (m) add(`Record the facts for ${e.id}`, `${m} of 12 fields still to record or mark not known · ${e.arrangementId}`, { act: 'openEntry', id: e.id, t: 'facts' }); }
@@ -472,7 +477,7 @@ function drawer() {
     <p class="small soft" style="padding:0 10px">The worked example is fictional and runs in this browser only. Nothing in it is saved.</p>
     <div class="grp">Apps</div>
     <a class="item" href="${SRV.site ? 'https://obligations-atlas-test.triodian.com/?suite=1' : 'https://obligations-atlas.triodian.com/?suite=1'}" style="text-decoration:none"><span class="appic" style="background:#E3E9EF;color:var(--navy)">OA</span><span>AI Obligations Atlas<br><span class="small soft">Obligations by jurisdiction, tier and use case</span></span></a>
-    <a class="item" href="${SRV.site ? 'https://board-direction-test.triodian.com/?suite=1' : 'https://board-direction.triodian.com/?suite=1'}" style="text-decoration:none"><span class="appic" style="background:var(--green-bg);color:var(--green)">BD</span><span>AI Board Direction<br><span class="small soft">Board steps B0 to B9: directions for the appetite, or the whole appetite for an unregulated company</span></span></a>
+    <a class="item" href="${SRV.site ? 'https://board-direction-test.triodian.com/?suite=1' : 'https://board-direction.triodian.com/?suite=1'}" style="text-decoration:none"><span class="appic" style="background:var(--green-bg);color:var(--green)">BD</span><span>AI Board Direction<br><span class="small soft">The board’s direction on AI: where to use it and what to rule out</span></span></a>
     <a class="item" href="${appetiteUrl()}?suite=1" style="text-decoration:none"><span class="appic" style="background:var(--aubergine-bg);color:var(--aubergine)">RA</span><span>AI Risk Appetite<br><span class="small soft">Sets the calibration set this app reads</span></span></a>
     <div class="item" aria-current="page"><span class="appic" style="background:#E3E9EF;color:var(--navy)">UA</span><span>AI Use Assessment<br><span class="small soft">Register, tests and findings</span></span><span class="badge b-green" style="margin-left:auto">now</span></div>
     <a class="item" href="${SRV.site ? 'https://confidentiality-test.triodian.com/' : 'https://confidentiality.triodian.com/'}" style="text-decoration:none"><span class="appic" style="background:#F1E6DD;color:#8A5A3B">CE</span><span>AI Confidentiality Exposure Assessment<br><span class="small soft">For unregulated entities: where deal information can reach an external AI model, for one transaction</span></span></a>
@@ -557,6 +562,8 @@ function screenSetup() {
   <div class="stack">
   <section class="card"><h2 class="sh">1 · Engagement</h2><div class="fgrid">${fld('Insurer', 'engagement.insurer', e.insurer)}${fld('Reference', 'engagement.reference', e.reference)}${fld('Counsel firm', 'engagement.counselFirm', e.counselFirm)}${fld('Start date', 'engagement.startDate', e.startDate, { type: 'date' })}</div>
     <div style="margin-top:14px">${fld(T('privilege', 'Privilege marking') + ' (as counsel directs; printed on every output)', 'engagement.privilegeMarking', e.privilegeMarking, { raw: true })}</div>
+    <div style="margin-top:14px"><label class="cb"><input type="checkbox" id="e-gcac" data-path="engagement.gcActsAsCounsel" ${e.gcActsAsCounsel ? 'checked' : ''} ${fs}> The GC also acts as counsel</label><p class="small soft" style="margin:4px 0 0">When one person holds both roles, the second agreement to the set (R1) comes from a named second approver, and every output records that the GC held both roles.</p>
+      ${e.gcActsAsCounsel ? `<div class="fgrid" style="margin-top:8px">${fld('Second approver (a company executive with the second approver role)', 'engagement.secondApproverId', e.secondApproverId, { select: peopleOpts('executive') })}</div>${!peopleOpts('executive').some(o => o[0]) ? '<p class="small" style="color:var(--ochre)">No one has the second approver role yet. Give it to the executive in the people list.</p>' : ''}` : ''}</div>
     <div class="fgrid" style="margin-top:14px">${fld('GC who confirmed the brief (recorded by Triodian)', 'engagement.briefConfirmed.by', e.briefConfirmed.by, { select: peopleOpts('gc') })}${fld('Confirmed on', 'engagement.briefConfirmed.on', e.briefConfirmed.on, { type: 'date' })}${fld('Brief reference', 'engagement.briefConfirmed.ref', e.briefConfirmed.ref)}${fld('Document request issued', 'engagement.documentsRequestedOn', e.documentsRequestedOn, { type: 'date' })}</div></section>
   <section class="card"><h2 class="sh">Practitioner</h2><p class="small soft" style="margin:4px 0 14px">The GC’s or advisory firm’s name, a line under it and a logo. They appear in the header and above the privilege marking on every Word and PDF output.</p><div class="fgrid">
     ${fld('Firm', 'engagement.practitioner.firm', (e.practitioner || {}).firm || '')}${fld('Line under the name', 'engagement.practitioner.line', (e.practitioner || {}).line || '', { ph: 'Prepared by [firm] using the Triodian method' })}
@@ -610,7 +617,7 @@ function screenSet() {
   <div class="calstrip"><div class="row"><span class="sh" style="margin:0">Coverage</span>${['B1', 'B2', 'B3'].map(x => badge(x + (cv[x] ? ' ✓' : ' missing'), cv[x] ? 'b-green' : 'b-ochre')).join('')}${badge('authority spread' + (spread ? ' ✓' : ' not yet'), spread ? 'b-green' : 'b-grey')}</div><button class="btn sm" data-act="addArr" ${fs}>Add arrangement</button></div>
   ${whyNote(why)}
   <div class="stack" style="gap:12px">${S.arrangements.map(card).join('') || `<div class="soft"><p style="margin:0 0 6px">No arrangements yet. ${T('set', 'The representative set')} is chosen in this order:</p><ol style="margin:0;padding-left:22px;line-height:1.7">${C.criteria.slice(0, 5).map(t => `<li>${esc(t)}</li>`).join('')}</ol></div>`}</div>
-  <section class="card" style="margin-top:18px"><h2 class="sh">Agree the set (R1)</h2><p class="small soft">The GC and counsel each record their own agreement.</p><div class="grid2">${ag(S.setAgreed.gcBy, S.setAgreed.gcOn, 'agreeGC', 'Record GC agreement')}${ag(S.setAgreed.counselBy, S.setAgreed.counselOn, 'agreeCounsel', 'Record counsel agreement')}</div>
+  <section class="card" style="margin-top:18px"><h2 class="sh">Agree the set (R1)</h2><p class="small soft">${S.engagement.gcActsAsCounsel ? 'The GC also acts as counsel, so the GC and the second approver named in set-up each record their own agreement.' : 'The GC and counsel each record their own agreement.'}</p><div class="grid2">${ag(S.setAgreed.gcBy, S.setAgreed.gcOn, 'agreeGC', 'Record GC agreement')}${ag(S.setAgreed.counselBy, S.setAgreed.counselOn, 'agreeCounsel', S.engagement.gcActsAsCounsel ? 'Record second approver agreement' : 'Record counsel agreement')}</div>
     <p class="small soft" style="margin-top:8px">If the set does not cover a boundary type, record it in the exceptions log on the Review screen, naming its code (B1, B2 or B3).</p></section>
   ${gateCard(1)}${stepbar(gate(gates()[1].ok, gates()[1].ok ? 'Phase 1 met' : 'Phase 1 open'))}`;
 }
@@ -926,16 +933,22 @@ const FREQ = { E0: 'n/a', E1: 'On change, or annually', E2: 'Per reporting perio
 const finalWhy = o => !r5Clear() ? 'Some R5 (legal-line check) hits are still open.' : !gates()[5].ok ? 'The phase 5 gate is not met.' : !gates()[o.gate].ok ? `The phase ${o.gate} gate is not met.` : '';
 const outFinal = o => !finalWhy(o);
 const outStatus = o => FORCE === 'draft' ? 'Draft' : FORCE === 'final' ? 'Final' : outFinal(o) ? 'Final' : 'Draft';
+/* Development plan task 0.5: every output records that the GC held both roles, and who gave the second agreement. */
+function bothRoles() {
+  const e = S.engagement; if (!e.gcActsAsCounsel) return '';
+  return `The GC also acted as counsel in this assessment. The second agreement to the set (R1) was given by the second approver${e.secondApproverId ? ', ' + (pname(e.secondApproverId) || e.secondApproverId) : ''}.\n\n`;
+}
 function mdHead(o) {
   const e = S.engagement, st = RAW ? '' : outStatus(o);
-  return `${e.privilegeMarking || '[Privilege marking not recorded in set-up]'}\n\n# ${o.id} · ${o.name}\n\n**${calLabel()}**${st ? ' · ' + st : ''} · ${dDoc(today())}${e.example ? ' · WORKED EXAMPLE, FICTIONAL' : ''}\n\n${e.insurer || '[Insurer]'} · ${e.reference || '[reference]'}\n\n`;
+  return `${e.privilegeMarking || '[Privilege marking not recorded in set-up]'}\n\n# ${o.id} · ${o.name}\n\n**${calLabel()}**${st ? ' · ' + st : ''} · ${dDoc(today())}${e.example ? ' · WORKED EXAMPLE, FICTIONAL' : ''}\n\n${e.insurer || '[Insurer]'} · ${e.reference || '[reference]'}\n\n${bothRoles()}`;
 }
 const OUTS = [
   { id: 'DL1', name: 'AI dependency register', gate: 3, gen: genDL1 }, { id: 'DL2', name: 'Evidence obtainable at each boundary', gate: 5, gen: genDL2 },
   { id: 'DL3', name: "Control-library shape for the insurer's own AI boundary", gate: 5, gen: genDL3 }, { id: 'DL4', name: 'Technical schedule, tolerance and trigger design', gate: 5, gen: genDL4 },
   { id: 'DL5', name: 'Technical annex', gate: 6, gen: genDL5 }, { id: 'DL6', name: 'Hand-back list', gate: 2, gen: genDL6 },
   { id: 'QS', name: 'Question set to counsel', gate: 3, gen: genQS }, { id: 'RP', name: 'Review pack for the independent reviewer', gate: 5, gen: genRP },
-  { id: 'CM', name: 'Closing measures', gate: 7, gen: genCM }, { id: 'DR', name: 'Difference report', gate: 0, gen: genDR }
+  { id: 'CM', name: 'Closing measures', gate: 7, gen: genCM }, { id: 'DR', name: 'Difference report', gate: 0, gen: genDR },
+  { id: 'EP', name: 'Engagement plan', gate: 0, gen: genEP }
 ];
 const O = id => OUTS.find(o => o.id === id) || OUTS[0];
 function fieldOut(e, n) {
@@ -959,8 +972,39 @@ function genDL1() {
 function dl1Csv() {
   const q = v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"', o = O('DL1');
   const head = ['Entry', 'Arrangement', ...C.fields.map(d => d.n + ' ' + FLD(d.n).name), ...C.fields.map(d => d.n + ' source'), 'Flags', 'Not known'];
-  return [[S.engagement.privilegeMarking || '[Privilege marking not recorded]'], [calLabel()], [outStatus(o) + ' · ' + dDoc(today())], [(S.engagement.insurer || '[Insurer]') + ' · ' + (S.engagement.reference || '')], [],
+  return [[S.engagement.privilegeMarking || '[Privilege marking not recorded]'], [calLabel()], [outStatus(o) + ' · ' + dDoc(today())], [(S.engagement.insurer || '[Insurer]') + ' · ' + (S.engagement.reference || '')], ...(bothRoles() ? [[bothRoles().trim()]] : []), [],
     head, ...S.entries.map(e => [e.id, e.arrangementId, ...C.fields.map(d => fieldOut(e, d.n)), ...C.fields.map(d => fieldSrc(e, d.n)), flags(e).map(x => x.label).join('; '), notKnownCount(e)])].map(r => r.map(q).join(',')).join('\n');
+}
+/* ---------- engagement plan (development plan task 0.7) ----------
+   The phases come from the framework's own workplan (section 5.1), so the plan says what the method says. Sessions are
+   the framework's interviews, with the dates set-up records; attendees by role come from the people list; inputs are
+   the documents the insurer is asked for; sign-off points are the review points R1 to R7, with where each stands. */
+function fwTable(heading) {
+  const m = C.frameworkMarkdown || '', i = m.indexOf(heading); if (i < 0) return [];
+  const lines = m.slice(i).split('\n').slice(1).filter((l, k, a) => l.startsWith('|') || (k < 3 && !l.trim()));
+  const rows = []; for (const l of lines) { if (!l.startsWith('|')) { if (rows.length) break; continue; } rows.push(l.replace(/^\|\s*|\s*\|$/g, '').split(/\s*\|\s*/)); }
+  return rows.filter(r => !r.every(c => /^-+$/.test(c))).slice(1);
+}
+function genEP() {
+  // RAW: the legal-line check (R5) is scanning every output's wording; the gates run that check, so skip them here.
+  const G = RAW ? [] : gates(), e = S.engagement;
+  let m = mdHead(O('EP'));
+  m += `This plan follows the framework’s workplan. It is for everyone taking part: what happens when, who attends, what the insurer is asked to provide, and where each sign-off stands.\n\n`;
+  const ph = fwTable('### 5.1 Phases');
+  m += `## Phases\n\n` + tbl(['Phase', 'When', 'Activities', 'Exit gate', 'Where it stands'], ph.map((r, n) => [r[0], r[1], r[2], r[4] || '', G[n] ? (G[n].ok ? 'Met' : 'Open') : ''])) + '\n';
+  m += `## Sessions\n\n` + tbl(['Session', 'Who', 'Purpose', 'Length', 'Date'], C.interviews.map((v, i) => { const iv = S.interviews.find(x => x.who === v.who) || S.interviews[i] || {}; return [iv.id || 'IV-' + (i + 1), v.who, v.purpose, v.length, iv.date ? dDoc(iv.date) : 'To be set']; }))
+    + `\nTriodian’s assessor attends every interview. Counsel convenes the opening briefing and receives every draft first.\n\n`;
+  const named = id => S.people.filter(p => p.roles.includes(id)).map(p => p.name + (p.organisation ? ' (' + p.organisation + ')' : '')).join('; ');
+  m += `## Attendees by role\n\n` + tbl(['Role', 'Named'], C.roles.map(r => [r.name, named(r.id) || 'Not yet named'])) + '\n';
+  if (bothRoles()) m += bothRoles();
+  const docStatus = ref => { const ds = S.documents.filter(d => d.ref === ref); if (!ds.length) return 'Not yet requested'; const st = ds.map(d => d.status || 'listed'); return ds.length === 1 ? st[0].replace(/^\w/, c => c.toUpperCase()) : `${ds.length} documents: ${[...new Set(st)].join(', ')}`; };
+  m += `## Documents needed from the insurer\n\n` + tbl(['Ref', 'Document', 'Used for', 'Status'], C.documents.map(d => [d.ref, d.name, d.usedFor, docStatus(d.ref)]))
+    + `\n${e.documentsRequestedOn ? 'The document request was issued on ' + dDoc(e.documentsRequestedOn) + '. ' : ''}No document needs to hold personal information; counsel directs how documents are handled.\n\n`;
+  const sa = S.setAgreed, r1 = sa.gcBy && sa.counselBy ? `Agreed ${dDoc(sa.counselOn || sa.on)}` : sa.gcBy || sa.counselBy ? 'One of the two agreements recorded' : 'Not yet';
+  const st = x => x.id === 'R1' ? r1 : rev(x.id).result || rev(x.id).on ? `${String(rev(x.id).result || 'Recorded').replace(/^\w/, c => c.toUpperCase())}${rev(x.id).on ? ' ' + dDoc(rev(x.id).on) : ''}` : 'Not yet';
+  m += `## Sign-off points\n\n` + tbl(['Point', 'Review', 'When', 'Reviewer', 'Where it stands'], C.reviews.map(x => [x.id, x.name, x.when, x.id === 'R1' && e.gcActsAsCounsel ? 'GC and the second approver' : x.reviewer, st(x)]))
+    + `\nThe technical annex is signed by the method owner once the phase 5 gate is met, and the insurer’s arrangement owner accepts the hand-back list at close.\n`;
+  return m;
 }
 function genDL2() { return mdHead(O('DL2')) + `## Summary\n\n` + summaryTable() + `## Worksheets\n\n` + S.arrangements.map(a => worksheetMd(a)).join(''); }
 function genDL3() {
@@ -1056,7 +1100,7 @@ function redlineMd() {
   return `## Changes since ${v.id} · ${v.label} (${dDoc(String(v.at).slice(0, 10))})\n\n` + (rows.length ? tbl(['Entry', 'What changed', 'Was', 'Now'], rows.map(r => [r.entry, r.what, r.was ? '~~' + showVal(r.was) + '~~' : '', r.now ? showVal(r.now) : ''])) : 'No changes since this version.\n\n');
 }
 /* Outputs open on a list of documents with their status; each opens on its own page with a way back. */
-const outDesc = o => ((C.deliverables || []).find(d => d.id === o.id) || {}).contents || ({ QS: 'Every question put to counsel, with its status and the response.', RP: 'What the independent reviewer needs to test the assessment.', CM: 'The measures that close the assessment.', DR: 'What changed between versions of the assessment.' })[o.id] || '';
+const outDesc = o => ((C.deliverables || []).find(d => d.id === o.id) || {}).contents || ({ EP: 'The phases with their timing, the sessions and who attends, the documents needed from the insurer, and the sign-off points, with where each stands.', QS: 'Every question put to counsel, with its status and the response.', RP: 'What the independent reviewer needs to test the assessment.', CM: 'The measures that close the assessment.', DR: 'What changed between versions of the assessment.' })[o.id] || '';
 function outStatusInfo(o) {
   const e = S.engagement, why = finalWhy(o);
   if (o.id === 'DL5' && e.annexSigned.by) return [why ? 'draft · signed' : 'final · signed', why ? 'b-ochre' : 'b-green', why];
@@ -1394,7 +1438,7 @@ function onClick(ev) {
     addArr: () => { let n = S.arrangements.length + 1; while (S.arrangements.some(x => x.id === 'ARR-' + String(n).padStart(2, '0'))) n++; S.arrangements.push({ id: 'ARR-' + String(n).padStart(2, '0'), name: '', parties: '', boundaries: [], criteria: [], reason: '', nextContracting: '', function: '', findingOwner: '' }); log('addArrangement', 'set'); render(); },
     rmArr: () => { const x = S.arrangements[+d.i]; if (S.entries.some(y => y.arrangementId === x.id)) return toast('Delete its register entries first.'); S.arrangements.splice(+d.i, 1); log('removeArrangement', x.id); render(); },
     agreeGC: () => { Object.assign(S.setAgreed, { gcBy: m.id, gcOn: today(), on: today() }); log('R1', 'set', null, 'GC agreed: ' + m.name); render(); },
-    agreeCounsel: () => { Object.assign(S.setAgreed, { counselBy: m.id, counselOn: today(), on: today() }); log('R1', 'set', null, 'counsel agreed: ' + m.name); render(); },
+    agreeCounsel: () => { Object.assign(S.setAgreed, { counselBy: m.id, counselOn: today(), on: today() }); log('R1', 'set', null, (S.engagement.gcActsAsCounsel ? 'second approver agreed: ' : 'counsel agreed: ') + m.name); render(); },
     addEntry: () => { const x = newEntry(document.getElementById('newEntryArr').value); S.entries.push(x); log('addEntry', x.id); UI.entryId = x.id; UI.tab = 'facts'; render(); window.scrollTo(0, 0); },
     nextAssessment: async () => {
       if (!confirm('Start the next assessment? This one is kept read only under Earlier assessments, and the new one starts from its facts.')) return;
