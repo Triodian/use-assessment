@@ -2,11 +2,13 @@
 // Static files in /public (the app, /admin and /profile) are served by Cloudflare. Requests to /api/* come here.
 // All the app logic is in lib/core (cloud-neutral); this file only connects it to Cloudflare:
 //   identity  → lib/identity/cloudflare-access.js (Cloudflare Access sign-in)
-//   storage   → lib/store/d1.js (Cloudflare D1)
-//   calibration → the AI Risk Appetite app's /api/calibration-set, read with a Cloudflare Access service token
+//   storage   → lib/store/d1.js (Cloudflare D1); users from lib/identity/people.js when IDENTITY is bound
+//   calibration → the AI Risk Appetite app's issued calibration set, through the APPETITE service binding
+//                 (plan task 1B.4); the older Access service token still works where no binding is set
 //   email     → Cloudflare Email Service binding EMAIL, only when NOTIFY_SENDING is "on" (off by default)
 import { whoIs, handleAuth, gate, markDemo } from '../lib/identity/session.js';
 import { d1Store } from '../lib/store/d1.js';
+import { identityUsers, withIdentity } from '../lib/identity/people.js';
 import { handle } from '../lib/core/api.js';
 import { dueReminders, deliver } from '../lib/core/notify.js';
 
@@ -14,8 +16,17 @@ const json = (obj, status = 200) => new Response(JSON.stringify(obj), {
   status, headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' },
 });
 
-/** Reads the issued calibration set from the Risk Appetite app, or null while that link is not configured. */
-function calibrationReader(env) {
+/** Reads the issued calibration set from the Risk Appetite app, or null while that link is not configured.
+ *  First choice: the APPETITE service binding to the app's AppetiteService entrypoint (no URL, no secret).
+ *  Kept for one release: APPETITE_URL with an Access service token, for a site that has no binding yet. */
+export function calibrationReader(env) {
+  if (env.APPETITE && typeof env.APPETITE.calibrationSet === 'function') return async () => {
+    let r;
+    try { r = await env.APPETITE.calibrationSet(); }
+    catch (e) { console.error(e); return { status: 503, error: 'The Risk Appetite app could not be reached through the APPETITE service binding. Check that the binding names the Risk Appetite Worker deployed in this account.' }; }
+    if (!r || r.status !== 200) return { status: (r && r.status) || 502, error: (r && r.body && r.body.error) || 'The Risk Appetite app did not return a calibration set.' };
+    return r.body;
+  };
   if (!env.APPETITE_URL || !env.APPETITE_CLIENT_ID || !env.APPETITE_CLIENT_SECRET) return null;
   return async () => {
     const r = await fetch(env.APPETITE_URL.replace(/\/$/, '') + '/api/calibration-set', {
@@ -39,6 +50,11 @@ const siteUrl = (env, request) => env.SITE_URL || (request ? new URL(request.url
 /** DEMO ADDITION: emails in DEMO_ADMINS (comma-separated) are made administrators when they sign in. */
 const demoAdmins = env => String(env.DEMO_ADMINS || '').split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
 
+/** The app's store. With the IDENTITY binding (the suite's shared identity database, plan task 1B.2) its users and their
+ *  roles come from there, so a person is added once for the suite; everything else stays in this app's own database. */
+const APP_ID = 'use-assessment';
+const storeFor = env => withIdentity(d1Store(env.DB), env.IDENTITY ? identityUsers(env.IDENTITY, APP_ID, env.DB) : null);
+
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
@@ -54,10 +70,11 @@ export default {
       const r = await handle({
         method: request.method, path: url.pathname, email: who.email, text: () => request.text(),
         demoAdmins: demoAdmins(env),
+        firstAdmins: String(env.FIRST_ADMINS || '').split(',').map(e => e.trim().toLowerCase()).filter(Boolean),
         site: env.SITE_LABEL || '', readCalibration: calibrationReader(env),
-        linkMissing: ['APPETITE_URL', 'APPETITE_CLIENT_ID', 'APPETITE_CLIENT_SECRET'].filter(k => !env[k]),
+        linkMissing: env.APPETITE ? [] : ['the APPETITE service binding'],
         origin: siteUrl(env, request), sender: emailSender(env), defer: p => ctx.waitUntil(p),
-      }, d1Store(env.DB));
+      }, storeFor(env));
       return json(r.body, r.status);
     } catch (e) {
       console.error(e);
@@ -68,7 +85,7 @@ export default {
   // Daily: remind counsel about questions open for a week or more.
   async scheduled(event, env, ctx) {
     if (!env.DB) return;
-    const store = d1Store(env.DB);
+    const store = storeFor(env);
     ctx.waitUntil((async () => {
       await store.init();
       const e = await store.getEngagement(); if (!e) return;

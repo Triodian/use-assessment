@@ -13,8 +13,14 @@
   "routes": [{ "pattern": "use-assessment.triodian.com", "custom_domain": true }],
 
   "d1_databases": [
-    { "binding": "DB", "database_name": "use-assessment-db", "database_id": "e7e9a50f-cfda-4ddd-938e-2ae38b4e6553" }
+    { "binding": "DB", "database_name": "use-assessment-db", "database_id": "e7e9a50f-cfda-4ddd-938e-2ae38b4e6553" },
+    { "binding": "IDENTITY", "database_name": "triodian-identity-db", "database_id": "d2031f39-53b4-438c-aed6-1d480f9526bf" }
   ],
+  // IDENTITY (development plan tasks 1B.2 and 1B.3): the suite's shared identity database, one per environment, bound to
+  // all four engagement apps. With it, people are added once, roles are kept per app, and one sign-in covers every app
+  // on SUITE_COOKIE_DOMAIN (the cookie SUITE_SESSION_COOKIE; the test sites use their own name so live and test stay apart).
+  // Each app copies its own users in the first time it starts with the binding. The databases are triodian-identity-db
+  // (live) and triodian-identity-test-db (test). Both are bound below.
   "observability": { "enabled": true },
 
   // Daily at 07:00 Brisbane time: remind counsel about questions open for a week or more (lib/core/notify.js).
@@ -26,11 +32,12 @@
   // To stop sending, set NOTIFY_SENDING to "off": messages are then held and listed in Admin → Notifications.
   "send_email": [{ "name": "EMAIL" }],
 
-  // The "Load from the Risk Appetite app" button reads the issued calibration set from
-  // APPETITE_URL/api/calibration-set using a Cloudflare Access service token. The token's two halves are
-  // secrets, set in Cloudflare (Worker → Settings → Variables and secrets), never in this file:
-  //   APPETITE_CLIENT_ID, APPETITE_CLIENT_SECRET
-  // Until both are set the button explains that the link is not set up, and a file can be loaded instead.
+  // The "Load from the Risk Appetite app" button reads the issued calibration set through the APPETITE service
+  // binding below: a direct call to the Risk Appetite Worker's AppetiteService entrypoint in the same Cloudflare
+  // account, with no public URL and no secret (development plan task 1B.4). Each environment binds to its own
+  // Risk Appetite Worker. The older Access service token (APPETITE_URL, APPETITE_CLIENT_ID, APPETITE_CLIENT_SECRET)
+  // is used only where no binding is set; once the binding works, delete those secrets from the Worker.
+  // Without either, the button explains that the link is not set up, and a file can be loaded instead.
   // DEMO_ADMINS (demo addition): comma-separated emails made active administrators when they sign in.
   // Empty it ("") on a client deployment. See lib/core/api.js.
   // DEMO_LOGIN (demo addition, a Worker secret, not set here): username sign-in for the shared trio_demo account,
@@ -38,7 +45,8 @@
   // DEMO_SESSION_KEY (a Worker secret, not set here; development plan task 0.1) signs the demo sign-in cookie, shared
   // across triodian.com; it must be the same in every app and is only accepted for the demo account's own email.
   // SUITE_DEMO "on" shows the demo band and app switcher (task 0.3). See lib/identity/session.js.
-  "vars": { "SUITE_DEMO": "on", "DEMO_ADMINS": "demo@triodian.com", "APPETITE_URL": "https://risk-appetite.triodian.com", "NOTIFY_SENDING": "on", "NOTIFY_FROM": "notifications@triodian.com" },
+  "services": [{ "binding": "APPETITE", "service": "risk-appetite", "entrypoint": "AppetiteService" }],
+  "vars": { "SUITE_DEMO": "on", "SUITE_COOKIE_DOMAIN": "triodian.com", "SUITE_SESSION_COOKIE": "tri_suite", "DEMO_ADMINS": "demo@triodian.com", "NOTIFY_SENDING": "on", "NOTIFY_FROM": "notifications@triodian.com" },
 
   // Test copy: use-assessment-test.triodian.com, with its own database. It reads the Risk Appetite test site.
   // Deployed with `npx wrangler deploy --env test` (see docs/test-site.md).
@@ -49,9 +57,11 @@
       "preview_urls": false,
       "routes": [{ "pattern": "use-assessment-test.triodian.com", "custom_domain": true }],
       "d1_databases": [
-        { "binding": "DB", "database_name": "use-assessment-test-db", "database_id": "8da15baa-c86e-4134-9bee-7412e064dc98" }
+        { "binding": "DB", "database_name": "use-assessment-test-db", "database_id": "8da15baa-c86e-4134-9bee-7412e064dc98" },
+        { "binding": "IDENTITY", "database_name": "triodian-identity-test-db", "database_id": "4d7591a1-bcb7-4514-b726-f0621d7de25a" }
       ],
-      "vars": { "SUITE_DEMO": "on", "DEMO_ADMINS": "demo@triodian.com", "SITE_LABEL": "Test site", "SITE_URL": "https://use-assessment-test.triodian.com", "APPETITE_URL": "https://risk-appetite-test.triodian.com", "NOTIFY_SENDING": "on", "NOTIFY_FROM": "notifications@triodian.com" },
+      "services": [{ "binding": "APPETITE", "service": "risk-appetite-test", "entrypoint": "AppetiteService" }],
+      "vars": { "SUITE_DEMO": "on", "SUITE_COOKIE_DOMAIN": "triodian.com", "SUITE_SESSION_COOKIE": "tri_suite_test", "DEMO_ADMINS": "demo@triodian.com", "SITE_LABEL": "Test site", "SITE_URL": "https://use-assessment-test.triodian.com", "NOTIFY_SENDING": "on", "NOTIFY_FROM": "notifications@triodian.com" },
       "send_email": [{ "name": "EMAIL" }],
       "triggers": { "crons": ["0 21 * * *"] },
       "observability": { "enabled": true }
@@ -71,7 +81,8 @@
       "d1_databases": [
         { "binding": "DB", "database_name": "use-assessment-client-db", "database_id": "REPLACE-WITH-THE-CLIENT-DATABASE-ID" }
       ],
-      "vars": { "SUITE_DEMO": "off", "DEMO_LOGIN": "", "DEMO_ADMINS": "", "SITE_URL": "https://use-assessment.CLIENT-DOMAIN.example", "APPETITE_URL": "https://risk-appetite.CLIENT-DOMAIN.example", "NOTIFY_SENDING": "off", "NOTIFY_FROM": "" },
+      "services": [{ "binding": "APPETITE", "service": "risk-appetite-client", "entrypoint": "AppetiteService" }],
+      "vars": { "SUITE_DEMO": "off", "SUITE_COOKIE_DOMAIN": "CLIENT-DOMAIN.example", "SUITE_SESSION_COOKIE": "tri_suite", "DEMO_LOGIN": "", "DEMO_ADMINS": "", "SITE_URL": "https://use-assessment.CLIENT-DOMAIN.example", "NOTIFY_SENDING": "off", "NOTIFY_FROM": "" },
       "send_email": [{ "name": "EMAIL" }],
       "triggers": { "crons": ["0 21 * * *"] },
       "observability": { "enabled": true }
