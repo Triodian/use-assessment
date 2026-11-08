@@ -98,6 +98,10 @@ The server design is the same as the AI Risk Appetite app's (`Triodian/risk_appe
 "Load from the Risk Appetite app" (Set-up → Calibration set) reads `/api/calibration-set` from the Risk Appetite app
 using a Cloudflare Access service token. Set-up: `docs/calibration-link.md`. Loading from a file still works.
 
+## Matter brief from the AI Obligations Atlas
+
+Set-up loads a matter brief built in the [AI Obligations Atlas](https://github.com/Triodian/obligations-atlas) for the insurer's jurisdictions, entity type and AI use cases (format `triodian.matterBrief/1`). It shows the obligations in scope by tier and the questions counsel will need to determine. On the Counsel screen each of those questions fills the new-question form, where the assessor ties it to an arrangement and one of the seven questions. The reader, `public/shared/matter-brief.js`, is the same file as AI Board Direction's; keep the two identical. The brief lists what sources say; counsel decides what applies.
+
 ## Test site
 A separate copy at `use-assessment-test.triodian.com` with its own database, deployed from the `test` branch. See `docs/test-site.md`.
 

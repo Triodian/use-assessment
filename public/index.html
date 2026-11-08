@@ -19,7 +19,8 @@
 <script src="/aua-content.js"></script>
 <script src="/brand.js"></script>
 <script src="/export.js"></script>
-<script type="module">import { merge3 } from "/shared/merge.js"; window.RAFMerge = { merge3 };</script>
+<script type="module">import { merge3 } from "/shared/merge.js"; import * as brief from "/shared/matter-brief.js"; window.RAFMerge = { merge3 }; window.AUABrief = brief;</script>
+<input type="file" id="briefIn" accept=".json,application/json" class="vh" tabindex="-1" aria-hidden="true">
 <script src="/aua.js"></script>
 <script src="/suite.js" data-current="ua"></script>
 </body>

@@ -1,0 +1,882 @@
+{
+ "briefFormat": "triodian.matterBrief/1",
+ "generatedAt": "2026-11-08T03:05:51.382Z",
+ "matterLabel": "Fixture",
+ "preparedBy": "Test",
+ "scope": {
+  "jurisdictions": [
+   "AU"
+  ],
+  "entityTypes": [
+   "generalInsurer"
+  ],
+  "useCases": [
+   {
+    "useCaseID": "UC3",
+    "title": "Automated triage or decline",
+    "consequenceLevel": null
+   },
+   {
+    "useCaseID": "UC7",
+    "title": "AI inside a provider or the platform behind it",
+    "consequenceLevel": null
+   }
+  ]
+ },
+ "dataset": {
+  "name": "AI Obligations Atlas",
+  "generatedAt": "2026-10-27T03:00:57.061Z",
+  "metamodelVersion": "2.3.0",
+  "ledgerHead": {
+   "sequence": 469,
+   "hash": "72296710246a909b3baaf91a5427c986ea48d1914854739f8e6bf62abb4887bb"
+  },
+  "preview": true
+ },
+ "obligationsByTier": {
+  "binding": [
+   {
+    "obligationID": "OBL-AU-CPS230-33",
+    "title": "Operational risk incident notification within 72 hours",
+    "instrument": "Prudential Standard CPS 230 Operational Risk Management",
+    "citation": "para 33",
+    "jurisdiction": "AU",
+    "appliesToAnyAIUse": false,
+    "status": "inForce",
+    "keyDates": [
+     {
+      "dateType": "commences",
+      "date": "2025-07-01",
+      "note": "Original CPS 230 (Determination No. 2 of 2023), para 6"
+     },
+     {
+      "dateType": "made",
+      "date": "2026-04-29",
+      "note": "CPS 230 remade by Banking, Insurance, Life Insurance, Health Insurance and Superannuation (prudential standard) determination No. 1 of 2026 (F2026L00475), adding a limited exemption from certain contractual requirements for specified non-traditional service providers"
+     },
+     {
+      "dateType": "transitionEnds",
+      "date": "2026-07-01",
+      "note": "Para 7: service provider requirements apply to pre-existing contracts from the earlier of next renewal or 1 July 2026"
+     },
+     {
+      "dateType": "commences",
+      "date": "2026-07-01",
+      "note": "Remade CPS 230 commences 1 July 2026 (APRA final targeted amendments release, 30 April 2026)"
+     }
+    ],
+    "useCaseIDs": [
+     "UC3",
+     "UC7"
+    ],
+    "sourceURL": "https://www.apra.gov.au/standards/cps-230",
+    "lastVerified": "2026-10-27",
+    "governedRecordID": "OBL-AU-CPS230-33@1",
+    "publicationStatus": "pendingReview",
+    "provenanceRef": "PROV-AI-OBLIGATIONS-ATLAS-0000067"
+   },
+   {
+    "obligationID": "OBL-AU-CPS230-35",
+    "title": "Critical operations, tolerance levels, BCP and 24-hour disruption notice",
+    "instrument": "Prudential Standard CPS 230 Operational Risk Management",
+    "citation": "paras 35-38, 40, 42",
+    "jurisdiction": "AU",
+    "appliesToAnyAIUse": false,
+    "status": "inForce",
+    "keyDates": [
+     {
+      "dateType": "commences",
+      "date": "2025-07-01",
+      "note": "Original CPS 230 (Determination No. 2 of 2023), para 6"
+     },
+     {
+      "dateType": "made",
+      "date": "2026-04-29",
+      "note": "CPS 230 remade by Banking, Insurance, Life Insurance, Health Insurance and Superannuation (prudential standard) determination No. 1 of 2026 (F2026L00475), adding a limited exemption from certain contractual requirements for specified non-traditional service providers"
+     },
+     {
+      "dateType": "transitionEnds",
+      "date": "2026-07-01",
+      "note": "Para 7: service provider requirements apply to pre-existing contracts from the earlier of next renewal or 1 July 2026"
+     },
+     {
+      "dateType": "commences",
+      "date": "2026-07-01",
+      "note": "Remade CPS 230 commences 1 July 2026 (APRA final targeted amendments release, 30 April 2026)"
+     }
+    ],
+    "useCaseIDs": [
+     "UC3",
+     "UC7"
+    ],
+    "sourceURL": "https://www.apra.gov.au/standards/cps-230",
+    "lastVerified": "2026-10-27",
+    "governedRecordID": "OBL-AU-CPS230-35@1",
+    "publicationStatus": "pendingReview",
+    "provenanceRef": "PROV-AI-OBLIGATIONS-ATLAS-0000073"
+   },
+   {
+    "obligationID": "OBL-AU-CPS230-47",
+    "title": "Service provider management policy and material service providers",
+    "instrument": "Prudential Standard CPS 230 Operational Risk Management",
+    "citation": "paras 47, 49, 50",
+    "jurisdiction": "AU",
+    "appliesToAnyAIUse": false,
+    "status": "inForce",
+    "keyDates": [
+     {
+      "dateType": "commences",
+      "date": "2025-07-01",
+      "note": "Original CPS 230 (Determination No. 2 of 2023), para 6"
+     },
+     {
+      "dateType": "made",
+      "date": "2026-04-29",
+      "note": "CPS 230 remade by Banking, Insurance, Life Insurance, Health Insurance and Superannuation (prudential standard) determination No. 1 of 2026 (F2026L00475), adding a limited exemption from certain contractual requirements for specified non-traditional service providers"
+     },
+     {
+      "dateType": "transitionEnds",
+      "date": "2026-07-01",
+      "note": "Para 7: service provider requirements apply to pre-existing contracts from the earlier of next renewal or 1 July 2026"
+     },
+     {
+      "dateType": "commences",
+      "date": "2026-07-01",
+      "note": "Remade CPS 230 commences 1 July 2026 (APRA final targeted amendments release, 30 April 2026)"
+     }
+    ],
+    "useCaseIDs": [
+     "UC7"
+    ],
+    "sourceURL": "https://www.apra.gov.au/standards/cps-230",
+    "lastVerified": "2026-10-27",
+    "governedRecordID": "OBL-AU-CPS230-47@1",
+    "publicationStatus": "pendingReview",
+    "provenanceRef": "PROV-AI-OBLIGATIONS-ATLAS-0000079"
+   },
+   {
+    "obligationID": "OBL-AU-CPS230-54",
+    "title": "Formal agreements for material arrangements and APRA notification",
+    "instrument": "Prudential Standard CPS 230 Operational Risk Management",
+    "citation": "paras 54, 59(a), 59(b)",
+    "jurisdiction": "AU",
+    "appliesToAnyAIUse": false,
+    "status": "inForce",
+    "keyDates": [
+     {
+      "dateType": "commences",
+      "date": "2025-07-01",
+      "note": "Original CPS 230 (Determination No. 2 of 2023), para 6"
+     },
+     {
+      "dateType": "made",
+      "date": "2026-04-29",
+      "note": "CPS 230 remade by Banking, Insurance, Life Insurance, Health Insurance and Superannuation (prudential standard) determination No. 1 of 2026 (F2026L00475), adding a limited exemption from certain contractual requirements for specified non-traditional service providers"
+     },
+     {
+      "dateType": "transitionEnds",
+      "date": "2026-07-01",
+      "note": "Para 7: service provider requirements apply to pre-existing contracts from the earlier of next renewal or 1 July 2026"
+     },
+     {
+      "dateType": "commences",
+      "date": "2026-07-01",
+      "note": "Remade CPS 230 commences 1 July 2026 (APRA final targeted amendments release, 30 April 2026)"
+     }
+    ],
+    "useCaseIDs": [
+     "UC7"
+    ],
+    "sourceURL": "https://www.apra.gov.au/standards/cps-230",
+    "lastVerified": "2026-10-27",
+    "governedRecordID": "OBL-AU-CPS230-54@1",
+    "publicationStatus": "pendingReview",
+    "provenanceRef": "PROV-AI-OBLIGATIONS-ATLAS-0000085"
+   },
+   {
+    "obligationID": "OBL-AU-CPS234-16",
+    "title": "Information assets managed by third parties: classification and controls",
+    "instrument": "Prudential Standard CPS 234 Information Security",
+    "citation": "paras 16, 20, 21, 22",
+    "jurisdiction": "AU",
+    "appliesToAnyAIUse": false,
+    "status": "inForce",
+    "keyDates": [
+     {
+      "dateType": "commences",
+      "date": "2019-07-01",
+      "note": "CPS 234 para 5"
+     },
+     {
+      "dateType": "transitionEnds",
+      "date": "2020-07-01",
+      "note": "Para 6: third-party managed information assets - earlier of next contract renewal or 1 July 2020"
+     }
+    ],
+    "useCaseIDs": [
+     "UC7"
+    ],
+    "sourceURL": "https://apra.gov.au/sites/default/files/cps_234_july_2019_for_public_release.pdf",
+    "lastVerified": "2026-10-27",
+    "governedRecordID": "OBL-AU-CPS234-16@1",
+    "publicationStatus": "pendingReview",
+    "provenanceRef": "PROV-AI-OBLIGATIONS-ATLAS-0000093"
+   },
+   {
+    "obligationID": "OBL-AU-CPS234-27",
+    "title": "Control testing, internal audit and APRA notification",
+    "instrument": "Prudential Standard CPS 234 Information Security",
+    "citation": "paras 27, 32, 35, 36",
+    "jurisdiction": "AU",
+    "appliesToAnyAIUse": false,
+    "status": "inForce",
+    "keyDates": [
+     {
+      "dateType": "commences",
+      "date": "2019-07-01",
+      "note": "CPS 234 para 5"
+     },
+     {
+      "dateType": "transitionEnds",
+      "date": "2020-07-01",
+      "note": "Para 6: third-party managed information assets - earlier of next contract renewal or 1 July 2020"
+     }
+    ],
+    "useCaseIDs": [
+     "UC7"
+    ],
+    "sourceURL": "https://apra.gov.au/sites/default/files/cps_234_july_2019_for_public_release.pdf",
+    "lastVerified": "2026-10-27",
+    "governedRecordID": "OBL-AU-CPS234-27@1",
+    "publicationStatus": "pendingReview",
+    "provenanceRef": "PROV-AI-OBLIGATIONS-ATLAS-0000097"
+   },
+   {
+    "obligationID": "OBL-AU-FAR-20",
+    "title": "Entity accountability obligations, accountability statements and maps",
+    "instrument": "Financial Accountability Regime Act 2023 (Cth)",
+    "citation": "s 20 (accountability obligations of an accountable entity); ss 33-34 (accountability statements and map)",
+    "jurisdiction": "AU",
+    "appliesToAnyAIUse": true,
+    "status": "inForce",
+    "keyDates": [
+     {
+      "dateType": "made",
+      "date": "2023-09-14",
+      "note": "Act made 14 September 2023 (legislation.gov.au C2023A00067)"
+     },
+     {
+      "dateType": "applies",
+      "date": "2024-03-15",
+      "note": "Applies to ADIs and authorised NOHCs"
+     },
+     {
+      "dateType": "applies",
+      "date": "2025-03-15",
+      "note": "Applies to insurers (general, life, private health), licensed NOHCs and RSE licensees"
+     }
+    ],
+    "useCaseIDs": [
+     "UC3",
+     "UC7"
+    ],
+    "sourceURL": "https://www.legislation.gov.au/C2023A00067/latest",
+    "lastVerified": "2026-10-27",
+    "governedRecordID": "OBL-AU-FAR-20@1",
+    "publicationStatus": "pendingReview",
+    "provenanceRef": "PROV-AI-OBLIGATIONS-ATLAS-0000107"
+   },
+   {
+    "obligationID": "OBL-AU-FAR-21",
+    "title": "Accountability obligations of accountable persons",
+    "instrument": "Financial Accountability Regime Act 2023 (Cth)",
+    "citation": "s 10 (meaning of accountable person); s 21 (accountability obligations of an accountable person)",
+    "jurisdiction": "AU",
+    "appliesToAnyAIUse": true,
+    "status": "inForce",
+    "keyDates": [
+     {
+      "dateType": "made",
+      "date": "2023-09-14",
+      "note": "Act made 14 September 2023 (legislation.gov.au C2023A00067)"
+     },
+     {
+      "dateType": "applies",
+      "date": "2024-03-15",
+      "note": "Applies to ADIs and authorised NOHCs"
+     },
+     {
+      "dateType": "applies",
+      "date": "2025-03-15",
+      "note": "Applies to insurers (general, life, private health), licensed NOHCs and RSE licensees"
+     }
+    ],
+    "useCaseIDs": [
+     "UC3",
+     "UC7"
+    ],
+    "sourceURL": "https://www.legislation.gov.au/C2023A00067/latest",
+    "lastVerified": "2026-10-27",
+    "governedRecordID": "OBL-AU-FAR-21@1",
+    "publicationStatus": "pendingReview",
+    "provenanceRef": "PROV-AI-OBLIGATIONS-ATLAS-0000102"
+   },
+   {
+    "obligationID": "OBL-AU-CPS220-9",
+    "title": "Board ultimately responsible for risk management framework and risk appetite",
+    "instrument": "Prudential Standard CPS 220 Risk Management",
+    "citation": "para 9, incl. 9(a)",
+    "jurisdiction": "AU",
+    "appliesToAnyAIUse": true,
+    "status": "inForce",
+    "keyDates": [
+     {
+      "dateType": "commences",
+      "date": "2019-07-01",
+      "note": "CPS 220 para 5; made by Banking, Insurance, Life Insurance and Health Insurance (prudential standard) determination No. 1 of 2019 (F2019L00669)"
+     }
+    ],
+    "useCaseIDs": [
+     "UC3",
+     "UC7"
+    ],
+    "sourceURL": "https://www.apra.gov.au/standard/cps-220",
+    "lastVerified": "2026-10-27",
+    "governedRecordID": "OBL-AU-CPS220-9@1",
+    "publicationStatus": "pendingReview",
+    "provenanceRef": "PROV-AI-OBLIGATIONS-ATLAS-0000051"
+   },
+   {
+    "obligationID": "OBL-AU-CPS220-23",
+    "title": "Risk management framework content, material risks and risk appetite statement",
+    "instrument": "Prudential Standard CPS 220 Risk Management",
+    "citation": "paras 23, 26, 28",
+    "jurisdiction": "AU",
+    "appliesToAnyAIUse": true,
+    "status": "inForce",
+    "keyDates": [
+     {
+      "dateType": "commences",
+      "date": "2019-07-01",
+      "note": "CPS 220 para 5; made by Banking, Insurance, Life Insurance and Health Insurance (prudential standard) determination No. 1 of 2019 (F2019L00669)"
+     }
+    ],
+    "useCaseIDs": [
+     "UC3",
+     "UC7"
+    ],
+    "sourceURL": "https://www.apra.gov.au/standard/cps-220",
+    "lastVerified": "2026-10-27",
+    "governedRecordID": "OBL-AU-CPS220-23@1",
+    "publicationStatus": "pendingReview",
+    "provenanceRef": "PROV-AI-OBLIGATIONS-ATLAS-0000055"
+   },
+   {
+    "obligationID": "OBL-AU-CPS230-20",
+    "title": "Board accountable for oversight of operational risk",
+    "instrument": "Prudential Standard CPS 230 Operational Risk Management",
+    "citation": "para 20",
+    "jurisdiction": "AU",
+    "appliesToAnyAIUse": true,
+    "status": "inForce",
+    "keyDates": [
+     {
+      "dateType": "commences",
+      "date": "2025-07-01",
+      "note": "Original CPS 230 (Determination No. 2 of 2023), para 6"
+     },
+     {
+      "dateType": "made",
+      "date": "2026-04-29",
+      "note": "CPS 230 remade by Banking, Insurance, Life Insurance, Health Insurance and Superannuation (prudential standard) determination No. 1 of 2026 (F2026L00475), adding a limited exemption from certain contractual requirements for specified non-traditional service providers"
+     },
+     {
+      "dateType": "transitionEnds",
+      "date": "2026-07-01",
+      "note": "Para 7: service provider requirements apply to pre-existing contracts from the earlier of next renewal or 1 July 2026"
+     },
+     {
+      "dateType": "commences",
+      "date": "2026-07-01",
+      "note": "Remade CPS 230 commences 1 July 2026 (APRA final targeted amendments release, 30 April 2026)"
+     }
+    ],
+    "useCaseIDs": [
+     "UC3",
+     "UC7"
+    ],
+    "sourceURL": "https://www.apra.gov.au/standards/cps-230",
+    "lastVerified": "2026-10-27",
+    "governedRecordID": "OBL-AU-CPS230-20@1",
+    "publicationStatus": "pendingReview",
+    "provenanceRef": "PROV-AI-OBLIGATIONS-ATLAS-0000061"
+   },
+   {
+    "obligationID": "OBL-AU-CPS234-13",
+    "title": "Board responsibility and information security capability",
+    "instrument": "Prudential Standard CPS 234 Information Security",
+    "citation": "paras 13, 15, 18",
+    "jurisdiction": "AU",
+    "appliesToAnyAIUse": true,
+    "status": "inForce",
+    "keyDates": [
+     {
+      "dateType": "commences",
+      "date": "2019-07-01",
+      "note": "CPS 234 para 5"
+     },
+     {
+      "dateType": "transitionEnds",
+      "date": "2020-07-01",
+      "note": "Para 6: third-party managed information assets - earlier of next contract renewal or 1 July 2020"
+     }
+    ],
+    "useCaseIDs": [
+     "UC3",
+     "UC7"
+    ],
+    "sourceURL": "https://apra.gov.au/sites/default/files/cps_234_july_2019_for_public_release.pdf",
+    "lastVerified": "2026-10-27",
+    "governedRecordID": "OBL-AU-CPS234-13@1",
+    "publicationStatus": "pendingReview",
+    "provenanceRef": "PROV-AI-OBLIGATIONS-ATLAS-0000089"
+   }
+  ],
+  "expected": [
+   {
+    "obligationID": "OBL-AU-APRA-AI-04",
+    "title": "Human involvement for high-risk AI decisions",
+    "instrument": "APRA Letter to Industry on Artificial Intelligence (AI)",
+    "citation": "Letter, governance expectations, bullet on human involvement",
+    "jurisdiction": "AU",
+    "appliesToAnyAIUse": false,
+    "status": "inForce",
+    "keyDates": [
+     {
+      "dateType": "published",
+      "date": "2026-04-30",
+      "note": "Letter and media release published 30 April 2026; signed by Therese McCarthy Hockey, Member"
+     }
+    ],
+    "useCaseIDs": [
+     "UC3"
+    ],
+    "sourceURL": "https://www.apra.gov.au/news-and-publications/apra-letter-industry-artificial-intelligence-ai",
+    "lastVerified": "2026-10-27",
+    "governedRecordID": "OBL-AU-APRA-AI-04@1",
+    "publicationStatus": "pendingReview",
+    "provenanceRef": "PROV-AI-OBLIGATIONS-ATLAS-0000021"
+   },
+   {
+    "obligationID": "OBL-AU-APRA-AI-05",
+    "title": "Security testing of AI-generated code",
+    "instrument": "APRA Letter to Industry on Artificial Intelligence (AI)",
+    "citation": "Letter, information security expectations ('APRA expects entities to actively manage information security vulnerabilities and threats. This would include:')",
+    "jurisdiction": "AU",
+    "appliesToAnyAIUse": false,
+    "status": "inForce",
+    "keyDates": [
+     {
+      "dateType": "published",
+      "date": "2026-04-30",
+      "note": "Letter and media release published 30 April 2026; signed by Therese McCarthy Hockey, Member"
+     }
+    ],
+    "useCaseIDs": [
+     "UC7"
+    ],
+    "sourceURL": "https://www.apra.gov.au/news-and-publications/apra-letter-industry-artificial-intelligence-ai",
+    "lastVerified": "2026-10-27",
+    "governedRecordID": "OBL-AU-APRA-AI-05@1",
+    "publicationStatus": "pendingReview",
+    "provenanceRef": "PROV-AI-OBLIGATIONS-ATLAS-0000026"
+   },
+   {
+    "obligationID": "OBL-AU-APRA-AI-07",
+    "title": "Fallback processes where AI supports critical operations",
+    "instrument": "APRA Letter to Industry on Artificial Intelligence (AI)",
+    "citation": "Letter, information security expectations, first bullet",
+    "jurisdiction": "AU",
+    "appliesToAnyAIUse": false,
+    "status": "inForce",
+    "keyDates": [
+     {
+      "dateType": "published",
+      "date": "2026-04-30",
+      "note": "Letter and media release published 30 April 2026; signed by Therese McCarthy Hockey, Member"
+     }
+    ],
+    "useCaseIDs": [
+     "UC3",
+     "UC7"
+    ],
+    "sourceURL": "https://www.apra.gov.au/news-and-publications/apra-letter-industry-artificial-intelligence-ai",
+    "lastVerified": "2026-10-27",
+    "governedRecordID": "OBL-AU-APRA-AI-07@1",
+    "publicationStatus": "pendingReview",
+    "provenanceRef": "PROV-AI-OBLIGATIONS-ATLAS-0000036"
+   },
+   {
+    "obligationID": "OBL-AU-APRA-AI-08",
+    "title": "AI supplier risk: supply-chain mapping, contracts, concentration and exit",
+    "instrument": "APRA Letter to Industry on Artificial Intelligence (AI)",
+    "citation": "Letter, supplier expectations ('APRA expects entities to manage supplier risks, this would include, at a minimum:')",
+    "jurisdiction": "AU",
+    "appliesToAnyAIUse": false,
+    "status": "inForce",
+    "keyDates": [
+     {
+      "dateType": "published",
+      "date": "2026-04-30",
+      "note": "Letter and media release published 30 April 2026; signed by Therese McCarthy Hockey, Member"
+     }
+    ],
+    "useCaseIDs": [
+     "UC7"
+    ],
+    "sourceURL": "https://www.apra.gov.au/news-and-publications/apra-letter-industry-artificial-intelligence-ai",
+    "lastVerified": "2026-10-27",
+    "governedRecordID": "OBL-AU-APRA-AI-08@1",
+    "publicationStatus": "pendingReview",
+    "provenanceRef": "PROV-AI-OBLIGATIONS-ATLAS-0000041"
+   },
+   {
+    "obligationID": "OBL-AU-OAIC-APP1-GUIDE",
+    "title": "OAIC guidance on ADM privacy policy transparency",
+    "instrument": "OAIC APP Guidelines Chapter 1 (APP 1) update and APP 1.7-1.9 Transparency Obligation Fact Sheet and Flowchart",
+    "citation": "APP Guidelines Chapter 1; Fact Sheet; Flowchart",
+    "jurisdiction": "AU",
+    "appliesToAnyAIUse": false,
+    "status": "inForce",
+    "keyDates": [
+     {
+      "dateType": "published",
+      "date": "2026-09-30",
+      "note": "OAIC media release"
+     }
+    ],
+    "useCaseIDs": [
+     "UC3"
+    ],
+    "sourceURL": "https://www.oaic.gov.au/privacy/australian-privacy-principles/australian-privacy-principles-guidelines/chapter-1-app-1-open-and-transparent-management-of-personal-information",
+    "lastVerified": "2026-10-27",
+    "governedRecordID": "OBL-AU-OAIC-APP1-GUIDE@1",
+    "publicationStatus": "pendingReview",
+    "provenanceRef": "PROV-AI-OBLIGATIONS-ATLAS-0000116"
+   },
+   {
+    "obligationID": "OBL-AU-APRA-AI-01",
+    "title": "Board AI literacy (APRA minimum expectation)",
+    "instrument": "APRA Letter to Industry on Artificial Intelligence (AI)",
+    "citation": "Letter, Boards expectations ('APRA expects Boards, at a minimum, to:'), first bullet",
+    "jurisdiction": "AU",
+    "appliesToAnyAIUse": true,
+    "status": "inForce",
+    "keyDates": [
+     {
+      "dateType": "published",
+      "date": "2026-04-30",
+      "note": "Letter and media release published 30 April 2026; signed by Therese McCarthy Hockey, Member"
+     }
+    ],
+    "useCaseIDs": [
+     "UC3",
+     "UC7"
+    ],
+    "sourceURL": "https://www.apra.gov.au/news-and-publications/apra-letter-industry-artificial-intelligence-ai",
+    "lastVerified": "2026-10-27",
+    "governedRecordID": "OBL-AU-APRA-AI-01@1",
+    "publicationStatus": "pendingReview",
+    "provenanceRef": "PROV-AI-OBLIGATIONS-ATLAS-0000006"
+   },
+   {
+    "obligationID": "OBL-AU-APRA-AI-02",
+    "title": "Board-overseen AI strategy within risk appetite, with defined triggers",
+    "instrument": "APRA Letter to Industry on Artificial Intelligence (AI)",
+    "citation": "Letter, Boards expectations, second bullet",
+    "jurisdiction": "AU",
+    "appliesToAnyAIUse": true,
+    "status": "inForce",
+    "keyDates": [
+     {
+      "dateType": "published",
+      "date": "2026-04-30",
+      "note": "Letter and media release published 30 April 2026; signed by Therese McCarthy Hockey, Member"
+     }
+    ],
+    "useCaseIDs": [
+     "UC3",
+     "UC7"
+    ],
+    "sourceURL": "https://www.apra.gov.au/news-and-publications/apra-letter-industry-artificial-intelligence-ai",
+    "lastVerified": "2026-10-27",
+    "governedRecordID": "OBL-AU-APRA-AI-02@1",
+    "publicationStatus": "pendingReview",
+    "provenanceRef": "PROV-AI-OBLIGATIONS-ATLAS-0000011"
+   },
+   {
+    "obligationID": "OBL-AU-APRA-AI-03",
+    "title": "AI governance arrangements, lifecycle ownership, inventory and training",
+    "instrument": "APRA Letter to Industry on Artificial Intelligence (AI)",
+    "citation": "Letter, governance expectations ('APRA expects entities to establish consistent governance arrangements that include, at a minimum:')",
+    "jurisdiction": "AU",
+    "appliesToAnyAIUse": true,
+    "status": "inForce",
+    "keyDates": [
+     {
+      "dateType": "published",
+      "date": "2026-04-30",
+      "note": "Letter and media release published 30 April 2026; signed by Therese McCarthy Hockey, Member"
+     }
+    ],
+    "useCaseIDs": [
+     "UC3",
+     "UC7"
+    ],
+    "sourceURL": "https://www.apra.gov.au/news-and-publications/apra-letter-industry-artificial-intelligence-ai",
+    "lastVerified": "2026-10-27",
+    "governedRecordID": "OBL-AU-APRA-AI-03@1",
+    "publicationStatus": "pendingReview",
+    "provenanceRef": "PROV-AI-OBLIGATIONS-ATLAS-0000016"
+   },
+   {
+    "obligationID": "OBL-AU-APRA-AI-09",
+    "title": "AI assurance and continuous monitoring",
+    "instrument": "APRA Letter to Industry on Artificial Intelligence (AI)",
+    "citation": "Letter, assurance expectations ('This would include at a minimum:')",
+    "jurisdiction": "AU",
+    "appliesToAnyAIUse": true,
+    "status": "inForce",
+    "keyDates": [
+     {
+      "dateType": "published",
+      "date": "2026-04-30",
+      "note": "Letter and media release published 30 April 2026; signed by Therese McCarthy Hockey, Member"
+     }
+    ],
+    "useCaseIDs": [
+     "UC3",
+     "UC7"
+    ],
+    "sourceURL": "https://www.apra.gov.au/news-and-publications/apra-letter-industry-artificial-intelligence-ai",
+    "lastVerified": "2026-10-27",
+    "governedRecordID": "OBL-AU-APRA-AI-09@1",
+    "publicationStatus": "pendingReview",
+    "provenanceRef": "PROV-AI-OBLIGATIONS-ATLAS-0000046"
+   },
+   {
+    "obligationID": "OBL-AU-DISR-AI-ADOPTION",
+    "title": "Six essential practices for responsible AI adoption",
+    "instrument": "Guidance for AI Adoption (Foundations and Implementation Practices)",
+    "citation": "Essential practices 1-6",
+    "jurisdiction": "AU",
+    "appliesToAnyAIUse": true,
+    "status": "inForce",
+    "keyDates": [
+     {
+      "dateType": "published",
+      "date": "2025-10-21",
+      "note": "Released by the National AI Centre"
+     }
+    ],
+    "useCaseIDs": [
+     "UC3",
+     "UC7"
+    ],
+    "sourceURL": "https://www.industry.gov.au/publications/guidance-ai-adoption",
+    "lastVerified": "2026-10-27",
+    "governedRecordID": "OBL-AU-DISR-AI-ADOPTION@1",
+    "publicationStatus": "pendingReview",
+    "provenanceRef": "PROV-AI-OBLIGATIONS-ATLAS-0000144"
+   },
+   {
+    "obligationID": "OBL-INT-ISO42001",
+    "title": "AI management system standard",
+    "instrument": "ISO/IEC 42001:2023 Information technology - Artificial intelligence - Management system",
+    "citation": "Whole standard (clauses 4-10, Annex A controls)",
+    "jurisdiction": "INT",
+    "appliesToAnyAIUse": true,
+    "status": "inForce",
+    "keyDates": [
+     {
+      "dateType": "published",
+      "date": "2023-12-18",
+      "note": "Edition 1; stage 60.60"
+     }
+    ],
+    "useCaseIDs": [
+     "UC3",
+     "UC7"
+    ],
+    "sourceURL": "https://www.iso.org/standard/42001",
+    "lastVerified": "2026-10-27",
+    "governedRecordID": "OBL-INT-ISO42001@1",
+    "publicationStatus": "pendingReview",
+    "provenanceRef": "PROV-AI-OBLIGATIONS-ATLAS-0000158"
+   },
+   {
+    "obligationID": "OBL-INT-NIST-AIRMF",
+    "title": "NIST AI RMF and Generative AI Profile",
+    "instrument": "NIST AI Risk Management Framework 1.0 (NIST AI 100-1) and Generative AI Profile (NIST AI 600-1)",
+    "citation": "Core functions: Govern, Map, Measure, Manage",
+    "jurisdiction": "INT",
+    "appliesToAnyAIUse": true,
+    "status": "inForce",
+    "keyDates": [
+     {
+      "dateType": "published",
+      "date": "2023-01-26",
+      "note": "AI RMF 1.0"
+     },
+     {
+      "dateType": "published",
+      "date": "2024-07-26",
+      "note": "NIST AI 600-1 Generative AI Profile"
+     }
+    ],
+    "useCaseIDs": [
+     "UC3",
+     "UC7"
+    ],
+    "sourceURL": "https://www.nist.gov/itl/ai-risk-management-framework",
+    "lastVerified": "2026-10-27",
+    "governedRecordID": "OBL-INT-NIST-AIRMF@1",
+    "publicationStatus": "pendingReview",
+    "provenanceRef": "PROV-AI-OBLIGATIONS-ATLAS-0000162"
+   }
+  ],
+  "anticipated": [
+   {
+    "obligationID": "OBL-AU-PRIVACY-APP1-7",
+    "title": "Privacy policy disclosure of automated decisions (APP 1.7-1.9)",
+    "instrument": "Privacy Act 1988 (Cth), Schedule 1 (APPs), as amended by the Privacy and Other Legislation Amendment Act 2024",
+    "citation": "APP 1.7, 1.8, 1.9 (inserted by POLA Act 2024 Sch 1 Part 15, item 88; application item 89)",
+    "jurisdiction": "AU",
+    "appliesToAnyAIUse": false,
+    "status": "pending",
+    "keyDates": [
+     {
+      "dateType": "made",
+      "date": "2024-12-10",
+      "note": "Royal Assent"
+     },
+     {
+      "dateType": "commences",
+      "date": "2026-12-10",
+      "note": "Sch 1 Part 15 commences the day after 24 months from Royal Assent (s 2 table item 7)"
+     },
+     {
+      "dateType": "applies",
+      "date": "2026-12-10",
+      "note": "Item 89: applies to decisions made after commencement, regardless of when the program was arranged or the information collected"
+     }
+    ],
+    "useCaseIDs": [
+     "UC3"
+    ],
+    "sourceURL": "https://legislation.gov.au/C2024A00128/asmade/2024-12-10/text/original/epub/OEBPS/document_1/document_1.html",
+    "lastVerified": "2026-10-27",
+    "governedRecordID": "OBL-AU-PRIVACY-APP1-7@1",
+    "publicationStatus": "pendingReview",
+    "provenanceRef": "PROV-AI-OBLIGATIONS-ATLAS-0000112"
+   }
+  ]
+ },
+ "counts": {
+  "binding": 12,
+  "expected": 12,
+  "anticipated": 1,
+  "specificToUseCases": 12,
+  "anyAIUse": 13
+ },
+ "coverage": [],
+ "questionsForCounsel": [
+  {
+   "about": "UC3",
+   "question": "Measured against the client’s own thresholds, which consequence level (C1 to C5) should counsel set for UC3 (Automated triage or decline)?"
+  },
+  {
+   "about": "UC7",
+   "question": "Measured against the client’s own thresholds, which consequence level (C1 to C5) should counsel set for UC7 (AI inside a provider or the platform behind it)?"
+  },
+  {
+   "about": "OBL-AU-FAR-20",
+   "question": "Does Financial Accountability Regime Act 2023 (Cth) reach the client’s arrangements for the selected use cases, and if so, what do its provisions call for?"
+  },
+  {
+   "about": "OBL-AU-CPS220-9",
+   "question": "Does Prudential Standard CPS 220 Risk Management reach the client’s arrangements for the selected use cases, and if so, what do its provisions call for?"
+  },
+  {
+   "about": "OBL-AU-CPS230-20",
+   "question": "Does Prudential Standard CPS 230 Operational Risk Management reach the client’s arrangements for the selected use cases, and if so, what do its provisions call for?"
+  },
+  {
+   "about": "OBL-AU-CPS234-13",
+   "question": "Does Prudential Standard CPS 234 Information Security reach the client’s arrangements for the selected use cases, and if so, what do its provisions call for?"
+  },
+  {
+   "about": "OBL-AU-APRA-AI-01",
+   "question": "What weight should the client give to APRA Letter to Industry on Artificial Intelligence (AI) (APRA) in its approach to the selected use cases?"
+  },
+  {
+   "about": "OBL-AU-DISR-AI-ADOPTION",
+   "question": "What weight should the client give to Guidance for AI Adoption (Foundations and Implementation Practices) (National Artificial Intelligence Centre (Department of Industry, Science and Resources)) in its approach to the selected use cases?"
+  },
+  {
+   "about": "OBL-AU-OAIC-APP1-GUIDE",
+   "question": "What weight should the client give to OAIC APP Guidelines Chapter 1 (APP 1) update and APP 1.7-1.9 Transparency Obligation Fact Sheet and Flowchart (OAIC) in its approach to the selected use cases?"
+  },
+  {
+   "about": "OBL-AU-PRIVACY-APP1-7",
+   "question": "How should the client prepare for Privacy Act 1988 (Cth), Schedule 1 (APPs), as amended by the Privacy and Other Legislation Amendment Act 2024, which is made but not yet in force (key date 2026-12-10)?"
+  },
+  {
+   "about": "OBL-INT-ISO42001",
+   "question": "What weight should the client give to ISO/IEC 42001:2023 Information technology - Artificial intelligence - Management system (ISO/IEC JTC 1/SC 42) in its approach to the selected use cases?"
+  },
+  {
+   "about": "OBL-INT-NIST-AIRMF",
+   "question": "What weight should the client give to NIST AI Risk Management Framework 1.0 (NIST AI 100-1) and Generative AI Profile (NIST AI 600-1) (NIST (US Department of Commerce)) in its approach to the selected use cases?"
+  }
+ ],
+ "engagementsThatFit": [
+  {
+   "assessmentType": "aiRiskAppetite",
+   "name": "AI Risk Appetite",
+   "purpose": "Sets the board’s AI risk appetite and the triggers that act on it",
+   "useCaseIDs": [
+    "UC3"
+   ],
+   "reason": "Fits a financially regulated entity"
+  },
+  {
+   "assessmentType": "aiUseAssessment",
+   "name": "AI Use Assessment",
+   "purpose": "Assesses a particular AI use, including AI in the supply chain",
+   "useCaseIDs": [
+    "UC3",
+    "UC7"
+   ],
+   "reason": "Fits a financially regulated entity"
+  },
+  {
+   "assessmentType": "aiBoardDirection",
+   "name": "AI Board Direction",
+   "purpose": "Records the board’s directions on AI: its appetite, red lines and questions for counsel, resolved at a board meeting",
+   "useCaseIDs": [
+    "UC3",
+    "UC7"
+   ],
+   "mode": "connected",
+   "reason": "Fits a financially regulated entity"
+  }
+ ],
+ "profile": "regulated",
+ "notices": [
+  "Records state what sources say and how they are classified. They are not legal advice and do not say what the law requires of any particular client; counsel decides what applies.",
+  "Tiers describe sources: Binding (law or prudential standard in force), Expected (regulator expectation, guidance or recognised standard), Anticipated (made but not yet in force, or under consultation).",
+  "This brief was built in the browser. The matter label, scope and consequence levels were not sent to Triodian.",
+  "Preview data: records marked pending review have not yet been approved by a Triodian reviewer."
+ ]
+}

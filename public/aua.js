@@ -311,6 +311,7 @@ function validateFile(o) {
   const en = o.engagement || {}; id(en.id, 'engagement.id');
   if (en.legalPhrases != null) arrOf(en.legalPhrases, 'engagement.legalPhrases').forEach((x, i) => { if (typeof x !== 'string') E('engagement.legalPhrases.' + i, 'must be text'); }); ['irPersonId', 'croPersonId'].forEach(k => id(en[k], 'engagement.' + k)); id((en.briefConfirmed || {}).by, 'engagement.briefConfirmed.by');
   inList(en.independentReviewerReportsTo, ['counsel', 'cro'], 'engagement.independentReviewerReportsTo', 'a reporting line');
+  if (en.matterBrief != null && MB()) { const be = MB().storedBriefError(en.matterBrief); if (be) E('engagement.matterBrief', be.replace(/^The matter brief /, '').replace(/\.$/, '')); }
   arrOf(o.people, 'people').forEach((p, i) => { id(p.id, `people.${i}.id`); arrOf(p.roles, `people.${i}.roles`).forEach((r, j) => inList(r, roles, `people.${i}.roles.${j}`, 'a known role')); });
   arrOf(o.documents, 'documents').forEach((d, i) => { id(d.id, `documents.${i}.id`); id(d.ref, `documents.${i}.ref`); inList(d.status, ['requested', 'received', 'notHeld'], `documents.${i}.status`, 'a document status'); });
   arrOf(o.interviews, 'interviews').forEach((v, i) => id(v.id, `interviews.${i}.id`));
@@ -547,6 +548,51 @@ function nextAssessmentCard() {
     <p class="small" style="margin:0 0 10px">This assessment is closed: the independent check is complete and the hand-back list is accepted. Once the next one starts, this assessment is kept under “Earlier assessments” in the menu, where it can be read but not changed. The new one carries over the engagement details (including the privilege marking, which counsel should re-confirm), the people, the calibration set, the set, the document list, the interview list and each entry's facts (fields 1 to 14) with their sources, marked for checking. The brief confirmation, the document request, document statuses, interview dates and notes, classification, evidence, questions to counsel, reviews, sign-offs and versions start afresh.</p>
     ${can ? '<button class="btn primary sm" data-act="nextAssessment">Start the next assessment</button>' : '<p class="small soft" style="margin:0">An administrator or the method owner starts it.</p>'}</section>`;
 }
+/* ---------- the matter brief (development plan task 2.6) ----------
+   A brief exported from the AI Obligations Atlas lists the obligations in scope by tier and the questions counsel will
+   need to determine. Set-up shows both; each question can be raised with counsel from the Counsel screen, where the
+   assessor picks the arrangement and which of the seven questions it belongs to. Nothing here says what applies. */
+const MB = () => window.AUABrief;
+// Names for the brief's scope line: the Metamodel's entity types and the jurisdictions, as AI Board Direction shows them.
+const BRIEF_NAMES = {"entityTypes":{"privateCompany":"Private company","listedEntity":"Listed entity","notForProfit":"Not-for-profit","criticalInfrastructureAssetOwner":"Critical infrastructure asset owner","defenceIndustrySupplier":"Defence industry supplier","healthServiceProvider":"Health service provider","authorisedDepositTakingInstitution":"Authorised deposit-taking institution","generalInsurer":"General insurer","lifeInsurer":"Life insurer","privateHealthInsurer":"Private health insurer","superannuationTrustee":"Superannuation trustee","financialServicesLicensee":"Financial services licensee","creditLicensee":"Credit licensee","bank":"Bank (Singapore)","insurer":"Insurer (Singapore)","capitalMarketsIntermediary":"Capital markets intermediary (Singapore)","paymentServiceProvider":"Payment service provider","financialInstitution":"Financial institution (Singapore, MAS)","other":"Other","anyOrganization":"Any organisation"},"jurisdictions":{"AU":"Australia","SG":"Singapore","INT":"International"}};
+const atlasBriefUrl = () => (SRV.site ? 'https://obligations-atlas-test.triodian.com' : 'https://obligations-atlas.triodian.com') + '/#/brief';
+const briefRaised = q => S.questions.find(x => x.fromBrief && x.fromBrief === q.question);
+function briefCard(fs) {
+  const mb = S.engagement.matterBrief, n = mb ? mb.tiers.reduce((m, t) => m + t.refs.length, 0) : 0;
+  let h = `<section class="card" id="briefCard"><div class="row between"><h2 class="sh" style="margin:0">Matter brief · obligations in scope</h2><div class="row"><button class="btn sm" data-act="loadBrief" ${fs}>${mb ? 'Load a newer brief' : 'Load the brief'}</button><button class="btn sm ghost" data-act="togglePaste" ${fs}>${UI.paste ? 'Hide paste box' : 'Paste instead'}</button></div></div>`;
+  h += `<p class="small soft" style="margin:8px 0 12px">Build the brief in the <a href="${esc(atlasBriefUrl())}" target="_blank" rel="noopener">AI Obligations Atlas</a> for the insurer’s jurisdictions, entity type and AI use cases, then load the file it downloads. The brief lists what sources say, by tier. Counsel decides what applies.</p>`;
+  if (UI.paste) h += `<textarea class="in" id="brief_paste" rows="5" placeholder="Paste the JSON the Atlas copied" aria-label="Matter brief JSON"></textarea><div class="row" style="margin:6px 0 12px"><button class="btn sm" data-act="pasteBrief" ${fs}>Load the pasted brief</button></div>`;
+  if (UI.briefError) h += `<p class="err" role="alert">${esc(UI.briefError)}</p>`;
+  if (!mb) return h + '<p class="small soft" style="margin:0">No matter brief loaded.</p></section>';
+  const ds = mb.dataset || {};
+  h += `<p class="small" style="margin:0 0 8px"><strong>${esc(mb.scope)}</strong>${mb.loadedOn ? ` · loaded ${esc(dAU(mb.loadedOn))}${mb.loadedBy ? ' by ' + esc(mb.loadedBy) : ''}` : ''}${ds.generatedAt ? ` · Atlas data of ${esc(dAU(String(ds.generatedAt).slice(0, 10)))}` : ''}${ds.preview ? ' · ' + badge('preview data', 'b-ochre') : ''} · ${n} reference${n === 1 ? '' : 's'}</p>`;
+  h += `<div class="tw"><table class="lg"><thead><tr><th style="width:120px">Tier</th><th>Obligations</th></tr></thead><tbody>${mb.tiers.map(t => `<tr><td>${esc(t.tier)}</td><td class="small">${t.refs.length ? t.refs.map(r => `<span class="mono">${esc(r[0])}</span> ${r[5] ? `<a href="${esc(r[5])}" target="_blank" rel="noopener">${esc(r[1])}</a>` : esc(r[1])}${r[3] ? ` <span class="soft">${esc(r[3])}</span>` : ''}`).join('<br>') : '<span class="soft">None in scope</span>'}</td></tr>`).join('')}</tbody></table></div>`;
+  h += (mb.coverage || []).map(c => `<p class="small soft" style="margin:6px 0 0">${esc(c.jurisdiction)}: ${esc(c.note)}</p>`).join('');
+  h += (mb.notices || []).map(x => `<p class="small soft" style="margin:6px 0 0">${esc(x)}</p>`).join('');
+  const qs = mb.questions || [];
+  if (qs.length) h += `<p class="mini" style="margin:14px 0 4px">Questions counsel will need to determine · ${qs.filter(q => !briefRaised(q)).length} not yet raised</p><ul class="small" style="margin:0 0 0 18px">${qs.map(q => { const r = briefRaised(q); return `<li>${esc(q.question)}${r ? ` ${badge('raised as ' + r.ref, 'b-green')}` : ''}</li>`; }).join('')}</ul><p class="small soft" style="margin:6px 0 0">Raise them from the <button class="lnk" data-act="go" data-to="counsel">Counsel</button> screen, where each one is tied to an arrangement and one of the seven questions.</p>`;
+  return h + '</section>';
+}
+function loadBriefText(text) {
+  const why = deny('setup'); if (why) { toast(why); return; }
+  if (!MB()) { toast('The matter brief reader did not load. Reload the page and try again.'); return; }
+  const r = MB().readBrief(text, BRIEF_NAMES, today(), pname(UI.personId) || (SRV.user && SRV.user.name) || '');
+  if (r.error) { UI.briefError = r.error; toast(r.error); render(); return; }
+  const had = !!S.engagement.matterBrief;
+  S.engagement.matterBrief = r.brief; UI.paste = false; UI.briefError = '';
+  log(had ? 'replace' : 'add', 'engagement.matterBrief', null, r.brief.scope);
+  const n = r.brief.tiers.reduce((m, t) => m + t.refs.length, 0);
+  toast(`Matter brief loaded: ${n} reference${n === 1 ? '' : 's'}, ${r.brief.questions.length} question${r.brief.questions.length === 1 ? '' : 's'} for counsel.`);
+  render();
+}
+/* On the Counsel screen: the brief's questions not yet raised, each with a button that fills the new-question form. */
+function briefQuestions(awhy) {
+  const mb = S.engagement.matterBrief, qs = mb ? (mb.questions || []) : [];
+  if (!qs.length) return '';
+  const open = qs.map((q, i) => [q, i]).filter(([q]) => !briefRaised(q));
+  return `<section class="card" style="margin-top:18px" id="briefQs"><h2 class="sh">From the matter brief</h2><p class="small soft" style="margin:4px 0 10px">${open.length ? `${open.length} of ${qs.length} questions not yet raised. Choosing one fills the form below; pick the arrangement and which of the seven questions it belongs to, then add it.` : `All ${qs.length} questions from the brief are raised.`}</p>
+    ${open.length ? `<ul class="small" style="margin:0 0 0 18px">${open.map(([q, i]) => `<li style="margin:4px 0">${esc(q.question)} ${awhy ? '' : `<button class="btn sm ghost" data-act="askBrief" data-i="${i}">Use this question</button>`}</li>`).join('')}</ul>` : ''}</section>`;
+}
 function screenSetup() {
   const e = S.engagement, b = bp(), c = cal(), why = deny('setup'), fs = why ? 'disabled' : '';
   const people = savesHere() || UI.archived ? S.people.map(p => `<div class="panel2" style="padding:12px 16px"><strong>${esc(p.name || 'Unnamed')}</strong>${p.organisation ? ` <span class="soft">· ${esc(p.organisation)}</span>` : ''}<div class="small soft" style="margin-top:4px">${esc(p.roles.map(roleName).join(', '))}</div></div>`).join('') : S.people.map((p, i) => `<div class="panel2" style="padding:14px 16px"><div class="fgrid">${fld('Name', `people.${i}.name`, p.name)}${fld('Organisation', `people.${i}.organisation`, p.organisation)}</div>
@@ -568,6 +614,7 @@ function screenSetup() {
   <section class="card"><h2 class="sh">Practitioner</h2><p class="small soft" style="margin:4px 0 14px">The GC’s or advisory firm’s name, a line under it and a logo. They appear in the header and above the privilege marking on every Word and PDF output.</p><div class="fgrid">
     ${fld('Firm', 'engagement.practitioner.firm', (e.practitioner || {}).firm || '')}${fld('Line under the name', 'engagement.practitioner.line', (e.practitioner || {}).line || '', { ph: 'Prepared by [firm] using the Triodian method' })}
   </div><div style="margin-top:14px">${TriodianBrand.logoControl(e.practitioner, deny('setup') ? 'disabled' : '')}</div></section>
+  ${briefCard(fs)}
   <section class="card"><div class="row between"><h2 class="sh" style="margin:0">2 · People</h2>${UI.archived ? '' : savesHere() ? (SRV.user && SRV.user.isAdmin ? '<a class="btn sm" href="/admin/">Manage in Admin</a>' : '') : `<button class="btn sm" data-act="addPerson" ${fs}>Add person</button>`}</div><p class="small soft" style="margin:8px 0 12px">${UI.archived ? 'The people with a role in this assessment.' : savesHere() ? 'Everyone with a role in this assessment. An administrator adds people and gives roles in Admin. What each person can do depends on their roles. Separation of duties is checked person by person, by the server as well as on this screen.' : 'Worked example: the person chosen under “Acting as” in the header decides what the app allows. Separation of duties is checked person by person, not role by role.'}</p><div class="stack" style="gap:10px">${people || '<p class="small soft">No one recorded yet.</p>'}</div></section>
   <section class="card"><h2 class="sh">3 · ${T('ir', 'Independent reviewer')}</h2><p class="small soft">The independent reviewer reviews the assessment on behalf of the CRO. Screens refer to the role, never to the firm.</p><div class="fgrid">${fld('Person', 'engagement.irPersonId', e.irPersonId, { select: peopleOpts('ir') })}${fld('Organisation filling the role', 'engagement.irOrganisation', e.irOrganisation)}${fld('Reporting line', 'engagement.independentReviewerReportsTo', line, { select: [['counsel', 'Through counsel'], ['cro', 'Directly to the CRO']] })}${fld('CRO', 'engagement.croPersonId', e.croPersonId, { select: peopleOpts('cro', S.people.some(p => p.roles.includes('cro')) ? '—' : 'Add a person with the CRO role') })}</div>
     <p class="small" style="margin-top:10px">The review pack is addressed to <strong>${line === 'cro' ? esc(cro || 'the CRO') : esc(e.counselFirm || 'counsel')}</strong>. R7 (independent check) is confirmed by ${line === 'cro' ? 'the CRO' + (cro ? ' (' + esc(cro) + ')' : '') : 'the independent reviewer, through counsel'}.</p></section>
@@ -809,7 +856,7 @@ function screenCounsel() {
   const form = awhy ? whyNote(awhy) : b === 'phone' ? `<div class="row" style="margin-top:18px"><button class="btn sm primary" id="openAsk" data-act="sheet" data-s="ask">New question to counsel</button></div>` : `<section class="card" style="margin-top:18px" id="askForm"><h2 class="sh">New ${T('qc', 'question to counsel')}</h2>${askForm('ask')}</section>`;
   return `${opening('Phase 4 · questions to counsel', 'Questions to counsel', 'Any point that depends on what the law requires goes to counsel as a numbered written question. It is never answered in a working paper.')}
   ${S.questions.length ? (b === 'phone' ? `<div class="stack" style="gap:10px">${rows}</div>` : `<div class="tw"><table class="lg"><thead><tr><th>Ref</th><th>Arrangement · entry</th>${b === 'desk' ? '<th>Q</th>' : ''}<th>Question</th>${b === 'desk' ? '<th>Response</th>' : ''}<th>Status</th></tr></thead><tbody>${rows}</tbody></table></div>`) : '<p class="soft">No questions yet. Use <em>ask counsel</em> beside any register field, or the form below.</p>'}
-  ${form}${gateCard(4)}${stepbar(gate(gates()[4].ok, gates()[4].ok ? 'Phase 4 met' : 'Phase 4 open'))}`;
+  ${briefQuestions(awhy)}${form}${gateCard(4)}${stepbar(gate(gates()[4].ok, gates()[4].ok ? 'Phase 4 met' : 'Phase 4 open'))}`;
 }
 
 /* ---------- worksheets and S7 findings ---------- */
@@ -1419,13 +1466,17 @@ function onClick(ev) {
   const el = ev.target.closest('[data-act]'); if (!el) return;
   if (el.tagName === 'SELECT' || (el.tagName === 'INPUT' && el.type !== 'button')) return;
   const a = el.dataset.act, d = el.dataset, e = curEntry(), m = me();
-  const gateOf = { confirmCarried: 'facts', confirmAllCarried: 'facts', addPerson: 'setup', rmPerson: 'setup', addDoc: 'setup', addIv: 'setup', loadCal: 'setup', loadCalApp: 'setup', addArr: 'set', rmArr: 'set', addEntry: 'facts', rmEntry: 'facts', addQ: 'ask', askFrom: 'ask', runR2: 'r2', recR4: 'r4', recR6: 'r6', recR7: 'r7', clearHit: 'r5', addExc: 'tri', addIR: 'irLog', signAnnex: 'sign', acceptHB: 'handBack', agreeGC: 'agreeGC', agreeCounsel: 'agreeCounsel', confirmCons: 'consequence', addDl3: 'tri', answerQ: 'answer', applyDet: 'answer', openOwner: 'answer' }[a];
+  const gateOf = { confirmCarried: 'facts', confirmAllCarried: 'facts', addPerson: 'setup', rmPerson: 'setup', addDoc: 'setup', addIv: 'setup', loadCal: 'setup', loadCalApp: 'setup', loadBrief: 'setup', pasteBrief: 'setup', askBrief: 'ask', addArr: 'set', rmArr: 'set', addEntry: 'facts', rmEntry: 'facts', addQ: 'ask', askFrom: 'ask', runR2: 'r2', recR4: 'r4', recR6: 'r6', recR7: 'r7', clearHit: 'r5', addExc: 'tri', addIR: 'irLog', signAnnex: 'sign', acceptHB: 'handBack', agreeGC: 'agreeGC', agreeCounsel: 'agreeCounsel', confirmCons: 'consequence', addDl3: 'tri', answerQ: 'answer', applyDet: 'answer', openOwner: 'answer' }[a];
   if (gateOf) { const why = deny(gateOf, a === 'rmEntry' ? ent(d.id) : null); if (why) return toast(why); }
   const A = {
     go: () => { if (d.to === 'outputs') UI.outTab = ''; go(d.to); }, drawer: () => { UI.drawer = !UI.drawer; UI.acct = false; render(); },
     acct: () => { UI.acct = !UI.acct; render(); },
     saveChip: async () => { if (SRV.state === 'conflict') { if (confirm('Someone else changed the same item. Load the latest saved version? Your unsaved change will be lost; you can then make it again.')) { const keep = { screen: UI.screen, entryId: UI.entryId, tab: UI.tab }; await loadReal(); Object.assign(UI, keep); render(); } } else if (SRV.state === 'error') saveNow(); else toast(saveLabel()[2]); },
     loadCal: () => document.getElementById('calIn').click(),
+    loadBrief: () => document.getElementById('briefIn').click(),
+    togglePaste: () => { UI.paste = !UI.paste; render(); },
+    pasteBrief: () => { const t = document.getElementById('brief_paste'); loadBriefText(t ? t.value : ''); },
+    askBrief: () => { const q = ((S.engagement.matterBrief || {}).questions || [])[+d.i]; if (!q) return; UI.ask = { arrangementId: (S.arrangements[0] || {}).id, entryId: '', question7: 7, targetField: '', facts: `From the AI Obligations Atlas matter brief (${S.engagement.matterBrief.scope})${q.about ? ', about ' + q.about : ''}.`, question: q.question, why: 'The matter brief lists it among the questions counsel will need to determine.', fromBrief: q.question }; if (bp() === 'phone') { UI.sheet = 'ask'; renderSheet(); } else { render(); const t = document.getElementById('askForm'); if (t) window.scrollTo(0, t.getBoundingClientRect().top + scrollY - 80); } },
     loadCalApp: async () => { toast('Reading the calibration set from the Risk Appetite app…'); const r = await api('GET', '/api/calibration-from-appetite'); if (!r.ok) return toast(r.code === 'not_linked' ? r.error : 'Could not load: ' + r.error); if (loadCalibration(r.body.calibrationSet || r.body)) { render(); const lv = r.body.laterVersion; toast('Calibration loaded: ' + calLabel() + (lv ? '. Version ' + lv.version + ' is agreed in the Risk Appetite app and waits for board approval; it is read once approved.' : '')); } },
     new: async () => { if (!SRV.on) return toast('The server could not be reached.'); if (!canSetup()) return toast('Only the method owner, the delivery manager or an administrator can start the assessment.'); const r = await api('GET', '/api/engagement'); if (r.ok && r.body.exists) { await loadReal(); go('overview'); return toast((r.body.updatedBy || 'Someone else') + ' has already started the assessment.'); }
       S = newAssessment(); S.people = SRV.people || []; applyIdentity(); UI.entryId = null; log('mobilise', 'engagement', null, 'started'); go('setup'); },
@@ -1470,7 +1521,7 @@ function onClick(ev) {
     confirmCons: () => { e.consequenceConfirmedBy = UI.personId; e.consequenceConfirmedOn = today(); log('confirmConsequence', e.id, null, fv(e, 16)); render(); },
     setPeer: () => { const why = deny('peer', e); if (why) return toast(why); const v = document.getElementById('peerSel').value; if (!v) { UI.err.peer = 'Choose a tier.'; return render(); } delete UI.err.peer; e.peerReview = { personId: UI.personId, tier: v, differs: !!fv(e, 15) && v !== fv(e, 15), resolution: '', on: today() }; e.reviewedBy = UI.personId; log('peerReview', e.id, null, v); render(); },
     qOpen: () => { UI.qOpen = UI.qOpen === d.r ? null : d.r; render(); },
-    addQ: () => { const A = Object.assign({ arrangementId: (S.arrangements[0] || {}).id, question7: 1 }, UI.ask || {}); if (!A.question || !A.question.trim()) return toast('Write the question.'); let n = S.questions.length + 1; while (S.questions.some(q => q.ref === 'QC-' + String(n).padStart(2, '0'))) n++; const ref = 'QC-' + String(n).padStart(2, '0'); S.questions.push({ ref, arrangementId: A.arrangementId, entryId: A.entryId || '', question7: +A.question7, facts: A.facts || '', question: A.question.trim(), why: A.why || '', response: '', respondedOn: '', status: 'open', owner: '', sentOn: today(), targetField: A.targetField || '' }); UI.ask = null; UI.qOpen = ref; UI.sheet = null; log('question', ref, null, 'raised'); render(); toast(ref + ' added.'); },
+    addQ: () => { const A = Object.assign({ arrangementId: (S.arrangements[0] || {}).id, question7: 1 }, UI.ask || {}); if (!A.question || !A.question.trim()) return toast('Write the question.'); let n = S.questions.length + 1; while (S.questions.some(q => q.ref === 'QC-' + String(n).padStart(2, '0'))) n++; const ref = 'QC-' + String(n).padStart(2, '0'); S.questions.push({ ref, arrangementId: A.arrangementId, entryId: A.entryId || '', question7: +A.question7, facts: A.facts || '', question: A.question.trim(), why: A.why || '', response: '', respondedOn: '', status: 'open', owner: '', sentOn: today(), targetField: A.targetField || '', ...(A.fromBrief && A.question.trim() === A.fromBrief ? { fromBrief: A.fromBrief } : {}) }); UI.ask = null; UI.qOpen = ref; UI.sheet = null; log('question', ref, null, 'raised'); render(); toast(ref + ' added.'); },
     answerQ: () => { const i = +d.i, q = S.questions[i], base = 'q-' + sid(q.ref), t = document.getElementById(base + '-resp').value.trim(); if (!t) { UI.err['q' + i] = 'Enter the response.'; return render(); }
       if (!has('counsel')) { const vb = document.getElementById(base + '-verb'); if (!vb || !vb.checked) { UI.err['q' + i] = 'A transcription must be counsel’s exact words. Tick the box to confirm.'; return render(); } q.transcribedBy = UI.personId; } else q.enteredBy = UI.personId;
       const dq = document.getElementById(base + '-detq'), rc = document.getElementById(base + '-reach'); q.determination = dq ? dq.value : ''; q.reach = rc ? rc.value : '';
@@ -1505,6 +1556,7 @@ function onClick(ev) {
 function onChange(ev) { inChange = true; try { changeHandler(ev); } finally { inChange = false; } }
 function changeHandler(ev) {
   const t = ev.target, d = t.dataset, e = curEntry(); if (t.id) UI.lastCtl = t.id;
+  if (t.id === 'briefIn') { const f = t.files[0]; t.value = ''; if (f) f.text().then(loadBriefText, () => toast('The file could not be read.')); return; }
   if (t.id === 'calIn') { if (t.files[0]) readJson(t.files[0], o => { if (loadCalibration(o)) { render(); toast('Calibration loaded: ' + calLabel()); } }); t.value = ''; return; }
   if (d.act === 'cmp') { if (d.k === 'from') UI.cmpFrom = t.value; else UI.cmpTo = t.value; render(); return; }
   if (d.act === 'person') { if (!practice() && SRV.user) return render(); UI.personId = t.value; UI.err = {}; render(); return; }
