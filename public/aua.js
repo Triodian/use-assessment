@@ -681,6 +681,41 @@ function screenOverview() {
 }
 
 /* ---------- S3 set ---------- */
+/* ---------- importing the client's provider register (task R.1) ----------
+   A CSV of AI arrangements and providers (public/shared/import.js) becomes arrangements, keyed on the client's provider
+   register id, and register entries, keyed on its system id. The facts are carried in as starting points marked
+   "carried", so the assessor confirms each, as for a previous assessment; tiers and consequences are not imported. */
+const IMP = () => window.AUAImport;
+function importRegister(text, file) {
+  const r = IMP().readArrangements(text); if (r.error) { toast(r.error); return; }
+  let newArr = 0, newEnt = 0, skipped = 0;
+  const src = row => `${file || 'Provider register'}, row ${row.line} (${row.providerId}${row.systemId ? ' · ' + row.systemId : ''})`;
+  r.rows.forEach(row => {
+    let a = S.arrangements.find(x => x.externalId === row.providerId);
+    if (!a) { let n = S.arrangements.length + 1; while (S.arrangements.some(x => x.id === 'ARR-' + String(n).padStart(2, '0'))) n++; a = { id: 'ARR-' + String(n).padStart(2, '0'), name: row.arrangement, parties: row.provider, boundaries: row.boundary ? [row.boundary] : [], criteria: [], reason: '', nextContracting: '', function: row.function, findingOwner: '', externalId: row.providerId }; S.arrangements.push(a); newArr++; }
+    else if (row.boundary && !(a.boundaries || []).includes(row.boundary)) a.boundaries = (a.boundaries || []).concat(row.boundary);
+    if (S.entries.some(e => (row.systemId && e.externalId === row.systemId) || (!row.systemId && e.arrangementId === a.id && fv(e, 7) === row.system))) { skipped++; return; }
+    const e = newEntry(a.id); e.externalId = row.systemId || ''; e.functionName = row.function;
+    const put = (n, v) => { if (v) e.fields[n] = { value: v, source: src(row), notKnown: false, carried: true, by: UI.personId, on: today() }; };
+    put(3, row.boundary); put(4, row.where); put(5, [row.function, row.criticalOperation ? 'critical operation: ' + row.criticalOperation : ''].filter(Boolean).join(' · ')); put(6, row.onInventory);
+    put(7, row.system); put(8, row.provider); put(9, row.platform); put(10, row.location); put(11, row.whatItDoes); put(12, row.human); put(13, row.credentials);
+    S.entries.push(e); newEnt++;
+  });
+  UI.importReport = { what: 'provider register', file: file || '', loaded: newEnt, arrangements: newArr, skipped, refused: r.refused };
+  log('importRegister', 'set', null, `${newEnt} entries, ${newArr} arrangements${r.refused.length ? ', ' + r.refused.length + ' rows refused' : ''}`);
+  render(); toast(`${newEnt} register ${newEnt === 1 ? 'entry' : 'entries'} imported${newArr ? ` into ${newArr} new arrangement${newArr === 1 ? '' : 's'}` : ''}${skipped ? `; ${skipped} already in the register` : ''}${r.refused.length ? `; ${r.refused.length} row${r.refused.length === 1 ? '' : 's'} refused` : ''}. Confirm each carried fact.`);
+}
+function importReport() {
+  const r = UI.importReport; if (!r) return '';
+  return `<div class="panel2" style="padding:10px 14px;margin:8px 0" role="status"><p class="small" style="margin:0 0 4px"><strong>Imported${r.file ? ' from ' + esc(r.file) : ''}:</strong> ${r.loaded} entries${r.arrangements ? `, ${r.arrangements} new arrangements` : ''}${r.skipped ? `, ${r.skipped} already in the register` : ''}. The facts are carried in for the assessor to confirm.</p>${r.refused.length ? `<p class="small" style="margin:6px 0 2px">${r.refused.length} row${r.refused.length === 1 ? '' : 's'} refused, and not loaded:</p><ul class="small" style="margin:0 0 0 18px">${r.refused.slice(0, 50).map(x => `<li>Line ${x.line}: ${esc(x.reason)}</li>`).join('')}</ul>` : ''}<button class="lnk small" data-act="closeImport">Close</button></div>`;
+}
+/* The register back out in the import format, with the client's ids, so a GRC export round-trips. */
+function registerForImport() {
+  return IMP().writeArrangements(S.entries.map(e => { const a = S.arrangements.find(x => x.id === e.arrangementId) || {}, v5 = String(fv(e, 5) || ''), op = opOf(e);
+    return { providerId: a.externalId || a.id || '', systemId: e.externalId || e.id, provider: fv(e, 8) || a.parties || '', system: fv(e, 7) || '', arrangement: a.name || '', function: v5.replace(/\s*·\s*critical operation:.*$/i, ''), criticalOperation: op,
+      boundary: fv(e, 3) || '', where: fv(e, 4) || '', platform: fv(e, 9) || '', location: fv(e, 10) || '', whatItDoes: fv(e, 11) || '', human: fv(e, 12) || '', credentials: fv(e, 13) || '', onInventory: fv(e, 6) || '',
+      users: '', authority: fv(e, 15) || '', consequence: fv(e, 16) || '', information: '', kind: '', adm: null, owner: '' }; }));
+}
 function screenSet() {
   const cv = coverage(), c = cal(), p1 = P('P1'), fns = p1 ? Object.keys(p1) : [], why = deny('set'), fs = why ? 'disabled' : '';
   const spread = S.entries.some(e => rk(AT, tierShown(e)) >= 2) && S.entries.some(e => tierShown(e) && rk(AT, tierShown(e)) <= 1);
@@ -694,7 +729,7 @@ function screenSet() {
     <div style="margin-top:10px">${fld('Reason selected', `arrangements.${i}.reason`, a.reason, { area: true })}</div><div class="row" style="justify-content:flex-end"><button class="btn sm ghost" data-act="rmArr" data-i="${i}" ${fs}>Remove</button></div></div>`;
   const ag = (who, on, act, label) => who ? `<div class="panel2" style="padding:12px 14px">${badge('agreed', 'b-green')} <strong>${esc(pname(who) || who)}</strong> <span class="mini">${esc(dAU(on))}</span></div>` : `<div class="panel2" style="padding:12px 14px"><button class="btn sm" data-act="${act}" ${deny(act) ? 'disabled title="' + esc(deny(act)) + '"' : ''}>${label}</button>${deny(act) ? whyNote(deny(act)) : ''}</div>`;
   return `${opening('Phase 1 · confirm the set', 'The representative set', 'The arrangements to be assessed, chosen against six criteria and agreed with the GC. The default is four arrangements.')}
-  <div class="calstrip"><div class="row"><span class="sh" style="margin:0">Coverage</span>${['B1', 'B2', 'B3'].map(x => badge(x + (cv[x] ? ' ✓' : ' missing'), cv[x] ? 'b-green' : 'b-ochre')).join('')}${badge('authority spread' + (spread ? ' ✓' : ' not yet'), spread ? 'b-green' : 'b-grey')}</div><button class="btn sm" data-act="addArr" ${fs}>Add arrangement</button></div>
+  <div class="calstrip"><div class="row"><span class="sh" style="margin:0">Coverage</span>${['B1', 'B2', 'B3'].map(x => badge(x + (cv[x] ? ' ✓' : ' missing'), cv[x] ? 'b-green' : 'b-ochre')).join('')}${badge('authority spread' + (spread ? ' ✓' : ' not yet'), spread ? 'b-green' : 'b-grey')}</div><div class="row" style="gap:6px"><button class="btn sm" data-act="addArr" ${fs}>Add arrangement</button><button class="btn sm ghost" data-act="importRegister" ${fs || (deny('facts') ? 'disabled' : '')}>Import the provider register (CSV)</button></div></div>${importReport()}
   ${whyNote(why)}
   <div class="stack" style="gap:12px">${S.arrangements.map(card).join('') || `<div class="soft"><p style="margin:0 0 6px">No arrangements yet. ${T('set', 'The representative set')} is chosen in this order:</p><ol style="margin:0;padding-left:22px;line-height:1.7">${C.criteria.slice(0, 5).map(t => `<li>${esc(t)}</li>`).join('')}</ol></div>`}</div>
   <section class="card" style="margin-top:18px"><h2 class="sh">Agree the set (R1)</h2><p class="small soft">${S.engagement.gcActsAsCounsel ? 'The GC also acts as counsel, so the GC and the second approver named in set-up each record their own agreement.' : 'The GC and counsel each record their own agreement.'}</p><div class="grid2">${ag(S.setAgreed.gcBy, S.setAgreed.gcOn, 'agreeGC', 'Record GC agreement')}${ag(S.setAgreed.counselBy, S.setAgreed.counselOn, 'agreeCounsel', S.engagement.gcActsAsCounsel ? 'Record second approver agreement' : 'Record counsel agreement')}</div>
@@ -1201,7 +1236,7 @@ function screenOutputs() {
   if (!UI.outTab || !OUTS.some(x => x.id === UI.outTab)) return outputsList();
   const o = O(UI.outTab), md = outText(o), fwhy = finalWhy(o), e = S.engagement, b3 = S.entries.filter(x => fv(x, 3) === 'B3');
   const dl = inFrame ? '<span class="small soft">Downloads are not available in this viewer. Use Copy, or open the file directly in a browser.</span>'
-    : `<button class="btn sm primary" id="out-docx" data-act="dlDocx" title="${fwhy ? 'Draft: ' + esc(fwhy) : 'Final'}">Download Word</button><button class="btn sm" id="out-pdf" data-act="dlPdf" title="Opens the print dialog. Choose Save as PDF.">Download PDF</button><button class="btn sm ghost" id="out-md" data-act="dlOut" data-m="${fwhy ? 'draft' : 'final'}">Download .md</button>${o.id === 'DL1' ? '<button class="btn sm" id="out-csv" data-act="dlCsv">Download .csv</button><button class="btn sm aub" id="out-ext" data-act="dlExtract">Register extract (.json)</button><button class="btn sm aub" id="out-ext2" data-act="dlExtract2">In-use feed (.json, v2)</button>' + (practice() ? '' : '<button class="btn sm" id="out-feed" data-act="issueFeed">Issue the in-use feed to Risk Appetite</button>') + (S.feedback ? `<span class="mini">Last issued ${esc(fmtAt(S.feedback.generated))}</span>` : '') : ''}`;
+    : `<button class="btn sm primary" id="out-docx" data-act="dlDocx" title="${fwhy ? 'Draft: ' + esc(fwhy) : 'Final'}">Download Word</button><button class="btn sm" id="out-pdf" data-act="dlPdf" title="Opens the print dialog. Choose Save as PDF.">Download PDF</button><button class="btn sm ghost" id="out-md" data-act="dlOut" data-m="${fwhy ? 'draft' : 'final'}">Download .md</button>${o.id === 'DL1' ? '<button class="btn sm" id="out-csv" data-act="dlCsv">Download .csv</button><button class="btn sm" id="out-reg" data-act="dlRegisterCsv">Provider register (.csv, import format)</button><button class="btn sm aub" id="out-ext" data-act="dlExtract">Register extract (.json)</button><button class="btn sm aub" id="out-ext2" data-act="dlExtract2">In-use feed (.json, v2)</button>' + (practice() ? '' : '<button class="btn sm" id="out-feed" data-act="issueFeed">Issue the in-use feed to Risk Appetite</button>') + (S.feedback ? `<span class="mini">Last issued ${esc(fmtAt(S.feedback.generated))}</span>` : '') : ''}`;
   return `<div class="outback"><button class="btn sm ghost" id="out-back" data-act="outList">← All outputs</button></div>
   ${opening('Phase 7 · outputs', esc(o.name), esc(outDesc(o)))}
   <div class="row between" style="margin-bottom:12px"><div class="row">${badge(fwhy ? 'draft' : 'final', fwhy ? 'b-grey' : 'b-green')}${fwhy ? `<span class="small" style="color:var(--red)">Cannot be exported as final: ${esc(fwhy)} ${T('legalline', 'Why')}</span>` : ''}</div>
@@ -1517,7 +1552,7 @@ function onClick(ev) {
   const el = ev.target.closest('[data-act]'); if (!el) return;
   if (el.tagName === 'SELECT' || (el.tagName === 'INPUT' && el.type !== 'button')) return;
   const a = el.dataset.act, d = el.dataset, e = curEntry(), m = me();
-  const gateOf = { confirmCarried: 'facts', confirmAllCarried: 'facts', addPerson: 'setup', rmPerson: 'setup', addDoc: 'setup', addIv: 'setup', loadCal: 'setup', loadCalApp: 'setup', loadBrief: 'setup', pasteBrief: 'setup', askBrief: 'ask', addArr: 'set', rmArr: 'set', addEntry: 'facts', rmEntry: 'facts', addQ: 'ask', askFrom: 'ask', runR2: 'r2', recR4: 'r4', recR6: 'r6', recR7: 'r7', clearHit: 'r5', addExc: 'tri', addIR: 'irLog', signAnnex: 'sign', acceptHB: 'handBack', agreeGC: 'agreeGC', agreeCounsel: 'agreeCounsel', confirmCons: 'consequence', addDl3: 'tri', answerQ: 'answer', applyDet: 'answer', openOwner: 'answer' }[a];
+  const gateOf = { importRegister: 'set', confirmCarried: 'facts', confirmAllCarried: 'facts', addPerson: 'setup', rmPerson: 'setup', addDoc: 'setup', addIv: 'setup', loadCal: 'setup', loadCalApp: 'setup', loadBrief: 'setup', pasteBrief: 'setup', askBrief: 'ask', addArr: 'set', rmArr: 'set', addEntry: 'facts', rmEntry: 'facts', addQ: 'ask', askFrom: 'ask', runR2: 'r2', recR4: 'r4', recR6: 'r6', recR7: 'r7', clearHit: 'r5', addExc: 'tri', addIR: 'irLog', signAnnex: 'sign', acceptHB: 'handBack', agreeGC: 'agreeGC', agreeCounsel: 'agreeCounsel', confirmCons: 'consequence', addDl3: 'tri', answerQ: 'answer', applyDet: 'answer', openOwner: 'answer' }[a];
   if (gateOf) { const why = deny(gateOf, a === 'rmEntry' ? ent(d.id) : null); if (why) return toast(why); }
   const A = {
     go: () => { if (d.to === 'outputs') UI.outTab = ''; go(d.to); }, drawer: () => { UI.drawer = !UI.drawer; UI.acct = false; render(); },
@@ -1598,6 +1633,8 @@ function onClick(ev) {
     dlPdf: () => { if (!window.RAFExport) return toast('PDF export did not load. Reload the page.'); const o = O(UI.outTab), m = finalWhy(o) ? 'draft' : 'final'; RAFExport.printPdf(withMode(m, () => o.gen()), { insurer: S.engagement.insurer, reference: S.engagement.reference, brand: S.engagement.practitioner, fileBase: `AUA-${slug(S.engagement.insurer)}-${o.id}-${m}` }, mdToHtml); toast('In the print dialog, choose Save as PDF'); },
     dlOut: () => { const o = O(UI.outTab); if (d.m === 'final') { const why = finalWhy(o); if (why) return toast('Cannot be exported as final: ' + why); } download(`AUA-${slug(S.engagement.insurer)}-${o.id}-${d.m}.md`, withMode(d.m, () => o.gen()), 'text/markdown'); },
     dlCsv: () => download(`AUA-${slug(S.engagement.insurer)}-DL1-register.csv`, dl1Csv(), 'text/csv'),
+    dlRegisterCsv: () => download(`AUA-${slug(S.engagement.insurer)}-provider-register.csv`, registerForImport(), 'text/csv'),
+    importRegister: () => document.getElementById('registerIn').click(), closeImport: () => { UI.importReport = null; render(); },
     dlExtract2: () => download(`AUA-${slug(S.engagement.insurer)}-in-use-feed.json`, JSON.stringify(registerExtractV2(), null, 2), 'application/json'),
     issueFeed: () => { const why = deny('tri'); if (why) return toast(why); S.feedback = registerExtractV2(); log('issueFeed', 'feedback', null, S.feedback.generated); render(); toast('The in-use feed is issued. AI Risk Appetite reads it on decisions 3 and 8 and in the board view.'); },
     dlExtract: () => download(`AUA-${slug(S.engagement.insurer)}-register-extract.json`, JSON.stringify(registerExtract(), null, 2), 'application/json'), cpExtract: () => copyText(JSON.stringify(registerExtract(), null, 2)),
@@ -1610,6 +1647,7 @@ function onChange(ev) { inChange = true; try { changeHandler(ev); } finally { in
 function changeHandler(ev) {
   const t = ev.target, d = t.dataset, e = curEntry(); if (t.id) UI.lastCtl = t.id;
   if (t.id === 'briefIn') { const f = t.files[0]; t.value = ''; if (f) f.text().then(loadBriefText, () => toast('The file could not be read.')); return; }
+  if (t.id === 'registerIn') { const f = t.files[0]; t.value = ''; if (!f) return; if (deny('set') || deny('facts')) { toast(deny('set') || deny('facts')); return; } const fr = new FileReader(); fr.onload = () => importRegister(String(fr.result), f.name); fr.readAsText(f); return; }
   if (t.id === 'calIn') { if (t.files[0]) readJson(t.files[0], o => { if (loadCalibration(o)) { render(); toast('Calibration loaded: ' + calLabel()); } }); t.value = ''; return; }
   if (d.act === 'cmp') { if (d.k === 'from') UI.cmpFrom = t.value; else UI.cmpTo = t.value; render(); return; }
   if (d.act === 'person') { if (!practice() && SRV.user) return render(); UI.personId = t.value; UI.err = {}; render(); return; }
@@ -1677,6 +1715,6 @@ async function connect() {
   SRV.ready = true;
   render();
 }
-window.AUA = { get state() { return S; }, go, gates: () => gates(), finding: id => finding(arr(id)), extract: () => registerExtract(), extractV2: () => registerExtractV2(), validate: o => validateFile(o), validateCal: o => validateCalibration(o), broken: () => brokenRefs(), hits: () => legalHits(), hydrate: o => hydrate(o), setState: x => { S = x; REV++; render(); }, save: () => snapshotForSave(), loadCalibration: (o, c) => { const r = loadCalibration(o, c); render(); return r; }, output: id => outText(O(id)), content: () => C };
+window.AUA = { get state() { return S; }, go, gates: () => gates(), finding: id => finding(arr(id)), extract: () => registerExtract(), registerCsv: () => registerForImport(), importRegister: (text, file) => importRegister(text, file), extractV2: () => registerExtractV2(), validate: o => validateFile(o), validateCal: o => validateCalibration(o), broken: () => brokenRefs(), hits: () => legalHits(), hydrate: o => hydrate(o), setState: x => { S = x; REV++; render(); }, save: () => snapshotForSave(), loadCalibration: (o, c) => { const r = loadCalibration(o, c); render(); return r; }, output: id => outText(O(id)), content: () => C };
 boot();
 })();
