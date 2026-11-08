@@ -1,0 +1,80 @@
+{
+  "id": "generalInsurer",
+  "name": "General insurer",
+  "jurisdiction": "AU",
+  "entityTypes": [
+    "generalInsurer"
+  ],
+  "note": "Today's wording, from before sector packs. Its outputs are checked word for word against the golden copies in tests/e2e/golden/insurer.",
+  "nouns": {
+    "entity": "insurer",
+    "Entity": "Insurer",
+    "entities": "insurers",
+    "Entities": "Insurers",
+    "anEntity": "an insurer",
+    "AnEntity": "An insurer",
+    "customer": "policyholder",
+    "Customer": "Policyholder",
+    "customers": "policyholders",
+    "Customers": "Policyholders",
+    "aCustomer": "a policyholder",
+    "ACustomer": "A policyholder",
+    "customerHarm": "A policyholder is wrongly declined, delayed, charged or paid.",
+    "regulator": "APRA"
+  },
+  "replace": {
+    "documents": [
+      {
+        "ref": "D1",
+        "name": "Current AI inventory or register, with owner and date",
+        "usedFor": "First input to the register"
+      },
+      {
+        "ref": "D2",
+        "name": "AI governance framework and acceptable-use policy",
+        "usedFor": "Authority and the {entity}'s own rules at B3"
+      },
+      {
+        "ref": "D3",
+        "name": "Material service provider register",
+        "usedFor": "Confirming the set and boundary types"
+      },
+      {
+        "ref": "D4",
+        "name": "Board risk appetite statement and tolerance levels for the critical operations in the set",
+        "usedFor": "The appetite the evidence is measured against"
+      },
+      {
+        "ref": "D5",
+        "name": "The agreement for each arrangement, with schedules, service descriptions and side letters",
+        "usedFor": "Rights, audit and information terms, sub-contracting terms"
+      },
+      {
+        "ref": "D6",
+        "name": "Delegated authority schedules for each binder or claims agreement",
+        "usedFor": "What authority the provider holds, and so what its AI can hold"
+      },
+      {
+        "ref": "D7",
+        "name": "Any provider disclosure about AI use already received: due diligence responses, attestations, notices",
+        "usedFor": "Evidence already obtainable"
+      },
+      {
+        "ref": "D8",
+        "name": "Licence terms and security documentation for each external AI service staff use",
+        "usedFor": "B3 entries"
+      },
+      {
+        "ref": "D9",
+        "name": "Existing assurance over the arrangements: audit reports, control reports, certifications",
+        "usedFor": "What existing assurance already covers"
+      },
+      {
+        "ref": "D10",
+        "name": "Incident and near-miss records involving AI in the set, last 24 months",
+        "usedFor": "Failure consequence"
+      }
+    ]
+  },
+  "override": {}
+}
