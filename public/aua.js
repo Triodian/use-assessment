@@ -1623,6 +1623,6 @@ async function connect() {
   SRV.ready = true;
   render();
 }
-window.AUA = { get state() { return S; }, go, gates: () => gates(), finding: id => finding(arr(id)), extract: () => registerExtract(), validate: o => validateFile(o), validateCal: o => validateCalibration(o), broken: () => brokenRefs(), hits: () => legalHits(), hydrate: o => hydrate(o), setState: x => { S = x; REV++; render(); }, save: () => snapshotForSave(), loadCalibration: (o, c) => { const r = loadCalibration(o, c); render(); return r; } };
+window.AUA = { get state() { return S; }, go, gates: () => gates(), finding: id => finding(arr(id)), extract: () => registerExtract(), validate: o => validateFile(o), validateCal: o => validateCalibration(o), broken: () => brokenRefs(), hits: () => legalHits(), hydrate: o => hydrate(o), setState: x => { S = x; REV++; render(); }, save: () => snapshotForSave(), loadCalibration: (o, c) => { const r = loadCalibration(o, c); render(); return r; }, output: id => outText(O(id)), content: () => C };
 boot();
 })();

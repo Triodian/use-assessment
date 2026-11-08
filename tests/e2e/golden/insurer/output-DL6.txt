@@ -1,0 +1,16 @@
+Privileged and confidential · prepared at the direction of counsel · worked example
+
+# DL6 · Hand-back list
+
+**Uncalibrated: framework defaults apply** · Draft · [today] · WORKED EXAMPLE, FICTIONAL
+
+Corvane General Insurance (fictional) · AUA-CGI-2026-01
+
+AI uses found that are not on the insurer's inventory, for the inventory owner.
+
+| Entry | Arrangement | On inventory | System | Supplier | What the AI does | Source |
+| --- | --- | --- | --- | --- | --- | --- |
+| REG-002 | ARR-01 | Partly | Claim scoring service behind the triage model | Quillon Analytics (fictional) | Scores each new claim. The score sets the route the triage model applies. | D1 row 14 names Harlow only |
+| REG-004 | ARR-03 | No | not known | Fenwick Underwriting Pty Ltd (fictional) | not known | D1 (not listed) |
+
+Accepted: [not yet accepted]

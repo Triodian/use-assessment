@@ -1,0 +1,117 @@
+My actions 2
+Set-up
+Set
+Register
+Classify
+Counsel
+Findings
+Review
+Outputs
+Practice · not saved
+⌾
+Choose person
+Meredith Vance · Counsel
+Helen Brandt · GC
+Ana Duarte · Arrangement owner
+Sam Okoro · Method owner
+Jordan Pike · Assessor
+Ravi Menon · Peer reviewer
+Elise Tan · Validation
+Kit Morrow · Delivery manager
+Lena Hartmann · Independent reviewer
+Priya Natarajan · CRO
+DH
+☰
+Privileged and confidential · prepared at the direction of counsel · worked example
+Askew Lane Partners (fictional)
+Corvane General Insurance (fictional) · AUA-CGI-2026-01
+Worked example: a fictional insurer, Corvane, and its providers, for practice only. Nothing is saved.
+Leave the worked example
+Uncalibrated: no calibration set is loaded, so the framework defaults apply
+Phase 1 · confirm the set
+The representative set
+
+The arrangements to be assessed, chosen against six criteria and agreed with the GC. The default is four arrangements.
+
+Coverage
+B1 ✓
+B2 ✓
+B3 ✓
+Authority spread ✓
+Add arrangement
+ARR-01
+No finding
+Name
+Parties
+Next contracting date
+Boundaries
+B1
+B2
+B3
+Criteria
+1. A live trigger
+2. AI inside a provider
+3. The insurer is itself asked for evidence
+4. Coverage of boundary types
+5. Spread of authority
+6. Likely above the authority ceiling
+Reason selected
+Remove
+ARR-02
+F1 Evidence obtainable
+Name
+Parties
+Next contracting date
+Boundaries
+B1
+B2
+B3
+Criteria
+1. A live trigger
+2. AI inside a provider
+3. The insurer is itself asked for evidence
+4. Coverage of boundary types
+5. Spread of authority
+6. Likely above the authority ceiling
+Reason selected
+Remove
+ARR-03
+F4 Not determinable on documents
+Name
+Parties
+Next contracting date
+Boundaries
+B1
+B2
+B3
+Criteria
+1. A live trigger
+2. AI inside a provider
+3. The insurer is itself asked for evidence
+4. Coverage of boundary types
+5. Spread of authority
+6. Likely above the authority ceiling
+Reason selected
+Remove
+Agree the set (R1)
+
+The GC and counsel each record their own agreement.
+
+Agreed Helen Brandt 13 October 2026
+Agreed Meredith Vance 13 October 2026
+
+If the set does not cover a boundary type, record it in the exceptions log on the Review screen, naming its code (B1, B2 or B3).
+
+Phase 1 exit gate
+Set agreed by the GC and by counsel (R1)
+B1 boundary covered by the set, or recorded as an exception
+B2 boundary covered by the set, or recorded as an exception
+B3 boundary covered by the set, or recorded as an exception
+← Overview
+Phase 1 met
+Register →
+Scope. A technical assessment prepared for counsel. It states what the documents show and how each AI use is classified. It gives no legal advice and recommends no product.
+Framework 12 October 2026
+User guide
+Reference
+Uncalibrated: framework defaults apply

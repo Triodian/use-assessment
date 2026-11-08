@@ -1,0 +1,121 @@
+My actions 2
+Set-up
+Set
+Register
+Classify
+Counsel
+Findings
+Review
+Outputs
+Practice · not saved
+⌾
+Choose person
+Meredith Vance · Counsel
+Helen Brandt · GC
+Ana Duarte · Arrangement owner
+Sam Okoro · Method owner
+Jordan Pike · Assessor
+Ravi Menon · Peer reviewer
+Elise Tan · Validation
+Kit Morrow · Delivery manager
+Lena Hartmann · Independent reviewer
+Priya Natarajan · CRO
+DH
+☰
+Privileged and confidential · prepared at the direction of counsel · worked example
+Askew Lane Partners (fictional)
+Corvane General Insurance (fictional) · AUA-CGI-2026-01
+Worked example: a fictional insurer, Corvane, and its providers, for practice only. Nothing is saved.
+Leave the worked example
+Uncalibrated: no calibration set is loaded, so the framework defaults apply
+Phase 7 · outputs and close
+Outputs
+
+Every output shows the privilege marking, the calibration status and version, whether it is draft or final, and the date. Open an output to read or download it.
+
+0 of 11 are ready as final. Until their gate is met, the rest are marked draft when downloaded.
+
+AI dependency register
+All 26 fields for every entry in the set. Source index. Count of not-known fields
+Draft
+Some R5 (legal-line check) hits are still open.
+→
+Evidence obtainable at each boundary
+One finding worksheet per arrangement (section 9.4). A one-page summary table: arrangement, tier, consequence, indicative, required, obtainable, finding, priority
+Draft
+Some R5 (legal-line check) hits are still open.
+→
+Control-library shape for the insurer's own AI boundary
+For B3 entries only: the categories of rule the insurer would need to state for its own staff's use, and the record each would produce. Shape only, with no product specified
+Draft
+Some R5 (legal-line check) hits are still open.
+→
+Technical schedule, tolerance and trigger design
+For each F1 and F2: the evidence item, its contents, its frequency, the tolerance it is measured against, the triggers and their timing. Written to sit beside counsel's flow-down clauses
+Draft
+Some R5 (legal-line check) hits are still open.
+→
+Technical annex
+Method, set, summary table, findings, limitations, not-known count, statement of what was not done
+Draft
+Some R5 (legal-line check) hits are still open.
+→
+Hand-back list
+AI uses found that are not on the insurer's inventory
+Draft
+Some R5 (legal-line check) hits are still open.
+→
+Question set to counsel
+Every question put to counsel, with its status and the response.
+Draft
+Some R5 (legal-line check) hits are still open.
+→
+Review pack for the independent reviewer
+What the independent reviewer needs to test the assessment.
+Draft
+Some R5 (legal-line check) hits are still open.
+→
+Closing measures
+The measures that close the assessment.
+Draft
+Some R5 (legal-line check) hits are still open.
+→
+Difference report
+What changed between versions of the assessment.
+None yet
+No difference reports have been made.
+→
+Engagement plan
+The phases with their timing, the sessions and who attends, the documents needed from the insurer, and the sign-off points, with where each stands.
+Draft
+Some R5 (legal-line check) hits are still open.
+→
+Compare versions
+From
+V1 · Set agreed (R1) · 13 Oct 2026, 19:00
+To
+The assessment now
+V1 · Set agreed (R1) · 13 Oct 2026, 19:00
+
+11 changes. Old values are struck through.
+
+Entry	What changed	Was	Now	Last changed by
+REG-001	15 Authority tier	—	A3 Decision	Jordan Pike
+REG-001	16 Failure consequence	—	C4 Policyholder harm	Jordan Pike
+REG-001	18 Evidence currently received	—	E1 Disclosure · Due diligence response naming the triage tool	Jordan Pike
+REG-001	19 Evidence the system could produce	—	Routing outcomes by category, aggregated weekly in the triage platform	Jordan Pike
+REG-001	20 Independently checkable	—	partly · An auditor with access could verify; none appointed	Jordan Pike
+REG-003	15 Authority tier	—	A1 Productivity	Jordan Pike
+REG-003	16 Failure consequence	—	C2 Contract breach	Jordan Pike
+REG-003	18 Evidence currently received	—	E1 Disclosure · Licence terms and usage policy	Jordan Pike
+REG-003	19 Evidence the system could produce	—	Monthly usage report by team	Jordan Pike
+REG-003	20 Independently checkable	—	yes · Report can be checked against the insurer’s own logs	Jordan Pike
+REG-003	25 Required rung and grading	—	E1 Disclosure · expectation	Meredith Vance
+Phase 7 exit gate
+Hand-back list accepted
+← Review
+Scope. A technical assessment prepared for counsel. It states what the documents show and how each AI use is classified. It gives no legal advice and recommends no product.
+Framework 12 October 2026
+User guide
+Reference
+Uncalibrated: framework defaults apply

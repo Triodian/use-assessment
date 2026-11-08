@@ -1,0 +1,19 @@
+Privileged and confidential · prepared at the direction of counsel · worked example
+
+# QS · Question set to counsel
+
+**Uncalibrated: framework defaults apply** · Draft · [today] · WORKED EXAMPLE, FICTIONAL
+
+Corvane General Insurance (fictional) · AUA-CGI-2026-01
+
+## QC-01
+
+| Field | Contents |
+| --- | --- |
+| Arrangement and entry | ARR-01 · REG-001 |
+| Which of the seven questions | 7 |
+| Facts | D5-ARR01 cl.11.2 gives an audit right over "financial records relating to the Services". D7-ARR01 p.3 names the triage tool. No term mentions automated decisions. |
+| Question | Does the audit clause reach an aggregate record of automated triage outcomes? What can the insurer require at renewal? |
+| Why it matters to the assessment | Field 25 and test T3 at E4 depend on it |
+| Response | — |
+| Status | open |

@@ -1,0 +1,81 @@
+My actions 2
+Set-up
+Set
+Register
+Classify
+Counsel
+Findings
+Review
+Outputs
+Practice · not saved
+⌾
+Choose person
+Meredith Vance · Counsel
+Helen Brandt · GC
+Ana Duarte · Arrangement owner
+Sam Okoro · Method owner
+Jordan Pike · Assessor
+Ravi Menon · Peer reviewer
+Elise Tan · Validation
+Kit Morrow · Delivery manager
+Lena Hartmann · Independent reviewer
+Priya Natarajan · CRO
+DH
+☰
+Privileged and confidential · prepared at the direction of counsel · worked example
+Askew Lane Partners (fictional)
+Corvane General Insurance (fictional) · AUA-CGI-2026-01
+Worked example: a fictional insurer, Corvane, and its providers, for practice only. Nothing is saved.
+Leave the worked example
+Uncalibrated: no calibration set is loaded, so the framework defaults apply
+Phase 2 · map the AI
+AI use register
+
+One entry for each place where AI acts. Every value has a source, or is recorded as not known.
+
+ARR-01 Outside claims manager · motor
+ARR-02 Legal staff drafting assistant
+ARR-03 Underwriting agency · SME property
+Add entry
+Arrangement
+All
+ARR-01
+ARR-02
+ARR-03
+Boundary
+All
+B1
+B2
+B3
+Finding
+All
+F1
+F2
+F3
+F4
+No finding
+Flag
+All
+Above ceiling
+Location
+Below confidence
+Not-known fields over limit
+F4 open too long
+Has not-known fields
+Entry	Arrangement	Boundary	Where AI acts	System	Tier	Consequence	Indicative	Obtainable	Finding	Flags	Facts
+REG-001	ARR-01	B1	Provider	Motor claims triage model	A3 Decision	C4 Policyholder harm	E4 Audit	E2 Attestation	Awaiting counsel		12/12
+REG-002	ARR-01	B2	Platform behind a provider	Claim scoring service behind the triage model			—	—	Awaiting counsel		12/12 · 1 not known
+REG-003	ARR-02	B3	Own staff	Drafting assistant for legal staff	A1 Productivity	C2 Contract breach	E1 Disclosure	E1 Disclosure	F1 Evidence obtainable		12/12
+REG-004	ARR-03	B1	Provider				—	—	F4 Not determinable on documents		12/12 · 5 not known
+Phase 2 exit gate
+At least one register entry
+Fields 1 to 14 filled in or marked not known, each value with a source (R2)
+No broken references
+← Set
+Phase 2 met
+Classify →
+Scope. A technical assessment prepared for counsel. It states what the documents show and how each AI use is classified. It gives no legal advice and recommends no product.
+Framework 12 October 2026
+User guide
+Reference
+Uncalibrated: framework defaults apply

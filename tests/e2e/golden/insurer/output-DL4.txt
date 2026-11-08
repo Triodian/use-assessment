@@ -1,0 +1,19 @@
+Privileged and confidential · prepared at the direction of counsel · worked example
+
+# DL4 · Technical schedule, tolerance and trigger design
+
+**Uncalibrated: framework defaults apply** · Draft · [today] · WORKED EXAMPLE, FICTIONAL
+
+Corvane General Insurance (fictional) · AUA-CGI-2026-01
+
+For each F1 and F2: the evidence item, its contents, frequency, the tolerance it is measured against, and the triggers and their timing. Written to sit beside counsel's flow-down clauses.
+
+## Tolerances and triggers (P10)
+
+[Set by the board in P10]
+
+## Evidence items
+
+| Arrangement | Evidence item | Contents | Frequency | Tolerance and triggers (P10 refs) | Basis |
+| --- | --- | --- | --- | --- | --- |
+| ARR-02 | E1 Disclosure | A statement of what AI is used, where and for what. | On change, or annually | [Set by the board in P10] | Obtainable |

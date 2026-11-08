@@ -1,0 +1,21 @@
+Privileged and confidential · prepared at the direction of counsel · worked example
+
+# DL3 · Control-library shape for the insurer's own AI boundary
+
+**Uncalibrated: framework defaults apply** · Draft · [today] · WORKED EXAMPLE, FICTIONAL
+
+Corvane General Insurance (fictional) · AUA-CGI-2026-01
+
+For B3 entries only: the categories of rule the insurer would need to state for its own staff's use, and the record each would produce (framework section 10.1). Shape only, with no product specified. The framework does not list the categories; each is stated here from the insurer's own policy (D2) and licence terms (D8).
+
+## REG-003 · Drafting assistant for legal staff
+
+What the AI does: Drafts and summarises documents. A lawyer edits and sends the final text.
+
+Credentials and systems it can change: none
+
+| Category of rule | Record it would produce |
+| --- | --- |
+| Permitted purposes for legal staff use, from D2 s.4 | Usage report by team (cl.7) |
+
+Evidence the system could produce (field 19): Monthly usage report by team

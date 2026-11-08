@@ -1,0 +1,103 @@
+My actions 2
+Set-up
+Set
+Register
+Classify
+Counsel
+Findings
+Review
+Outputs
+Practice · not saved
+⌾
+Choose person
+Meredith Vance · Counsel
+Helen Brandt · GC
+Ana Duarte · Arrangement owner
+Sam Okoro · Method owner
+Jordan Pike · Assessor
+Ravi Menon · Peer reviewer
+Elise Tan · Validation
+Kit Morrow · Delivery manager
+Lena Hartmann · Independent reviewer
+Priya Natarajan · CRO
+DH
+☰
+Privileged and confidential · prepared at the direction of counsel · worked example
+Askew Lane Partners (fictional)
+Corvane General Insurance (fictional) · AUA-CGI-2026-01
+Worked example: a fictional insurer, Corvane, and its providers, for practice only. Nothing is saved.
+Leave the worked example
+Uncalibrated: no calibration set is loaded, so the framework defaults apply
+Overview
+Eight phases, each with a gate
+
+Each phase ends with a gate: a short list of conditions to meet. Work can carry on before a gate is met, but any output produced before its gate is met is marked draft.
+
+Next: phase 3 · Classify and test
+
+Still open: Fields 15 to 22 complete; R3 (classification review) differences resolved and R4 (validation) passed.
+
+Open classify →
+3 Arrangements
+4 Register entries
+1 Open questions to counsel
+2 of 3 Findings set
+Uncalibrated
+0
+Gate met
+Mobilise
+Brief confirmed by the GC
+Privilege marking entered
+Document request issued
+Set-up →
+1
+Gate met
+Confirm the set
+Set agreed by the GC and by counsel (R1)
+B1 boundary covered by the set, or recorded as an exception
+B2 boundary covered by the set, or recorded as an exception
+B3 boundary covered by the set, or recorded as an exception
+Set →
+2
+Gate met
+Map the AI
+At least one register entry
+Fields 1 to 14 filled in or marked not known, each value with a source (R2)
+No broken references
+Register →
+3
+Open
+Classify and test
+Fields 15 to 22 complete
+R3 (classification review) differences resolved
+R4 (validation) passed
+Classify →
+4
+Open
+Questions to counsel
+Every question to counsel answered, or left open with a named owner
+Counsel →
+5
+Open
+Findings and report
+Every arrangement has a finding or is awaiting counsel
+R5 (legal-line check) cleared
+R6 (counsel review) recorded
+Findings →
+6
+Open
+Independent check
+R7 (independent check) complete
+Review →
+7
+Open
+Close
+Hand-back list accepted
+Outputs →
+← Set-up
+Set →
+Scope. A technical assessment prepared for counsel. It states what the documents show and how each AI use is classified. It gives no legal advice and recommends no product.
+Framework 12 October 2026
+User guide
+Reference
+Uncalibrated: framework defaults apply
