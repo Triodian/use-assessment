@@ -391,6 +391,37 @@ function loadCalibration(o, confirmed) {
 function registerExtract() {
   return { privilegeMarking: S.engagement.privilegeMarking || null, schema: 'triodian.aua.extract.v1', generated: nowISO(), calibration: cal() ? `${cal().status} v${cal().version}` : 'uncalibrated', entries: S.entries.map(e => { const r = fv(e, 18); return { function: fnOf(e) || null, location: fv(e, 4) || null, tier: fv(e, 15) || null, consequence: fv(e, 16) || null, received: r === 'none' ? 'E0' : /^E\d$/.test(r) ? r : null }; }) };
 }
+/* The in-use feed for AI Risk Appetite (development plan task 3.7): the extract v2 carries the entries as v1 does, plus
+   the measures M1 to M10 the register can count, the gaps by priority and the overdue items. A measure the register
+   cannot count says so (value null, with the reason); nothing is estimated. Risk Appetite reads it on decisions 3 and 8
+   and in the board view. */
+function registerExtractV2() {
+  const v1 = registerExtract(), es = S.entries, fl = es.map(e => [e, flags(e)]), has = (id) => fl.filter(([, f]) => f.some(x => x.id === id));
+  const approvedExc = x => x && x.approvedBy;
+  const excepted = e => S.exceptions.some(x => approvedExc(x) && ((x.entryId && x.entryId === e.id) || String(x.departure || '').includes(e.id)));
+  const c45 = e => ['C4', 'C5'].includes(fv(e, 16));
+  const cc = concentration(), F = S.arrangements.map(a => [a, finding(a)]);
+  const gaps = { High: 0, Medium: 0, Low: 0 }; F.forEach(([, f]) => { if (f.type === 'F2' && gaps[f.priority] != null) gaps[f.priority]++; });
+  const counted = (ref, value, basis) => ({ ref, value, basis }), notHere = (ref, why) => ({ ref, value: null, basis: why });
+  const NEEDS = 'Needs the calibration set, which is not loaded';
+  const ifCal = (ref, value, basis, param) => cal() ? counted(ref, value, basis) : notHere(ref, NEEDS + ' (' + param + ')');
+  const measures = [
+    ifCal('M1', has('aboveCeiling').filter(([e]) => !excepted(e)).length, 'Register entries flagged above the authority ceiling (P1) and not named in an approved exception', 'P1'),
+    notHere('M2', 'Time limits are set as events (for example the next risk committee), so the register cannot date them. The gaps by priority are given below'),
+    notHere('M3', 'The next contract date is not held in the register'),
+    ifCal('M4', has('f4TooLong').filter(([e]) => c45(e)).length, 'F4 entries at C4 or C5 open past the period P6 allows', 'P6'),
+    notHere('M5', 'Evidence due dates are held in the technical schedule, outside the register'),
+    counted('M6', cc ? cc.share : 0, cc && cc.platform ? `Per cent of ${cc.ops} critical operations on ${cc.platform}, the platform most of them depend on` : 'No critical operation in the register names its platform'),
+    ifCal('M7', has('location').filter(([, f]) => f.some(x => x.id === 'location' && /not accepted/i.test(x.label))).length, 'Register entries in a location marked not accepted (P8)', 'P8'),
+    notHere('M8', 'The trigger log is kept outside the register'),
+    counted('M9', es.filter(e => c45(e) && confidence(e) === 'low').length, 'Register entries at C4 or C5 whose evidence level was established with low confidence'),
+    counted('M10', cc ? cc.onTop : 0, cc && cc.platform ? `Critical operations that depend on ${cc.platform}, the provider most of them depend on` : 'No critical operation in the register names its platform'),
+  ];
+  const overdue = fl.flatMap(([e, f]) => f.filter(x => x.id === 'f4TooLong').map(x => ({ entry: e.id, item: x.label })));
+  return { ...v1, schema: 'triodian.aua.extract.v2', engagementId: S.engagement.id || '', company: S.engagement.insurer || '',
+    measures, measuresNote: 'Counted from the register as it stood when the feed was issued. A measure with no value cannot be counted from the register; the reason is given.',
+    gapsByPriority: gaps, findings: F.map(([a, f]) => ({ arrangement: a.id, type: f.type || null, priority: f.priority || null })), overdue };
+}
 const calLabel = () => cal() ? (cal().status === 'approved' ? `Approved appetite, version ${cal().version}, ${cal().date}${cal().minuteRef ? ' · minute ' + cal().minuteRef : ''}` : `${cal().status === 'working' ? 'Working' : 'Default'} appetite, version ${cal().version}`) : 'Uncalibrated: framework defaults apply';
 
 /* ---------- shell ---------- */
@@ -1170,7 +1201,7 @@ function screenOutputs() {
   if (!UI.outTab || !OUTS.some(x => x.id === UI.outTab)) return outputsList();
   const o = O(UI.outTab), md = outText(o), fwhy = finalWhy(o), e = S.engagement, b3 = S.entries.filter(x => fv(x, 3) === 'B3');
   const dl = inFrame ? '<span class="small soft">Downloads are not available in this viewer. Use Copy, or open the file directly in a browser.</span>'
-    : `<button class="btn sm primary" id="out-docx" data-act="dlDocx" title="${fwhy ? 'Draft: ' + esc(fwhy) : 'Final'}">Download Word</button><button class="btn sm" id="out-pdf" data-act="dlPdf" title="Opens the print dialog. Choose Save as PDF.">Download PDF</button><button class="btn sm ghost" id="out-md" data-act="dlOut" data-m="${fwhy ? 'draft' : 'final'}">Download .md</button>${o.id === 'DL1' ? '<button class="btn sm" id="out-csv" data-act="dlCsv">Download .csv</button><button class="btn sm aub" id="out-ext" data-act="dlExtract">Register extract (.json)</button>' : ''}`;
+    : `<button class="btn sm primary" id="out-docx" data-act="dlDocx" title="${fwhy ? 'Draft: ' + esc(fwhy) : 'Final'}">Download Word</button><button class="btn sm" id="out-pdf" data-act="dlPdf" title="Opens the print dialog. Choose Save as PDF.">Download PDF</button><button class="btn sm ghost" id="out-md" data-act="dlOut" data-m="${fwhy ? 'draft' : 'final'}">Download .md</button>${o.id === 'DL1' ? '<button class="btn sm" id="out-csv" data-act="dlCsv">Download .csv</button><button class="btn sm aub" id="out-ext" data-act="dlExtract">Register extract (.json)</button><button class="btn sm aub" id="out-ext2" data-act="dlExtract2">In-use feed (.json, v2)</button>' + (practice() ? '' : '<button class="btn sm" id="out-feed" data-act="issueFeed">Issue the in-use feed to Risk Appetite</button>') + (S.feedback ? `<span class="mini">Last issued ${esc(fmtAt(S.feedback.generated))}</span>` : '') : ''}`;
   return `<div class="outback"><button class="btn sm ghost" id="out-back" data-act="outList">← All outputs</button></div>
   ${opening('Phase 7 · outputs', esc(o.name), esc(outDesc(o)))}
   <div class="row between" style="margin-bottom:12px"><div class="row">${badge(fwhy ? 'draft' : 'final', fwhy ? 'b-grey' : 'b-green')}${fwhy ? `<span class="small" style="color:var(--red)">Cannot be exported as final: ${esc(fwhy)} ${T('legalline', 'Why')}</span>` : ''}</div>
@@ -1567,6 +1598,8 @@ function onClick(ev) {
     dlPdf: () => { if (!window.RAFExport) return toast('PDF export did not load. Reload the page.'); const o = O(UI.outTab), m = finalWhy(o) ? 'draft' : 'final'; RAFExport.printPdf(withMode(m, () => o.gen()), { insurer: S.engagement.insurer, reference: S.engagement.reference, brand: S.engagement.practitioner, fileBase: `AUA-${slug(S.engagement.insurer)}-${o.id}-${m}` }, mdToHtml); toast('In the print dialog, choose Save as PDF'); },
     dlOut: () => { const o = O(UI.outTab); if (d.m === 'final') { const why = finalWhy(o); if (why) return toast('Cannot be exported as final: ' + why); } download(`AUA-${slug(S.engagement.insurer)}-${o.id}-${d.m}.md`, withMode(d.m, () => o.gen()), 'text/markdown'); },
     dlCsv: () => download(`AUA-${slug(S.engagement.insurer)}-DL1-register.csv`, dl1Csv(), 'text/csv'),
+    dlExtract2: () => download(`AUA-${slug(S.engagement.insurer)}-in-use-feed.json`, JSON.stringify(registerExtractV2(), null, 2), 'application/json'),
+    issueFeed: () => { const why = deny('tri'); if (why) return toast(why); S.feedback = registerExtractV2(); log('issueFeed', 'feedback', null, S.feedback.generated); render(); toast('The in-use feed is issued. AI Risk Appetite reads it on decisions 3 and 8 and in the board view.'); },
     dlExtract: () => download(`AUA-${slug(S.engagement.insurer)}-register-extract.json`, JSON.stringify(registerExtract(), null, 2), 'application/json'), cpExtract: () => copyText(JSON.stringify(registerExtract(), null, 2)),
     signAnnex: () => { S.engagement.annexSigned = { by: UI.personId, on: today() }; log('signAnnex', 'DL5', null, pname(UI.personId)); render(); },
     acceptHB: () => { S.engagement.handBack = { by: UI.personId, on: today() }; log('handBack', 'DL6', null, 'accepted'); render(); }
@@ -1644,6 +1677,6 @@ async function connect() {
   SRV.ready = true;
   render();
 }
-window.AUA = { get state() { return S; }, go, gates: () => gates(), finding: id => finding(arr(id)), extract: () => registerExtract(), validate: o => validateFile(o), validateCal: o => validateCalibration(o), broken: () => brokenRefs(), hits: () => legalHits(), hydrate: o => hydrate(o), setState: x => { S = x; REV++; render(); }, save: () => snapshotForSave(), loadCalibration: (o, c) => { const r = loadCalibration(o, c); render(); return r; }, output: id => outText(O(id)), content: () => C };
+window.AUA = { get state() { return S; }, go, gates: () => gates(), finding: id => finding(arr(id)), extract: () => registerExtract(), extractV2: () => registerExtractV2(), validate: o => validateFile(o), validateCal: o => validateCalibration(o), broken: () => brokenRefs(), hits: () => legalHits(), hydrate: o => hydrate(o), setState: x => { S = x; REV++; render(); }, save: () => snapshotForSave(), loadCalibration: (o, c) => { const r = loadCalibration(o, c); render(); return r; }, output: id => outText(O(id)), content: () => C };
 boot();
 })();
