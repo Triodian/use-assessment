@@ -1055,8 +1055,11 @@ function bothRoles() {
 }
 function mdHead(o) {
   const e = S.engagement, st = RAW ? '' : outStatus(o);
-  return `${e.privilegeMarking || '[Privilege marking not recorded in set-up]'}\n\n# ${o.id} · ${o.name}\n\n**${calLabel()}**${st ? ' · ' + st : ''} · ${dDoc(today())}${e.example ? ' · WORKED EXAMPLE, FICTIONAL' : ''}\n\n${e.insurer || '[' + N.Entity + ']'} · ${e.reference || '[reference]'}\n\n${bothRoles()}`;
+  return `${e.privilegeMarking || '[Privilege marking not recorded in set-up]'}\n\n# ${o.id} · ${o.name}\n\n**${calLabel()}**${st ? ' · ' + st : ''} · ${dDoc(today())}${e.example ? ' · WORKED EXAMPLE, FICTIONAL' : ''}\n\n${e.insurer || '[' + N.Entity + ']'} · ${e.reference || '[reference]'}\n\n${evLine(o.id)}${bothRoles()}`;
 }
+/* The APRA letter bullet, CPS 230 paragraph and ISO/IEC 42001 control each output serves (task R.2; public/shared/evidence.js). */
+const evTags = id => (window.AUAEvidence ? window.AUAEvidence.tagLine('UA', id) : '');
+const evLine = id => { const t = evTags(id); return t ? `Evidence for: ${t}.\n\n` : ''; };
 const OUTS = [
   { id: 'DL1', name: 'AI dependency register', gate: 3, gen: genDL1 }, { id: 'DL2', name: 'Evidence obtainable at each boundary', gate: 5, gen: genDL2 },
   { id: 'DL3', name: '', /* named from the pack in applyPack */ gate: 5, gen: genDL3 }, { id: 'DL4', name: 'Technical schedule, tolerance and trigger design', gate: 5, gen: genDL4 },
@@ -1224,7 +1227,7 @@ function outStatusInfo(o) {
   return why ? ['draft', 'b-grey', why] : ['final', 'b-green', ''];
 }
 function outputsList() {
-  const rows = OUTS.map(o => { const [l, c, why] = outStatusInfo(o); return `<button class="outrow" data-act="outTab" data-t="${o.id}"><span class="outname"><strong>${esc(o.name)}</strong><span class="small soft">${esc(outDesc(o))}</span></span><span class="outstat">${badge(l, c)}${why ? `<span class="mini">${esc(why)}</span>` : ''}</span><span class="outgo" aria-hidden="true">→</span></button>`; }).join('');
+  const rows = OUTS.map(o => { const [l, c, why] = outStatusInfo(o); return `<button class="outrow" data-act="outTab" data-t="${o.id}"><span class="outname"><strong>${esc(o.name)}</strong><span class="small soft">${esc(outDesc(o))}</span>${evTags(o.id) ? `<span class="mini">${esc(evTags(o.id))}</span>` : ''}</span><span class="outstat">${badge(l, c)}${why ? `<span class="mini">${esc(why)}</span>` : ''}</span><span class="outgo" aria-hidden="true">→</span></button>`; }).join('');
   const nFinal = OUTS.filter(o => !finalWhy(o)).length;
   return `${opening('Phase 7 · outputs and close', 'Outputs', 'Every output shows the privilege marking, the calibration status and version, whether it is draft or final, and the date. Open an output to read or download it.')}
   <p class="small soft" style="margin:-6px 0 12px">${nFinal} of ${OUTS.length} are ready as final. Until their gate is met, the rest are marked draft when downloaded.</p>

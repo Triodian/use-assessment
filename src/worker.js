@@ -9,7 +9,7 @@
 import { whoIs, handleAuth, gate, markDemo } from '../lib/identity/session.js';
 import { d1Store } from '../lib/store/d1.js';
 import { identityUsers, withIdentity } from '../lib/identity/people.js';
-import { handle, issuedFeedback } from '../lib/core/api.js';
+import { handle, issuedFeedback, assessmentEvidence } from '../lib/core/api.js';
 import { dueReminders, deliver } from '../lib/core/notify.js';
 
 const json = (obj, status = 200) => new Response(JSON.stringify(obj), {
@@ -60,6 +60,13 @@ export async function feedbackForService(env) {
   if (!env.DB) return { status: 503, body: { error: 'The database is not connected to the Use Assessment app yet.' } };
   try { return await issuedFeedback(d1Store(env.DB)); }
   catch (e) { console.error(e); return { status: 500, body: { error: 'The Use Assessment app hit an error reading the in-use feed.' } }; }
+}
+
+/** The artefacts for the APRA letter evidence index, for another Triodian app over a service binding (task R.2). */
+export async function evidenceForService(env) {
+  if (!env.DB) return { status: 503, body: { error: 'The database is not connected to the Use Assessment app yet.' } };
+  try { return await assessmentEvidence(d1Store(env.DB)); }
+  catch (e) { console.error(e); return { status: 500, body: { error: 'The Use Assessment app hit an error listing its artefacts.' } }; }
 }
 
 export default {
