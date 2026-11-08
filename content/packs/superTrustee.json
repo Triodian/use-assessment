@@ -1,0 +1,162 @@
+{
+  "id": "superTrustee",
+  "name": "Superannuation trustee",
+  "jurisdiction": "AU",
+  "entityTypes": [
+    "superannuationTrustee"
+  ],
+  "note": "Added for an ART engagement (development plan task 3.3): trustee and member nouns, the administrator and group insurer as the main providers, D6 for the administration agreement and the group insurance policy, and superannuation examples for the authority tiers. The worked illustration in section 8.5 of the framework stays a motor claim, marked illustrative. Counsel reviews the wording before it is used with a client.",
+  "nouns": {
+    "entity": "trustee",
+    "Entity": "Trustee",
+    "entities": "trustees",
+    "Entities": "Trustees",
+    "anEntity": "a trustee",
+    "AnEntity": "A trustee",
+    "customer": "member",
+    "Customer": "Member",
+    "customers": "members",
+    "Customers": "Members",
+    "aCustomer": "a member",
+    "ACustomer": "A member",
+    "customerHarm": "A member is wrongly denied, delayed, charged or paid: in a benefit payment, an insurance claim, a rollover or a fee. Where the operation is on the critical operations register (I4), the failure is also tested against C5.",
+    "regulator": "APRA"
+  },
+  "replace": {
+    "documents": [
+      {
+        "ref": "D1",
+        "name": "Current AI inventory or register, with owner and date",
+        "usedFor": "First input to the register"
+      },
+      {
+        "ref": "D2",
+        "name": "AI governance framework and acceptable-use policy",
+        "usedFor": "Authority and the {entity}'s own rules at B3"
+      },
+      {
+        "ref": "D3",
+        "name": "Material service provider register",
+        "usedFor": "Confirming the set and boundary types"
+      },
+      {
+        "ref": "D4",
+        "name": "Board risk appetite statement and tolerance levels for the critical operations in the set",
+        "usedFor": "The appetite the evidence is measured against"
+      },
+      {
+        "ref": "D5",
+        "name": "The agreement for each arrangement, with schedules, service descriptions and side letters",
+        "usedFor": "Rights, audit and information terms, sub-contracting terms"
+      },
+      {
+        "ref": "D6",
+        "name": "Administration agreement and group insurance policy, with the authority each provider holds over member decisions",
+        "usedFor": "What authority the provider holds, and so what its AI can hold"
+      },
+      {
+        "ref": "D7",
+        "name": "Any provider disclosure about AI use already received: due diligence responses, attestations, notices",
+        "usedFor": "Evidence already obtainable"
+      },
+      {
+        "ref": "D8",
+        "name": "Licence terms and security documentation for each external AI service staff use",
+        "usedFor": "B3 entries"
+      },
+      {
+        "ref": "D9",
+        "name": "Existing assurance over the arrangements: audit reports, control reports, certifications",
+        "usedFor": "What existing assurance already covers"
+      },
+      {
+        "ref": "D10",
+        "name": "Incident and near-miss records involving AI in the set, last 24 months",
+        "usedFor": "Failure consequence"
+      }
+    ]
+  },
+  "override": {
+    "boundaries.0.parties": "The {entity} and a material service provider: the administrator, the group insurer, an investment manager or an advice provider acting under the trustee's delegation",
+    "boundaries.2.parties": "The {entity}'s member services, claims, investment and compliance staff and an external AI service",
+    "questions7.2.scale": "Passive · significant influence · contractual, including administration and group insurance agreements · control or board seat",
+    "authorityTests.1": "Does the output move money, change a member, benefit or claim record, or commit the {entity}?"
+  },
+  "edits": [
+    {
+      "at": "frameworkMarkdown",
+      "find": "Illustrative insurance example",
+      "replace": "Illustrative superannuation example"
+    },
+    {
+      "at": "frameworkMarkdown",
+      "find": "The insurance examples are illustrative",
+      "replace": "The superannuation examples are illustrative"
+    },
+    {
+      "at": "frameworkMarkdown",
+      "find": "A claims handler uses a copilot to summarise a file",
+      "replace": "A member services officer uses a copilot to summarise a member's file"
+    },
+    {
+      "at": "frameworkMarkdown",
+      "find": "A fraud score shown to an assessor",
+      "replace": "A risk score on a death or disablement claim shown to an assessor"
+    },
+    {
+      "at": "frameworkMarkdown",
+      "find": "Automatic triage of a claim to fast-track or investigation",
+      "replace": "Automatic triage of a benefit or insurance claim to fast-track or review"
+    },
+    {
+      "at": "frameworkMarkdown",
+      "find": "Automated pricing under a binder, or straight-through claim payment",
+      "replace": "Straight-through processing of a benefit payment or rollover"
+    },
+    {
+      "at": "frameworkMarkdown",
+      "find": "An agent that gathers documents, contacts a repairer and books an assessment",
+      "replace": "An agent that gathers a member's documents, contacts the employer and lodges the claim with the group insurer"
+    },
+    {
+      "at": "frameworkMarkdown",
+      "find": "An agent with write access to the policy administration system",
+      "replace": "An agent with write access to the member administration system"
+    },
+    {
+      "at": "frameworkMarkdown",
+      "find": "The {entity} and a material service provider: claims manager, underwriting agency or broker acting under delegated authority",
+      "replace": "The {entity} and a material service provider: the administrator, the group insurer, an investment manager or an advice provider acting under the trustee's delegation"
+    },
+    {
+      "at": "frameworkMarkdown",
+      "find": "The {entity}'s legal, claims and compliance staff and an external AI service",
+      "replace": "The {entity}'s member services, claims, investment and compliance staff and an external AI service"
+    },
+    {
+      "at": "frameworkMarkdown",
+      "find": "Passive · significant influence · contractual, including binder and claims agreements · control or board seat",
+      "replace": "Passive · significant influence · contractual, including administration and group insurance agreements · control or board seat"
+    },
+    {
+      "at": "frameworkMarkdown",
+      "find": "Delegated authority schedules for each binder or claims agreement",
+      "replace": "Administration agreement and group insurance policy, with the authority each provider holds over member decisions"
+    },
+    {
+      "at": "frameworkMarkdown",
+      "find": "change a policy or claim record",
+      "replace": "change a member, benefit or claim record"
+    },
+    {
+      "at": "frameworkMarkdown",
+      "find": "Business written through agencies or outside claims managers, where the agreement holds the audit rights.",
+      "replace": "Member administration, group insurance or investment management run by a provider, where the agreement holds the audit rights."
+    },
+    {
+      "at": "frameworkMarkdown",
+      "find": "For example a group life {entity} answering to superannuation trustees.",
+      "replace": "For example a trustee asked by {regulator}, or by an employer that uses the fund as its default."
+    }
+  ]
+}

@@ -1,0 +1,162 @@
+{
+  "id": "adi",
+  "name": "Authorised deposit-taking institution",
+  "jurisdiction": "AU",
+  "entityTypes": [
+    "authorisedDepositTakingInstitution"
+  ],
+  "note": "Task 3.3. ADI and customer nouns; brokers, collections agencies and payments or core banking providers at B1; credit delegations at D6; banking examples for the authority tiers. Counsel reviews the wording before it is used with a client.",
+  "nouns": {
+    "entity": "ADI",
+    "Entity": "ADI",
+    "entities": "ADIs",
+    "Entities": "ADIs",
+    "anEntity": "an ADI",
+    "AnEntity": "An ADI",
+    "customer": "customer",
+    "Customer": "Customer",
+    "customers": "customers",
+    "Customers": "Customers",
+    "aCustomer": "a customer",
+    "ACustomer": "A customer",
+    "customerHarm": "A customer is wrongly declined, delayed, charged or paid: in a credit decision, a payment, a hardship request, an account closure or a fee.",
+    "regulator": "APRA"
+  },
+  "replace": {
+    "documents": [
+      {
+        "ref": "D1",
+        "name": "Current AI inventory or register, with owner and date",
+        "usedFor": "First input to the register"
+      },
+      {
+        "ref": "D2",
+        "name": "AI governance framework and acceptable-use policy",
+        "usedFor": "Authority and the {entity}'s own rules at B3"
+      },
+      {
+        "ref": "D3",
+        "name": "Material service provider register",
+        "usedFor": "Confirming the set and boundary types"
+      },
+      {
+        "ref": "D4",
+        "name": "Board risk appetite statement and tolerance levels for the critical operations in the set",
+        "usedFor": "The appetite the evidence is measured against"
+      },
+      {
+        "ref": "D5",
+        "name": "The agreement for each arrangement, with schedules, service descriptions and side letters",
+        "usedFor": "Rights, audit and information terms, sub-contracting terms"
+      },
+      {
+        "ref": "D6",
+        "name": "Credit and lending delegations, and the authority each provider holds under its agreement",
+        "usedFor": "What authority the provider holds, and so what its AI can hold"
+      },
+      {
+        "ref": "D7",
+        "name": "Any provider disclosure about AI use already received: due diligence responses, attestations, notices",
+        "usedFor": "Evidence already obtainable"
+      },
+      {
+        "ref": "D8",
+        "name": "Licence terms and security documentation for each external AI service staff use",
+        "usedFor": "B3 entries"
+      },
+      {
+        "ref": "D9",
+        "name": "Existing assurance over the arrangements: audit reports, control reports, certifications",
+        "usedFor": "What existing assurance already covers"
+      },
+      {
+        "ref": "D10",
+        "name": "Incident and near-miss records involving AI in the set, last 24 months",
+        "usedFor": "Failure consequence"
+      }
+    ]
+  },
+  "override": {
+    "boundaries.0.parties": "The {entity} and a material service provider: a broker, a collections agency, or a payments or core banking provider acting under the ADI's delegation",
+    "boundaries.2.parties": "The {entity}'s lending, financial crime and compliance staff and an external AI service",
+    "questions7.2.scale": "Passive · significant influence · contractual, including broker, collections and payments agreements · control or board seat",
+    "authorityTests.1": "Does the output move money, change an account, credit or payment record, or commit the {entity}?"
+  },
+  "edits": [
+    {
+      "at": "frameworkMarkdown",
+      "find": "Illustrative insurance example",
+      "replace": "Illustrative banking example"
+    },
+    {
+      "at": "frameworkMarkdown",
+      "find": "The insurance examples are illustrative",
+      "replace": "The banking examples are illustrative"
+    },
+    {
+      "at": "frameworkMarkdown",
+      "find": "A claims handler uses a copilot to summarise a file",
+      "replace": "A lending officer uses a copilot to summarise an application"
+    },
+    {
+      "at": "frameworkMarkdown",
+      "find": "A fraud score shown to an assessor",
+      "replace": "A credit score shown to a credit assessor"
+    },
+    {
+      "at": "frameworkMarkdown",
+      "find": "Automatic triage of a claim to fast-track or investigation",
+      "replace": "Automatic decline or referral of a credit card application"
+    },
+    {
+      "at": "frameworkMarkdown",
+      "find": "Automated pricing under a binder, or straight-through claim payment",
+      "replace": "Straight-through approval and funding of a personal loan, or a payment released by a fraud model"
+    },
+    {
+      "at": "frameworkMarkdown",
+      "find": "An agent that gathers documents, contacts a repairer and books an assessment",
+      "replace": "An agent that gathers a customer's documents, verifies income and books a call"
+    },
+    {
+      "at": "frameworkMarkdown",
+      "find": "An agent with write access to the policy administration system",
+      "replace": "An agent with write access to the core banking system"
+    },
+    {
+      "at": "frameworkMarkdown",
+      "find": "The {entity} and a material service provider: claims manager, underwriting agency or broker acting under delegated authority",
+      "replace": "The {entity} and a material service provider: a broker, a collections agency, or a payments or core banking provider acting under the ADI's delegation"
+    },
+    {
+      "at": "frameworkMarkdown",
+      "find": "The {entity}'s legal, claims and compliance staff and an external AI service",
+      "replace": "The {entity}'s lending, financial crime and compliance staff and an external AI service"
+    },
+    {
+      "at": "frameworkMarkdown",
+      "find": "Passive · significant influence · contractual, including binder and claims agreements · control or board seat",
+      "replace": "Passive · significant influence · contractual, including broker, collections and payments agreements · control or board seat"
+    },
+    {
+      "at": "frameworkMarkdown",
+      "find": "Delegated authority schedules for each binder or claims agreement",
+      "replace": "Credit and lending delegations, and the authority each provider holds under its agreement"
+    },
+    {
+      "at": "frameworkMarkdown",
+      "find": "change a policy or claim record",
+      "replace": "an account, credit or payment record"
+    },
+    {
+      "at": "frameworkMarkdown",
+      "find": "Business written through agencies or outside claims managers, where the agreement holds the audit rights.",
+      "replace": "Lending, collections or payments run by a provider, where the agreement holds the audit rights."
+    },
+    {
+      "at": "frameworkMarkdown",
+      "find": "For example a group life {entity} answering to superannuation trustees.",
+      "replace": "For example an ADI asked for evidence by a payments scheme or a correspondent bank."
+    }
+  ]
+}

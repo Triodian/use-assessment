@@ -95,7 +95,7 @@ function screenUsers() {
     ${ADM.requests.map(r => `<tr><td class="em">${esc(r.email)}</td><td class="small">${fmtLocal(r.last_at)}</td><td class="adm-hide-sm small">${esc(r.attempts)}</td>
       <td style="text-align:right;white-space:nowrap"><button class="btn sm primary" data-act="grant" data-email="${esc(r.email)}">Add as user</button> <button class="btn sm" data-act="dismiss" data-email="${esc(r.email)}">Dismiss</button></td></tr>`).join('')}
     </tbody></table></div></section>` : '';
-  const short = n => n.replace(/ \((Triodian|insurer)\)/, '');
+  const short = n => n.replace(/ \((Triodian|client|insurer)\)/, '');
   const perms = `<section class="adm-sec"><h2>Roles and permissions</h2>
     <p class="small soft" style="margin:4px 0 12px">What each role can change. The server checks every save against these rules, including the rules that depend on who did what (for example, a peer reviewer cannot review an entry they classified).</p>
     <div class="tw"><table class="lg perm"><thead><tr><th>Can change</th>${ADM.roles.map(r => `<th class="r">${esc(short(r.name))}</th>`).join('')}</tr></thead><tbody>

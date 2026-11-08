@@ -1,0 +1,98 @@
+My actions 2
+Set-up
+Set
+Register
+Classify
+Counsel
+Findings
+Review
+Outputs
+Practice · not saved
+⌾
+Choose person
+Meredith Vance · Counsel
+Helen Brandt · GC
+Ana Duarte · Arrangement owner
+Sam Okoro · Method owner
+Jordan Pike · Assessor
+Ravi Menon · Peer reviewer
+Elise Tan · Validation
+Kit Morrow · Delivery manager
+Lena Hartmann · Independent reviewer
+Priya Natarajan · CRO
+DH
+☰
+Privileged and confidential · prepared at the direction of counsel · worked example
+Askew Lane Partners (fictional)
+Corvane General Insurance (fictional) · AUA-CGI-2026-01
+Worked example: a fictional insurer, Corvane, and its providers, for practice only. Nothing is saved.
+Leave the worked example
+Uncalibrated: no calibration set is loaded, so the framework defaults apply
+Phase 6 · review
+Quality control and independent check
+
+Seven review points (R1 to R7), including the legal-line check (R5), then the exceptions log and the points raised by the independent reviewer.
+
+#	Review	Reviewer	Status	By · on
+R2	Register completeness
+Fields 1 to 14 complete or not known; every value sourced and dated
+	Delivery manager	Not run		Run completeness check
+Only the delivery manager can run R2 (register completeness). Why
+
+R3	Classification review
+Tier re-derived from fields 11 to 13 without sight of the original; differences resolved and logged
+	A second Triodian reviewer, not the classifier	2/4 re-derived		Classify step 5
+R4	Validation
+Rules in sections 8.3 and 8.4 applied consistently across entries; every adjustment has a reason; every obtainable rung has five test results
+	Validation (Triodian)	Not recorded		Passed
+Only a validation person can record R4 (validation). Why
+
+R5	Legal-line check
+No sentence states what the law requires; "required" and "gap" used only as section 10.4 allows
+	Method owner	2 of 2 hits open		hits
+R6	Counsel review
+Draft seen by counsel first; determinations transcribed accurately
+	Counsel	Not recorded		Record counsel review
+Only counsel can record R6 (counsel review). Why
+
+R7	Independent check
+Is the assessment sound, and are its findings supported?
+	Independent reviewer, through counsel	0 points open		Confirm R7 complete
+The independent reviewer reports through counsel, so only the independent reviewer can confirm R7 (independent check). Why
+
+✓ R1 complete · show
+R5 · Legal-line check
+
+The app scans every draft output for wording that states what the law requires. Each hit is listed once for its phrase and source text, so clearing it clears it in every output that contains that text. No output can be exported as final until every hit is cleared.
+
+Phrase list (one per line; kept by the method owner)
+“breach of” · Fixed text · in EP
+Clear
+C2 | Contract breach | The provider or insurer would be in breach of an agreement term | — | — |
+“in breach” · Fixed text · in EP
+Clear
+C2 | Contract breach | The provider or insurer would be in breach of an agreement term | — | — |
+Exceptions log
+Add exception
+
+No exceptions recorded.
+
+Independent review points
+Add point
+
+Only the independent reviewer can log review points. Why
+
+The independent reviewer logs each point. Triodian responds. Only the independent reviewer closes or discloses a point.
+
+No points logged.
+
+Phase 6 exit gate
+R7 (independent check) complete
+← Findings
+Phase 6 open
+Outputs →
+Scope. A technical assessment prepared for counsel. It states what the documents show and how each AI use is classified. It gives no legal advice and recommends no product.
+Framework 12 October 2026
+User guide
+Reference
+Uncalibrated: framework defaults apply

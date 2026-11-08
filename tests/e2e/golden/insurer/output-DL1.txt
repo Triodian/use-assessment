@@ -1,0 +1,184 @@
+Privileged and confidential · prepared at the direction of counsel · worked example
+
+# DL1 · AI dependency register
+
+**Uncalibrated: framework defaults apply** · Draft · [today] · WORKED EXAMPLE, FICTIONAL
+
+Corvane General Insurance (fictional) · AUA-CGI-2026-01
+
+Every entry, with all 26 fields and their sources. Fields recorded as not known: 6.
+
+## REG-001 · ARR-01
+
+| # | Field | Value | Source |
+| --- | --- | --- | --- |
+| 1 | Entry ID | REG-001 | — |
+| 2 | Arrangement ID | ARR-01 | — |
+| 3 | Boundary type | B1 Insurer to third party | D3 p.4 |
+| 4 | Where the AI acts | Provider | D5-ARR01 cl.2 |
+| 5 | Business function and critical operation supported | Motor claims handling · critical operation: Claims payment | D3 p.4 |
+| 6 | On the insurer's inventory | Yes | D1 row 14 |
+| 7 | System name and purpose | Motor claims triage model | D7-ARR01 p.3 |
+| 8 | Supplier | Harlow Claims Services Pty Ltd (fictional) | D5-ARR01 p.1 |
+| 9 | Platform and model provider behind it | Quillon Analytics (fictional) | D7-ARR01 p.3 |
+| 10 | Location of each party, and any offshoring | Harlow: Australia · Quillon: Australia | D5-ARR01 p.1 |
+| 11 | What the AI does | Routes each new motor claim to fast-track payment or investigation. No person reviews the routing. | D7-ARR01 p.3 |
+| 12 | Human involvement | The output is the decision | IV-2 2026-10-15 |
+| 13 | Credentials and systems the AI can change | Read access to claims intake; no write access | D7-ARR01 p.4 |
+| 14 | Agreement terms on information, audit, sub-contracting and notification | cl.11.2: "The Insurer may audit the Manager’s financial records relating to the Services." cl.14.1: material incidents notified within 5 business days. | D5-ARR01 p.14 |
+| 15 | Authority tier | A3 Decision | Q5 tests 1 to 3 |
+| 16 | Failure consequence | C4 Policyholder harm | Wrong routing delays or denies payment to a policyholder; D10 records two near misses |
+| 17 | Indicative rung | E4 Audit | Base rule E3; C4 with A3: up one (proposed adjustment) |
+| 18 | Evidence currently received | E1 Disclosure · Due diligence response naming the triage tool | D7-ARR01 |
+| 19 | Evidence the system could produce | Routing outcomes by category, aggregated weekly in the triage platform | IV-2 2026-10-15 |
+| 20 | Independently checkable | Partly · An auditor with access could verify; none appointed | D9 p.2 |
+| 21 | Obtainable rung | E2 Attestation | Obtainability test |
+| 22 | Confidence in obtainability | medium | Obtainability test |
+| 23 | Nexus, relationship and location determination | — | — |
+| 24 | Rights the insurer holds | — | — |
+| 25 | Required rung and grading | — | — |
+| 26 | Finding and gap owner | Awaiting counsel | Finding |
+
+Flags: none · not known: 0
+
+## REG-002 · ARR-01
+
+| # | Field | Value | Source |
+| --- | --- | --- | --- |
+| 1 | Entry ID | REG-002 | — |
+| 2 | Arrangement ID | ARR-01 | — |
+| 3 | Boundary type | B2 Third party to fourth party | D7-ARR01 p.3 |
+| 4 | Where the AI acts | Platform behind a provider | D7-ARR01 p.3 |
+| 5 | Business function and critical operation supported | Motor claims handling · critical operation: Claims payment | D3 p.4 |
+| 6 | On the insurer's inventory | Partly | D1 row 14 names Harlow only |
+| 7 | System name and purpose | Claim scoring service behind the triage model | D7-ARR01 p.3 |
+| 8 | Supplier | Quillon Analytics (fictional) | D7-ARR01 p.3 |
+| 9 | Platform and model provider behind it | not known | — |
+| 10 | Location of each party, and any offshoring | Australia; model hosting not stated | D7-ARR01 p.3 |
+| 11 | What the AI does | Scores each new claim. The score sets the route the triage model applies. | D7-ARR01 p.3 |
+| 12 | Human involvement | The output is the decision | IV-2 2026-10-15 |
+| 13 | Credentials and systems the AI can change | none | D7-ARR01 p.4 |
+| 14 | Agreement terms on information, audit, sub-contracting and notification | No flow-down term found in D5-ARR01 on sub-contractor AI. | D5-ARR01 p.16 |
+| 15 | Authority tier | — | — |
+| 16 | Failure consequence | — | — |
+| 17 | Indicative rung | — | — |
+| 18 | Evidence currently received | — | — |
+| 19 | Evidence the system could produce | — | — |
+| 20 | Independently checkable | — | — |
+| 21 | Obtainable rung | not known | Obtainability test |
+| 22 | Confidence in obtainability | not known | Obtainability test |
+| 23 | Nexus, relationship and location determination | — | — |
+| 24 | Rights the insurer holds | — | — |
+| 25 | Required rung and grading | — | — |
+| 26 | Finding and gap owner | Awaiting counsel | Finding |
+
+Flags: none · not known: 1
+
+## REG-003 · ARR-02
+
+| # | Field | Value | Source |
+| --- | --- | --- | --- |
+| 1 | Entry ID | REG-003 | — |
+| 2 | Arrangement ID | ARR-02 | — |
+| 3 | Boundary type | B3 Insurer's own use | D8-ARR02 p.1 |
+| 4 | Where the AI acts | Own staff | D2 s.4 |
+| 5 | Business function and critical operation supported | Legal research and drafting · none | IV-5 2026-10-17 |
+| 6 | On the insurer's inventory | Yes | D1 row 3 |
+| 7 | System name and purpose | Drafting assistant for legal staff | D8-ARR02 p.1 |
+| 8 | Supplier | Lexmere Ltd (fictional) | D8-ARR02 p.1 |
+| 9 | Platform and model provider behind it | Lexmere Ltd (fictional); model provider named in the security pack | D8-ARR02 p.6 |
+| 10 | Location of each party, and any offshoring | Lexmere: United Kingdom · processing: Australia region | D8-ARR02 p.6 |
+| 11 | What the AI does | Drafts and summarises documents. A lawyer edits and sends the final text. | D2 s.4 |
+| 12 | Human involvement | A person acts | D2 s.4 |
+| 13 | Credentials and systems the AI can change | none | D8-ARR02 p.7 |
+| 14 | Agreement terms on information, audit, sub-contracting and notification | cl.7: usage reports on request. cl.9: 30 days’ notice of a sub-processor change. | D8-ARR02 p.3 |
+| 15 | Authority tier | A1 Productivity | Q5 tests 1 to 3 |
+| 16 | Failure consequence | C2 Contract breach | Misuse would breach the licence acceptable-use term |
+| 17 | Indicative rung | E1 Disclosure | Base rule, no adjustment |
+| 18 | Evidence currently received | E1 Disclosure · Licence terms and usage policy | D8-ARR02 |
+| 19 | Evidence the system could produce | Monthly usage report by team | D8-ARR02 p.3 |
+| 20 | Independently checkable | Yes · Report can be checked against the insurer’s own logs | D8-ARR02 p.3 |
+| 21 | Obtainable rung | E1 Disclosure | Obtainability test |
+| 22 | Confidence in obtainability | high | Obtainability test |
+| 23 | Nexus, relationship and location determination | — | — |
+| 24 | Rights the insurer holds | — | — |
+| 25 | Required rung and grading | E1 Disclosure · expectation | QC-02 |
+| 26 | Finding and gap owner | F1 Evidence obtainable · owner: AI governance lead | Finding |
+
+Flags: none · not known: 0
+
+## REG-004 · ARR-03
+
+| # | Field | Value | Source |
+| --- | --- | --- | --- |
+| 1 | Entry ID | REG-004 | — |
+| 2 | Arrangement ID | ARR-03 | — |
+| 3 | Boundary type | B1 Insurer to third party | D3 p.6 |
+| 4 | Where the AI acts | Provider | D6-ARR03 p.2 |
+| 5 | Business function and critical operation supported | SME property pricing · none | D3 p.6 |
+| 6 | On the insurer's inventory | No | D1 (not listed) |
+| 7 | System name and purpose | not known | — |
+| 8 | Supplier | Fenwick Underwriting Pty Ltd (fictional) | D6-ARR03 p.1 |
+| 9 | Platform and model provider behind it | not known | — |
+| 10 | Location of each party, and any offshoring | Australia | D6-ARR03 p.1 |
+| 11 | What the AI does | not known | — |
+| 12 | Human involvement | not known | — |
+| 13 | Credentials and systems the AI can change | not known | — |
+| 14 | Agreement terms on information, audit, sub-contracting and notification | Binder cl.6: Fenwick prices within the rating guide; no term mentions automation. | D6-ARR03 p.4 |
+| 15 | Authority tier | — | — |
+| 16 | Failure consequence | — | — |
+| 17 | Indicative rung | — | — |
+| 18 | Evidence currently received | — | — |
+| 19 | Evidence the system could produce | — | — |
+| 20 | Independently checkable | — | — |
+| 21 | Obtainable rung | not known | Obtainability test |
+| 22 | Confidence in obtainability | not known | Obtainability test |
+| 23 | Nexus, relationship and location determination | — | — |
+| 24 | Rights the insurer holds | — | — |
+| 25 | Required rung and grading | — | — |
+| 26 | Finding and gap owner | F4 Not determinable on documents | Finding |
+
+Flags: none · not known: 5
+
+## Changes since V1 · Set agreed (R1) (13 October 2026)
+
+| Entry | What changed | Was | Now |
+| --- | --- | --- | --- |
+| REG-001 | 15 Authority tier | — | A3 Decision |
+| REG-001 | 16 Failure consequence | — | C4 Policyholder harm |
+| REG-001 | 18 Evidence currently received | — | E1 Disclosure · Due diligence response naming the triage tool |
+| REG-001 | 19 Evidence the system could produce | — | Routing outcomes by category, aggregated weekly in the triage platform |
+| REG-001 | 20 Independently checkable | — | partly · An auditor with access could verify; none appointed |
+| REG-003 | 15 Authority tier | — | A1 Productivity |
+| REG-003 | 16 Failure consequence | — | C2 Contract breach |
+| REG-003 | 18 Evidence currently received | — | E1 Disclosure · Licence terms and usage policy |
+| REG-003 | 19 Evidence the system could produce | — | Monthly usage report by team |
+| REG-003 | 20 Independently checkable | — | yes · Report can be checked against the insurer’s own logs |
+| REG-003 | 25 Required rung and grading | — | E1 Disclosure · expectation |
+
+## Source index
+
+| ID | Document | Status | Date |
+| --- | --- | --- | --- |
+| D1 | Current AI inventory or register, with owner and date | received | 2026-10-10 |
+| D2 | AI governance framework and acceptable-use policy | received | 2026-10-10 |
+| D3 | Material service provider register | received | 2026-10-10 |
+| D4 | Board risk appetite statement and tolerance levels for the critical operations in the set | received | 2026-10-10 |
+| D5 | The agreement for each arrangement, with schedules, service descriptions and side letters | received | 2026-10-10 |
+| D6 | Delegated authority schedules for each binder or claims agreement | received | 2026-10-10 |
+| D7 | Any provider disclosure about AI use already received: due diligence responses, attestations, notices | received | 2026-10-10 |
+| D8 | Licence terms and security documentation for each external AI service staff use | received | 2026-10-10 |
+| D9 | Existing assurance over the arrangements: audit reports, control reports, certifications | received | 2026-10-10 |
+| D10 | Incident and near-miss records involving AI in the set, last 24 months | received | 2026-10-10 |
+| D5-ARR01 | Claims management agreement, Harlow Claims Services | received | 2026-10-10 |
+| D7-ARR01 | Harlow due diligence response 2026 | received | 2026-10-10 |
+| D8-ARR02 | Lexmere licence terms and security pack | received | 2026-10-10 |
+| D6-ARR03 | Fenwick binder delegated authority schedule | received | 2026-10-10 |
+
+| ID | Interview | Date | Notes |
+| --- | --- | --- | --- |
+| IV-1 | Head of AI or AI governance | 2026-10-14 | IN-01 |
+| IV-2 | Owner of each arrangement in the set | 2026-10-15 | IN-02 |
+| IV-3 | Procurement or vendor management | 2026-10-16 | IN-03 |
+| IV-4 | Operational risk, second line | 2026-10-17 | IN-04 |
+| IV-5 | Users of each external AI service at B3 | 2026-10-17 | IN-05 |

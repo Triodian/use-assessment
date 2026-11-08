@@ -4,6 +4,8 @@
 (function () {
 'use strict';
 let C = null, S = null;
+let BASE = null;   // aua-content.js as built: the wording with {tokens}, and every sector pack (public/shared/packs.js)
+let N = {};        // the pack's nouns: N.entity is "insurer" in the general insurer pack
 const UI = { screen: 'entry', personId: '', drawer: false, pop: null, sheet: null, entryId: null, tab: 'facts', step: 1, outTab: '', cnTab: 'log', filt: { arr: '', b: '', f: '', flag: '', nk: false }, refQ: '', present: false, dirty: false, err: {}, hist: null, ask: null, expanded: {}, qOpen: null };
 const AT = ['A1','A2','A3','A4','A5','A6'], CO = ['C1','C2','C3','C4','C5'], EV = ['E0','E1','E2','E3','E4','E5','E6'], CONF = ['low','medium','high'], PRI = ['Low','Medium','High'];
 const TRI = ['methodOwner','assessor','peer','validation','delivery'], MARKS = ['Accepted', 'Escalate', 'Not accepted'], BANDS = ['b12', 'b3', 'b45'], TESTS = ['T1', 'T2', 'T3', 'T4', 'T5'];
@@ -40,7 +42,7 @@ const canFacts = () => has('assessor') || has('methodOwner');
 const tierName = c => (C.tiers.find(t => t.code === c) || {}).name || '';
 const consName = c => (C.consequences.find(t => t.code === c) || {}).name || '';
 const rungName = c => (C.rungs.find(t => t.code === c) || {}).name || '';
-/* Short names beside scale codes (as in the Risk Appetite app): "C2 Contract breach", "F2 Gap", "B1 Insurer to third party". */
+/* Short names beside scale codes (as in the Risk Appetite app): "C2 Contract breach", "F2 Gap". */
 const codeName = c => { const all = [].concat(C.tiers, C.consequences, C.rungs, C.findings, C.boundaries); return (all.find(t => t.code === c) || {}).name || ''; };
 const codeOpt = c => codeName(c) ? c + ' ' + codeName(c) : String(c || '');
 const codeHtml = c => codeName(c) ? `${esc(c)} <span class="clbl">${esc(codeName(c))}</span>` : esc(c);
@@ -59,7 +61,7 @@ const optL = v => C.optLabels[v] || v;
 function newAssessment() {
   return {
     schema: 'triodian.aua.v1',
-    engagement: { id: uid(), insurer: '', reference: '', counselFirm: '', gcActsAsCounsel: false, secondApproverId: '', privilegeMarking: '', startDate: '', briefConfirmed: { by: '', on: '', ref: '' }, documentsRequestedOn: '', independentReviewerReportsTo: 'counsel', irPersonId: '', irOrganisation: '', croPersonId: '', example: false, autosave: false, legalPhrases: C.legalPhrases.slice(), annexText: {}, annexSigned: { by: '', on: '' }, handBack: { by: '', on: '' } },
+    engagement: { id: uid(), insurer: '', sectorPack: C.pack, reference: '', counselFirm: '', gcActsAsCounsel: false, secondApproverId: '', privilegeMarking: '', startDate: '', briefConfirmed: { by: '', on: '', ref: '' }, documentsRequestedOn: '', independentReviewerReportsTo: 'counsel', irPersonId: '', irOrganisation: '', croPersonId: '', example: false, autosave: false, legalPhrases: C.legalPhrases.slice(), annexText: {}, annexSigned: { by: '', on: '' }, handBack: { by: '', on: '' } },
     people: [],
     calibration: { loaded: false, status: 'default', version: 0, date: '', approvedBy: '', agreedBy: '', privilegeMarking: '', minuteRef: '', fellBack: [], parameters: {} },
     documents: C.documents.map(d => ({ id: d.ref, ref: d.ref, title: d.name, status: '', date: '' })),
@@ -438,7 +440,7 @@ function myActions() {
   });
   if (G[5].ok && !deny('r7') && rev('R7').result !== 'complete' && !S.independentReviewPoints.some(x => x.status === 'open')) add('Confirm the independent check (R7)', 'No review points are open.', { act: 'go', to: 'review' });
   if (r('methodOwner') && G[5].ok && !S.engagement.annexSigned.by) add('Sign the technical annex', 'The method owner signs the annex before it goes to counsel.', { act: 'outTab', t: 'DL5' });
-  if (r('owner') && G[5].ok && !S.engagement.handBack.by) add('Accept the hand-back list', 'AI uses found that are not on the insurer’s inventory.', { act: 'outTab', t: 'DL6' });
+  if (r('owner') && G[5].ok && !S.engagement.handBack.by) add('Accept the hand-back list', 'AI uses found that are not on the ' + N.entity + '’s inventory.', { act: 'outTab', t: 'DL6' });
   return out.sort((a, b) => (b.tone === 'due') - (a.tone === 'due'));
 }
 function screenActions() {
@@ -502,7 +504,7 @@ function entryOverlay() {
   return `<div class="overlay" role="dialog" aria-modal="true" aria-labelledby="entry-h"><div class="entry" style="border-top-color:var(--navy)">
     <div class="row" style="gap:12px;margin-bottom:22px">${LOGO(26)}<span class="vrule"></span><span style="font-weight:600">AI Use Assessment</span></div>
     <div class="eyebrow">What the documents show, at each boundary</div>
-    <h1 id="entry-h" class="h1" style="font-size:32px">A record of where AI acts, and what evidence about it can reach the insurer</h1>
+    <h1 id="entry-h" class="h1" style="font-size:32px">A record of where AI acts, and what evidence about it can reach the ${N.entity}</h1>
     <p class="soft">The assessment runs in eight phases, from set-up to close. Each place where AI acts becomes one register entry and goes through seven questions. Starting from the indicative rung, each rung of evidence is tested in turn until one passes all five tests (T1 to T5). Each arrangement ends with one finding.</p>
     ${entryStatus()}
     <div class="acts">
@@ -560,7 +562,7 @@ const briefRaised = q => S.questions.find(x => x.fromBrief && x.fromBrief === q.
 function briefCard(fs) {
   const mb = S.engagement.matterBrief, n = mb ? mb.tiers.reduce((m, t) => m + t.refs.length, 0) : 0;
   let h = `<section class="card" id="briefCard"><div class="row between"><h2 class="sh" style="margin:0">Matter brief · obligations in scope</h2><div class="row"><button class="btn sm" data-act="loadBrief" ${fs}>${mb ? 'Load a newer brief' : 'Load the brief'}</button><button class="btn sm ghost" data-act="togglePaste" ${fs}>${UI.paste ? 'Hide paste box' : 'Paste instead'}</button></div></div>`;
-  h += `<p class="small soft" style="margin:8px 0 12px">Build the brief in the <a href="${esc(atlasBriefUrl())}" target="_blank" rel="noopener">AI Obligations Atlas</a> for the insurer’s jurisdictions, entity type and AI use cases, then load the file it downloads. The brief lists what sources say, by tier. Counsel decides what applies.</p>`;
+  h += `<p class="small soft" style="margin:8px 0 12px">Build the brief in the <a href="${esc(atlasBriefUrl())}" target="_blank" rel="noopener">AI Obligations Atlas</a> for the ${N.entity}’s jurisdictions, entity type and AI use cases, then load the file it downloads. The brief lists what sources say, by tier. Counsel decides what applies.</p>`;
   if (UI.paste) h += `<textarea class="in" id="brief_paste" rows="5" placeholder="Paste the JSON the Atlas copied" aria-label="Matter brief JSON"></textarea><div class="row" style="margin:6px 0 12px"><button class="btn sm" data-act="pasteBrief" ${fs}>Load the pasted brief</button></div>`;
   if (UI.briefError) h += `<p class="err" role="alert">${esc(UI.briefError)}</p>`;
   if (!mb) return h + '<p class="small soft" style="margin:0">No matter brief loaded.</p></section>';
@@ -606,7 +608,7 @@ function screenSetup() {
   return `${opening('Phase 0 · mobilise', 'Set up the assessment', 'Record the engagement details, the people and their roles, the independent reviewer, the calibration set, and the documents and interviews.')}
   ${whyNote(why)}
   <div class="stack">
-  <section class="card"><h2 class="sh">1 · Engagement</h2><div class="fgrid">${fld('Insurer', 'engagement.insurer', e.insurer)}${fld('Reference', 'engagement.reference', e.reference)}${fld('Counsel firm', 'engagement.counselFirm', e.counselFirm)}${fld('Start date', 'engagement.startDate', e.startDate, { type: 'date' })}</div>
+  <section class="card"><h2 class="sh">1 · Engagement</h2><div class="fgrid">${fld(N.Entity, 'engagement.insurer', e.insurer)}${fld('Sector pack', 'engagement.sectorPack', packId(), { select: TriodianPacks.list(BASE).map(p => [p.id, p.name]), disabled: packLocked() || undefined })}${fld('Reference', 'engagement.reference', e.reference)}${fld('Counsel firm', 'engagement.counselFirm', e.counselFirm)}${fld('Start date', 'engagement.startDate', e.startDate, { type: 'date' })}</div>
     <div style="margin-top:14px">${fld(T('privilege', 'Privilege marking') + ' (as counsel directs; printed on every output)', 'engagement.privilegeMarking', e.privilegeMarking, { raw: true })}</div>
     <div style="margin-top:14px"><label class="cb"><input type="checkbox" id="e-gcac" data-path="engagement.gcActsAsCounsel" ${e.gcActsAsCounsel ? 'checked' : ''} ${fs}> The GC also acts as counsel</label><p class="small soft" style="margin:4px 0 0">When one person holds both roles, the second agreement to the set (R1) comes from a named second approver, and every output records that the GC held both roles.</p>
       ${e.gcActsAsCounsel ? `<div class="fgrid" style="margin-top:8px">${fld('Second approver (a company executive with the second approver role)', 'engagement.secondApproverId', e.secondApproverId, { select: peopleOpts('executive') })}</div>${!peopleOpts('executive').some(o => o[0]) ? '<p class="small" style="color:var(--ochre)">No one has the second approver role yet. Give it to the executive in the people list.</p>' : ''}` : ''}</div>
@@ -771,9 +773,9 @@ function screenClassify() {
       <div class="fgrid"><label class="f" for="tierSel"><span>Record the tier (field 15)</span><select class="in" id="tierSel" ${dis}><option value="">Choose a tier</option>${AT.map(t => `<option value="${t}" ${fv(e, 15) === t ? 'selected' : ''}>${esc(codeOpt(t))}</option>`).join('')}</select></label>${fld('Reason for overriding (if you choose a tier other than the proposed one)', `entries.${i}.tierOverrideReason`, e.tierOverrideReason)}</div>
       ${UI.err.tier ? `<p class="err" role="alert">${esc(UI.err.tier)}</p>` : ''}<button class="btn primary sm" id="${base}-settier" data-act="setTier" style="align-self:flex-start" ${dis}>Record tier</button></div>`;
   }
-  if (s === 2) { const p2 = P('P2'), ins = c => p2 && typeof p2 === 'object' ? Object.entries(p2).filter(([k]) => k.startsWith(c)).map(([k, v]) => { const lbl = k.replace(/^C\d+\s*[,·:]?\s*/, ''); return `<br><span class="small">Insurer’s threshold · ${esc(lbl)}: ${esc(v || '')}</span>`; }).join('') : '';
+  if (s === 2) { const p2 = P('P2'), ins = c => p2 && typeof p2 === 'object' ? Object.entries(p2).filter(([k]) => k.startsWith(c)).map(([k, v]) => { const lbl = k.replace(/^C\d+\s*[,·:]?\s*/, ''); return `<br><span class="small">${N.Entity}’s threshold · ${esc(lbl)}: ${esc(v || '')}</span>`; }).join('') : '';
     const cwy = deny('consequence');
-    step = `<h2 class="sh">Question 6 · ${T('consequence', 'failure consequence')}</h2><p class="small soft">Choose the most serious credible outcome if the AI acted wrongly and went undetected for one reporting period. Anchor it to the insurer’s tolerance for the critical operation in field 5, where one exists.</p>
+    step = `<h2 class="sh">Question 6 · ${T('consequence', 'failure consequence')}</h2><p class="small soft">Choose the most serious credible outcome if the AI acted wrongly and went undetected for one reporting period. Anchor it to the ${N.entity}’s tolerance for the critical operation in field 5, where one exists.</p>
     <div class="stack" style="gap:8px">${C.consequences.map(c => `<label class="panel2 cb" style="padding:10px 14px;align-items:flex-start;${fv(e, 16) === c.code ? 'border-color:var(--aubergine);background:var(--aubergine-bg)' : ''}"><input type="radio" name="cons" id="${base}-cons-${c.code}" data-cons="${c.code}" ${fv(e, 16) === c.code ? 'checked' : ''} ${canC ? '' : 'disabled'}><span><span class="mono" style="font-weight:600">${c.code}</span> ${esc(c.name)}<br><span class="small soft">${esc(c.def)}</span>${ins(c.code)}</span></label>`).join('')}</div>
     <div style="margin-top:10px">${fld('Reason and source (field 16)', `entries.${i}.fields.16.source`, (e.fields[16] || {}).source || '', { ph: 'Two lines tied to the facts, for example: D10 incident log' })}</div>
     <div class="row" style="margin-top:10px"><button class="btn sm" data-act="confirmCons" ${!cwy && fv(e, 16) ? '' : 'disabled'}>Confirm as arrangement owner</button><span class="small soft">${e.consequenceConfirmedBy ? 'Confirmed by ' + esc(pname(e.consequenceConfirmedBy)) + ', ' + esc(dAU(e.consequenceConfirmedOn)) : esc(cwy || '')}</span></div>${whyNote(cwhy)}`; }
@@ -924,7 +926,7 @@ function textSources() {
   S.questions.forEach(q => ['facts', 'question', 'why', 'response'].forEach(k => add(`${q.ref}.${k}`, `${q.ref} ${k}`, q[k])));
   Object.entries(S.engagement.annexText || {}).forEach(([k, v]) => add('annex.' + k, 'Annex section ' + k, v));
   S.exceptions.forEach(x => ['departure', 'reason'].forEach(k => add(`${x.ref}.${k}`, `${x.ref} ${k}`, x[k])));
-  ['insurer', 'reference', 'privilegeMarking', 'irOrganisation', 'counselFirm'].forEach(k => add('eng.' + k, 'Set-up ' + k, S.engagement[k]));
+  ['insurer', 'reference', 'privilegeMarking', 'irOrganisation', 'counselFirm'].forEach(k => add('eng.' + k, 'Set-up ' + (k === 'insurer' ? N.entity : k), S.engagement[k]));
   S.documents.forEach(d => add('doc.' + d.id, 'Document ' + d.id, d.title)); S.interviews.forEach(v => { add('iv.' + v.id, 'Interview ' + v.id, v.who); add('ivn.' + v.id, 'Interview ' + v.id + ' notes', v.notesRef); });
   return src;
 }
@@ -987,11 +989,11 @@ function bothRoles() {
 }
 function mdHead(o) {
   const e = S.engagement, st = RAW ? '' : outStatus(o);
-  return `${e.privilegeMarking || '[Privilege marking not recorded in set-up]'}\n\n# ${o.id} · ${o.name}\n\n**${calLabel()}**${st ? ' · ' + st : ''} · ${dDoc(today())}${e.example ? ' · WORKED EXAMPLE, FICTIONAL' : ''}\n\n${e.insurer || '[Insurer]'} · ${e.reference || '[reference]'}\n\n${bothRoles()}`;
+  return `${e.privilegeMarking || '[Privilege marking not recorded in set-up]'}\n\n# ${o.id} · ${o.name}\n\n**${calLabel()}**${st ? ' · ' + st : ''} · ${dDoc(today())}${e.example ? ' · WORKED EXAMPLE, FICTIONAL' : ''}\n\n${e.insurer || '[' + N.Entity + ']'} · ${e.reference || '[reference]'}\n\n${bothRoles()}`;
 }
 const OUTS = [
   { id: 'DL1', name: 'AI dependency register', gate: 3, gen: genDL1 }, { id: 'DL2', name: 'Evidence obtainable at each boundary', gate: 5, gen: genDL2 },
-  { id: 'DL3', name: "Control-library shape for the insurer's own AI boundary", gate: 5, gen: genDL3 }, { id: 'DL4', name: 'Technical schedule, tolerance and trigger design', gate: 5, gen: genDL4 },
+  { id: 'DL3', name: '', /* named from the pack in applyPack */ gate: 5, gen: genDL3 }, { id: 'DL4', name: 'Technical schedule, tolerance and trigger design', gate: 5, gen: genDL4 },
   { id: 'DL5', name: 'Technical annex', gate: 6, gen: genDL5 }, { id: 'DL6', name: 'Hand-back list', gate: 2, gen: genDL6 },
   { id: 'QS', name: 'Question set to counsel', gate: 3, gen: genQS }, { id: 'RP', name: 'Review pack for the independent reviewer', gate: 5, gen: genRP },
   { id: 'CM', name: 'Closing measures', gate: 7, gen: genCM }, { id: 'DR', name: 'Difference report', gate: 0, gen: genDR },
@@ -1019,13 +1021,13 @@ function genDL1() {
 function dl1Csv() {
   const q = v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"', o = O('DL1');
   const head = ['Entry', 'Arrangement', ...C.fields.map(d => d.n + ' ' + FLD(d.n).name), ...C.fields.map(d => d.n + ' source'), 'Flags', 'Not known'];
-  return [[S.engagement.privilegeMarking || '[Privilege marking not recorded]'], [calLabel()], [outStatus(o) + ' · ' + dDoc(today())], [(S.engagement.insurer || '[Insurer]') + ' · ' + (S.engagement.reference || '')], ...(bothRoles() ? [[bothRoles().trim()]] : []), [],
+  return [[S.engagement.privilegeMarking || '[Privilege marking not recorded]'], [calLabel()], [outStatus(o) + ' · ' + dDoc(today())], [(S.engagement.insurer || '[' + N.Entity + ']') + ' · ' + (S.engagement.reference || '')], ...(bothRoles() ? [[bothRoles().trim()]] : []), [],
     head, ...S.entries.map(e => [e.id, e.arrangementId, ...C.fields.map(d => fieldOut(e, d.n)), ...C.fields.map(d => fieldSrc(e, d.n)), flags(e).map(x => x.label).join('; '), notKnownCount(e)])].map(r => r.map(q).join(',')).join('\n');
 }
 /* ---------- engagement plan (development plan task 0.7) ----------
    The phases come from the framework's own workplan (section 5.1), so the plan says what the method says. Sessions are
    the framework's interviews, with the dates set-up records; attendees by role come from the people list; inputs are
-   the documents the insurer is asked for; sign-off points are the review points R1 to R7, with where each stands. */
+   the documents the ${N.entity} is asked for; sign-off points are the review points R1 to R7, with where each stands. */
 function fwTable(heading) {
   const m = C.frameworkMarkdown || '', i = m.indexOf(heading); if (i < 0) return [];
   const lines = m.slice(i).split('\n').slice(1).filter((l, k, a) => l.startsWith('|') || (k < 3 && !l.trim()));
@@ -1036,7 +1038,7 @@ function genEP() {
   // RAW: the legal-line check (R5) is scanning every output's wording; the gates run that check, so skip them here.
   const G = RAW ? [] : gates(), e = S.engagement;
   let m = mdHead(O('EP'));
-  m += `This plan follows the framework’s workplan. It is for everyone taking part: what happens when, who attends, what the insurer is asked to provide, and where each sign-off stands.\n\n`;
+  m += `This plan follows the framework’s workplan. It is for everyone taking part: what happens when, who attends, what the ${N.entity} is asked to provide, and where each sign-off stands.\n\n`;
   const ph = fwTable('### 5.1 Phases');
   m += `## Phases\n\n` + tbl(['Phase', 'When', 'Activities', 'Exit gate', 'Where it stands'], ph.map((r, n) => [r[0], r[1], r[2], r[4] || '', G[n] ? (G[n].ok ? 'Met' : 'Open') : ''])) + '\n';
   m += `## Sessions\n\n` + tbl(['Session', 'Who', 'Purpose', 'Length', 'Date'], C.interviews.map((v, i) => { const iv = S.interviews.find(x => x.who === v.who) || S.interviews[i] || {}; return [iv.id || 'IV-' + (i + 1), v.who, v.purpose, v.length, iv.date ? dDoc(iv.date) : 'To be set']; }))
@@ -1045,18 +1047,18 @@ function genEP() {
   m += `## Attendees by role\n\n` + tbl(['Role', 'Named'], C.roles.map(r => [r.name, named(r.id) || 'Not yet named'])) + '\n';
   if (bothRoles()) m += bothRoles();
   const docStatus = ref => { const ds = S.documents.filter(d => d.ref === ref); if (!ds.length) return 'Not yet requested'; const st = ds.map(d => d.status || 'listed'); return ds.length === 1 ? st[0].replace(/^\w/, c => c.toUpperCase()) : `${ds.length} documents: ${[...new Set(st)].join(', ')}`; };
-  m += `## Documents needed from the insurer\n\n` + tbl(['Ref', 'Document', 'Used for', 'Status'], C.documents.map(d => [d.ref, d.name, d.usedFor, docStatus(d.ref)]))
+  m += `## Documents needed from the ${N.entity}\n\n` + tbl(['Ref', 'Document', 'Used for', 'Status'], C.documents.map(d => [d.ref, d.name, d.usedFor, docStatus(d.ref)]))
     + `\n${e.documentsRequestedOn ? 'The document request was issued on ' + dDoc(e.documentsRequestedOn) + '. ' : ''}No document needs to hold personal information; counsel directs how documents are handled.\n\n`;
   const sa = S.setAgreed, r1 = sa.gcBy && sa.counselBy ? `Agreed ${dDoc(sa.counselOn || sa.on)}` : sa.gcBy || sa.counselBy ? 'One of the two agreements recorded' : 'Not yet';
   const st = x => x.id === 'R1' ? r1 : rev(x.id).result || rev(x.id).on ? `${String(rev(x.id).result || 'Recorded').replace(/^\w/, c => c.toUpperCase())}${rev(x.id).on ? ' ' + dDoc(rev(x.id).on) : ''}` : 'Not yet';
   m += `## Sign-off points\n\n` + tbl(['Point', 'Review', 'When', 'Reviewer', 'Where it stands'], C.reviews.map(x => [x.id, x.name, x.when, x.id === 'R1' && e.gcActsAsCounsel ? 'GC and the second approver' : x.reviewer, st(x)]))
-    + `\nThe technical annex is signed by the method owner once the phase 5 gate is met, and the insurer’s arrangement owner accepts the hand-back list at close.\n`;
+    + `\nThe technical annex is signed by the method owner once the phase 5 gate is met, and the ${N.entity}’s arrangement owner accepts the hand-back list at close.\n`;
   return m;
 }
 function genDL2() { return mdHead(O('DL2')) + `## Summary\n\n` + summaryTable() + `## Worksheets\n\n` + S.arrangements.map(a => worksheetMd(a)).join(''); }
 function genDL3() {
   const b3 = S.entries.filter(e => fv(e, 3) === 'B3');
-  return mdHead(O('DL3')) + `For B3 entries only: the categories of rule the insurer would need to state for its own staff's use, and the record each would produce (framework section 10.1). Shape only, with no product specified. The framework does not list the categories; each is stated here from the insurer's own policy (D2) and licence terms (D8).\n\n` + (b3.length ? b3.map(e => `## ${e.id} · ${fvs(e, 7)}\n\nWhat the AI does: ${fvs(e, 11)}\n\nCredentials and systems it can change: ${fvs(e, 13) || '—'}\n\n` + tbl(['Category of rule', 'Record it would produce'], (e.dl3Rows || []).length ? e.dl3Rows.map(r => [r.category, r.record]) : [['[To be stated from D2]', '[To be stated]']]) + `Evidence the system could produce (field 19): ${fvs(e, 19) || '—'}\n\n`).join('') : 'No B3 entries in the set.\n\n');
+  return mdHead(O('DL3')) + `For B3 entries only: the categories of rule the ${N.entity} would need to state for its own staff's use, and the record each would produce (framework section 10.1). Shape only, with no product specified. The framework does not list the categories; each is stated here from the ${N.entity}'s own policy (D2) and licence terms (D8).\n\n` + (b3.length ? b3.map(e => `## ${e.id} · ${fvs(e, 7)}\n\nWhat the AI does: ${fvs(e, 11)}\n\nCredentials and systems it can change: ${fvs(e, 13) || '—'}\n\n` + tbl(['Category of rule', 'Record it would produce'], (e.dl3Rows || []).length ? e.dl3Rows.map(r => [r.category, r.record]) : [['[To be stated from D2]', '[To be stated]']]) + `Evidence the system could produce (field 19): ${fvs(e, 19) || '—'}\n\n`).join('') : 'No B3 entries in the set.\n\n');
 }
 function genDL4() {
   const p10 = P('P10'), rows = [], all = p10 ? p10.map(t => t.ref) : [];
@@ -1067,7 +1069,7 @@ function genDL4() {
 function genDL5() {
   const e = S.engagement, A = e.annexText || {}, nk = S.arrangements.map(a => a.id + ': ' + S.entries.filter(x => x.arrangementId === a.id).reduce((n, x) => n + notKnownCount(x), 0)).join('; ');
   const fails = {}; S.entries.forEach(x => Object.values(x.obtainability.rungs || {}).forEach(t => C.tests.forEach(k => { if (t[k.id] && t[k.id].pass === false) { const key = k.id + ' at ' + (fv(x, 3) || '?'); fails[key] = (fails[key] || 0) + 1; } })));
-  const gen = [`The assessment answers one question: what evidence about AI can reach ${e.insurer || 'the insurer'} at each boundary in the set, and how firmly that is established.`, 'No data was processed. No provider was approached. No production system was accessed. No legal advice is given.', S.arrangements.map(a => `${a.id} ${a.name}: ${a.reason || '—'}`).join('\n\n'), 'A register of 26 fields for each entry, the seven questions asked in order, the evidence ladder (E0 to E6) and the five-part obtainability test (T1 to T5). ' + calLabel() + '.', summaryTable(), S.arrangements.map(a => { const fd = finding(a); return `${a.id}: ${fd.type ? fd.type + ' ' + findingName(fd.type) : fd.label || '—'}${fd.priority ? ', priority ' + fd.priority : ''}`; }).join('\n\n'), Object.keys(fails).length ? Object.entries(fails).sort((a, b) => b[1] - a[1]).map(([k, n]) => `${k}: ${n}`).join(' · ') : 'No failed tests recorded.', S.arrangements.map(a => { const fd = finding(a); return fd.type === 'F2' ? `${a.id}: ${fd.routes.join('; ')}` : ''; }).filter(Boolean).join('\n\n') || 'No gaps recorded.', `Not-known fields by arrangement: ${nk || '—'}. Obtainable rungs by confidence: ${CONF.map(c => c + ' ' + S.entries.filter(x => confidence(x) === c).length).join(', ')}.`, 'Register extract (DL1), question log (QS), source index (DL1), exceptions log.'];
+  const gen = [`The assessment answers one question: what evidence about AI can reach ${e.insurer || 'the ' + N.entity} at each boundary in the set, and how firmly that is established.`, 'No data was processed. No provider was approached. No production system was accessed. No legal advice is given.', S.arrangements.map(a => `${a.id} ${a.name}: ${a.reason || '—'}`).join('\n\n'), 'A register of 26 fields for each entry, the seven questions asked in order, the evidence ladder (E0 to E6) and the five-part obtainability test (T1 to T5). ' + calLabel() + '.', summaryTable(), S.arrangements.map(a => { const fd = finding(a); return `${a.id}: ${fd.type ? fd.type + ' ' + findingName(fd.type) : fd.label || '—'}${fd.priority ? ', priority ' + fd.priority : ''}`; }).join('\n\n'), Object.keys(fails).length ? Object.entries(fails).sort((a, b) => b[1] - a[1]).map(([k, n]) => `${k}: ${n}`).join(' · ') : 'No failed tests recorded.', S.arrangements.map(a => { const fd = finding(a); return fd.type === 'F2' ? `${a.id}: ${fd.routes.join('; ')}` : ''; }).filter(Boolean).join('\n\n') || 'No gaps recorded.', `Not-known fields by arrangement: ${nk || '—'}. Obtainable rungs by confidence: ${CONF.map(c => c + ' ' + S.entries.filter(x => confidence(x) === c).length).join(', ')}.`, 'Register extract (DL1), question log (QS), source index (DL1), exceptions log.'];
   let m = mdHead(O('DL5')) + `Issued in Triodian’s name.\n\n`;
   C.annexOutline.forEach((t, k) => { m += `## ${k + 1}. ${t}\n\n${gen[k]}\n\n${A[k + 1] ? A[k + 1] + '\n\n' : '[Method owner\u2019s text]\n\n'}`; });
   m += redlineMd();
@@ -1075,7 +1077,7 @@ function genDL5() {
   m += `Signed for Triodian: ${e.annexSigned.by ? pname(e.annexSigned.by) + ', method owner, ' + dDoc(e.annexSigned.on) : '[not signed]'}\n`;
   return m;
 }
-function genDL6() { const h = S.entries.filter(e => ['no', 'partly'].includes(fv(e, 6))); return mdHead(O('DL6')) + `AI uses found that are not on the insurer's inventory, for the inventory owner.\n\n` + (h.length ? tbl(['Entry', 'Arrangement', 'On inventory', 'System', 'Supplier', 'What the AI does', 'Source'], h.map(e => [e.id, e.arrangementId, fvs(e, 6), fvs(e, 7), fvs(e, 8), fvs(e, 11), (e.fields[6] || {}).source])) : 'None found.\n\n') + `Accepted: ${S.engagement.handBack.by ? pname(S.engagement.handBack.by) + ', ' + S.engagement.handBack.on : '[not yet accepted]'}\n`; }
+function genDL6() { const h = S.entries.filter(e => ['no', 'partly'].includes(fv(e, 6))); return mdHead(O('DL6')) + `AI uses found that are not on the ${N.entity}'s inventory, for the inventory owner.\n\n` + (h.length ? tbl(['Entry', 'Arrangement', 'On inventory', 'System', 'Supplier', 'What the AI does', 'Source'], h.map(e => [e.id, e.arrangementId, fvs(e, 6), fvs(e, 7), fvs(e, 8), fvs(e, 11), (e.fields[6] || {}).source])) : 'None found.\n\n') + `Accepted: ${S.engagement.handBack.by ? pname(S.engagement.handBack.by) + ', ' + S.engagement.handBack.on : '[not yet accepted]'}\n`; }
 function genQS() { const q = S.questions.filter(x => x.status !== 'answered'); return mdHead(O('QS')) + (q.length ? q.map(x => `## ${x.ref}\n\n` + tbl(['Field', 'Contents'], [['Arrangement and entry', `${x.arrangementId} · ${x.entryId || '—'}`], ['Which of the seven questions', x.question7], ['Facts', x.facts], ['Question', x.question], ['Why it matters to the assessment', x.why], ['Response', x.response || ''], ['Status', x.status + (x.owner ? ' · ' + pname(x.owner) : '')]])).join('') : 'No open questions.\n\n'); }
 function genRP() { const e = S.engagement, cro = pname(e.croPersonId), to = e.independentReviewerReportsTo === 'cro' ? `the CRO${cro ? ', ' + cro : ''}` : `counsel${e.counselFirm ? ', ' + e.counselFirm : ''}`; const strip = s => s.split('\n').slice(4).join('\n'); return mdHead(O('RP')) + `Addressed to ${to}, for the independent reviewer${e.irOrganisation ? ' (' + e.irOrganisation + ')' : ''}. The reviewer’s queries and Triodian’s answers go through the same reporting line. R7 is confirmed by ${e.independentReviewerReportsTo === 'cro' ? 'the CRO' : 'the independent reviewer, through counsel'}.\n\n---\n\n` + strip(genDL1()) + '\n---\n\n' + strip(genDL2()) + '\n---\n\n' + strip(genDL5()); }
 function genCM() {
@@ -1147,7 +1149,7 @@ function redlineMd() {
   return `## Changes since ${v.id} · ${v.label} (${dDoc(String(v.at).slice(0, 10))})\n\n` + (rows.length ? tbl(['Entry', 'What changed', 'Was', 'Now'], rows.map(r => [r.entry, r.what, r.was ? '~~' + showVal(r.was) + '~~' : '', r.now ? showVal(r.now) : ''])) : 'No changes since this version.\n\n');
 }
 /* Outputs open on a list of documents with their status; each opens on its own page with a way back. */
-const outDesc = o => ((C.deliverables || []).find(d => d.id === o.id) || {}).contents || ({ EP: 'The phases with their timing, the sessions and who attends, the documents needed from the insurer, and the sign-off points, with where each stands.', QS: 'Every question put to counsel, with its status and the response.', RP: 'What the independent reviewer needs to test the assessment.', CM: 'The measures that close the assessment.', DR: 'What changed between versions of the assessment.' })[o.id] || '';
+const outDesc = o => ((C.deliverables || []).find(d => d.id === o.id) || {}).contents || ({ EP: 'The phases with their timing, the sessions and who attends, the documents needed from the ' + N.entity + ', and the sign-off points, with where each stands.', QS: 'Every question put to counsel, with its status and the response.', RP: 'What the independent reviewer needs to test the assessment.', CM: 'The measures that close the assessment.', DR: 'What changed between versions of the assessment.' })[o.id] || '';
 function outStatusInfo(o) {
   const e = S.engagement, why = finalWhy(o);
   if (o.id === 'DL5' && e.annexSigned.by) return [why ? 'draft · signed' : 'final · signed', why ? 'b-ochre' : 'b-green', why];
@@ -1190,8 +1192,8 @@ function screenReference() {
   return `${opening('Reference', 'Questions, scales, tests and glossary', 'From the AI Use Assessment Framework dated ' + esc(C.frameworkDate) + ', with the changes set out in section 0.2 of the build specification. Read only.')}
   <h2 class="sh">The ${T('seven', 'seven questions')}</h2>${t(['#', 'Question', 'Answer scale', 'Determined by', 'Facts Triodian supplies', 'Fields'], C.questions7.map(x => [x.n, esc(x.q), esc(x.scale), esc(x.by), esc(x.facts || ''), esc(x.fields)]))}
   <h2 class="sh">${T('tier', 'Authority tiers')}</h2>${t(['Code', 'Tier', 'Definition', 'Deciding test'], C.tiers.map(x => [x.code, esc(x.name), esc(x.def), esc(x.test)]))}
-  <h2 class="sh">${T('consequence', 'Failure consequence')}</h2>${t(['Code', 'Consequence', 'Meaning', 'Insurer\u2019s threshold (P2)'], C.consequences.map(x => [x.code, esc(x.name), esc(x.def), p2 && typeof p2 === 'object' ? esc(Object.entries(p2).filter(([k]) => k.startsWith(x.code)).map(([, v]) => v).join('; ') || '—') : 'uncalibrated']))}
-  <h2 class="sh">${T('rung', 'Evidence ladder')}</h2>${t(['Code', 'Rung', 'Also called', 'What the insurer holds', 'Produced by', 'Frequency'], C.rungs.map(x => [x.code, esc(x.name), esc(x.alt || ''), esc(x.def), esc(x.producedBy || ''), esc(FREQ[x.code])]))}
+  <h2 class="sh">${T('consequence', 'Failure consequence')}</h2>${t(['Code', 'Consequence', 'Meaning', N.Entity + '\u2019s threshold (P2)'], C.consequences.map(x => [x.code, esc(x.name), esc(x.def), p2 && typeof p2 === 'object' ? esc(Object.entries(p2).filter(([k]) => k.startsWith(x.code)).map(([, v]) => v).join('; ') || '—') : 'uncalibrated']))}
+  <h2 class="sh">${T('rung', 'Evidence ladder')}</h2>${t(['Code', 'Rung', 'Also called', 'What the ' + N.entity + ' holds', 'Produced by', 'Frequency'], C.rungs.map(x => [x.code, esc(x.name), esc(x.alt || ''), esc(x.def), esc(x.producedBy || ''), esc(FREQ[x.code])]))}
   <h2 class="sh">${T('obtest', 'Obtainability test')}</h2>${t(['#', 'Condition', 'Question'], C.tests.map(x => [x.id, esc(x.name), esc(x.q)]))}
   <h2 class="sh">Finding types</h2>${t(['Code', 'Finding', 'Condition'], C.findings.map(x => [x.code, esc(x.name), esc(x.cond)]))}
   <h2 class="sh">Deliverables</h2>${t(['#', 'Deliverable', 'Contents', 'Accepted when'], (C.deliverables || []).map(x => [esc(x.id), esc(x.name), esc(x.contents), esc(x.accepted)]))}
@@ -1263,7 +1265,25 @@ const slug = s => (s || 'engagement').toLowerCase().replace(/\(.*?\)/g, '').repl
 let lastBp = null, inChange = false, pendingRender = false, LEAVING = false;
 function render() { if (inChange) { if (!pendingRender) { pendingRender = true; setTimeout(() => { pendingRender = false; doRender(); }, 0); } return; } doRender(); }
 const dsKey = el => el && el !== document.body && el.dataset && Object.keys(el.dataset).length ? el.tagName + '|' + JSON.stringify(Object.assign({}, el.dataset)) : null;
+// The sector pack follows the assessment: set-up picks it, and it is fixed once a register entry is recorded.
+function packId() { return (S && S.engagement && S.engagement.sectorPack) || TriodianPacks.DEFAULT; }
+function applyPack() {
+  const id = packId(); if (C && C.pack === id) return;
+  C = TriodianPacks.resolve(BASE, id); N = BASE.packs[C.pack].nouns;
+  C.glossary.rule11 = { term: 'Field 11 before field 15', def: 'The description is written before the tier is chosen, so a reviewer can re-derive the tier from it. Field 11 must be saved with a source, or recorded as not known, first.', where: 'Classify' };
+  O('DL3').name = `Control-library shape for the ${N.entity}'s own AI boundary`;
+}
+// Mirrors packLocked in lib/core/rbac.js, which refuses the change on the server.
+function packLocked() { return !!S && ((S.entries || []).length > 0 || (S.versions || []).length > 0); }
+// A new pack on an assessment with no entries: the documents requested follow the pack.
+function switchPack() {
+  applyPack();
+  const keep = Object.fromEntries((S.documents || []).map(x => [x.ref, x]));
+  S.documents = C.documents.map(d => keep[d.ref] ? { ...keep[d.ref], title: d.name } : { id: d.ref, ref: d.ref, title: d.name, status: '', date: '' });
+  REV++; toast('Sector pack: ' + BASE.packs[C.pack].name + '. The documents requested now follow it.');
+}
 function doRender() {
+  applyPack();
   const app = document.getElementById('app'); lastBp = bp();
   // Until start-up has finished, show a quiet line rather than the welcome screen, so it doesn't flash before the assessment opens.
   if (!S) { app.innerHTML = SRV.ready ? entryOverlay() : `<p class="small soft" role="status" style="text-align:center;padding:30vh 16px 0">Opening AI Use Assessment…</p>`; return; }
@@ -1577,6 +1597,7 @@ function changeHandler(ev) {
   if (d.ob && e) { const [r, k] = d.ob.split('|'); const R = e.obtainability.rungs; R[r] = R[r] || {}; R[r][k] = Object.assign(R[r][k] || {}, { pass: t.value === '' ? null : t.value === 'pass' }); if (r === ladder(e)[0]) e.obtainability.start = r; else if (!e.obtainability.start) e.obtainability.start = ladder(e)[0]; log('test ' + r + ' ' + k, e.id, null, t.value || null); render(); return; }
   if (d.obs && e) { const [r, k] = d.obs.split('|'); const R = e.obtainability.rungs; R[r] = R[r] || {}; R[r][k] = Object.assign(R[r][k] || { pass: null }, { source: t.value }); log('testSource ' + r + ' ' + k, e.id, null, t.value); render(); return; }
   if (d.arrchk) { const pt = pathTarget(d.arrchk), why = deny(pt[0], pt[1]); if (why) { toast(why); return render(); } const ks = d.arrchk.split('.'); if (ks[2] === 'dl4Triggers') { const a = S.arrangements[+ks[1]]; if (!Array.isArray(a.dl4Triggers)) a.dl4Triggers = (P('P10') || []).map(t => t.ref); } let o = S; ks.forEach(k => o = o[k]); const v = t.value, i = o.indexOf(v); if (t.checked && i < 0) o.push(v); if (!t.checked && i >= 0) o.splice(i, 1); log('edit', d.arrchk, null, o.join(',')); render(); return; }
+  if (d.path === 'engagement.sectorPack') { if (packLocked()) { toast('The sector pack is fixed once a register entry is recorded.'); render(); return; } const from = packId(); if (setPath(d.path, t.value) !== false && packId() !== from) switchPack(); render(); return; }
   if (d.path) { setPath(d.path, t.type === 'checkbox' ? t.checked : t.value); render(); return; }
 }
 function onInput(ev) {
@@ -1597,9 +1618,9 @@ const exampleLeft = () => { try { return sessionStorage.getItem(EX_LEFT) === '1'
 const markExampleLeft = left => { try { if (left) sessionStorage.setItem(EX_LEFT, '1'); else sessionStorage.removeItem(EX_LEFT); } catch (e) {} };
 const openExampleByDefault = () => !exampleLeft() && location.hash !== '#actions';
 function boot() {
-  C = window.AUA_CONTENT;
-  if (!C) { document.getElementById('app').innerHTML = '<p style="padding:40px">The app content (aua-content.js) could not be loaded. Reload the page.</p>'; return; }
-  C.glossary.rule11 = { term: 'Field 11 before field 15', def: 'The description is written before the tier is chosen, so a reviewer can re-derive the tier from it. Field 11 must be saved with a source, or recorded as not known, first.', where: 'Classify' };
+  BASE = window.AUA_CONTENT;
+  if (!BASE || !BASE.packs || !window.TriodianPacks) { document.getElementById('app').innerHTML = '<p style="padding:40px">The app content (aua-content.js or shared/packs.js) could not be loaded. Reload the page.</p>'; return; }
+  applyPack();
   const tt = document.getElementById('toast'); if (tt) { tt.className = 'vh'; tt.setAttribute('role', 'status'); tt.setAttribute('aria-live', 'polite'); }
   document.addEventListener('click', onClick); document.addEventListener('change', onChange); document.addEventListener('input', onInput); TriodianBrand.bind(v => { if (setPath('engagement.practitioner.logo', v)) render(); }, toast); document.addEventListener('keydown', onKey); document.addEventListener('toggle', ev => { if (ev.target && ev.target.id === 'annexText') UI.annexOpen = ev.target.open; }, true);
   let sy0 = null; document.addEventListener('touchstart', e => { if (e.target.closest('.handle')) sy0 = e.touches[0].clientY; }, { passive: true });
@@ -1623,6 +1644,6 @@ async function connect() {
   SRV.ready = true;
   render();
 }
-window.AUA = { get state() { return S; }, go, gates: () => gates(), finding: id => finding(arr(id)), extract: () => registerExtract(), validate: o => validateFile(o), validateCal: o => validateCalibration(o), broken: () => brokenRefs(), hits: () => legalHits(), hydrate: o => hydrate(o), setState: x => { S = x; REV++; render(); }, save: () => snapshotForSave(), loadCalibration: (o, c) => { const r = loadCalibration(o, c); render(); return r; } };
+window.AUA = { get state() { return S; }, go, gates: () => gates(), finding: id => finding(arr(id)), extract: () => registerExtract(), validate: o => validateFile(o), validateCal: o => validateCalibration(o), broken: () => brokenRefs(), hits: () => legalHits(), hydrate: o => hydrate(o), setState: x => { S = x; REV++; render(); }, save: () => snapshotForSave(), loadCalibration: (o, c) => { const r = loadCalibration(o, c); render(); return r; }, output: id => outText(O(id)), content: () => C };
 boot();
 })();

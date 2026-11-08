@@ -1,0 +1,120 @@
+My actions 2
+Set-up
+Set
+Register
+Classify
+Counsel
+Findings
+Review
+Outputs
+Practice · not saved
+⌾
+Choose person
+Meredith Vance · Counsel
+Helen Brandt · GC
+Ana Duarte · Arrangement owner
+Sam Okoro · Method owner
+Jordan Pike · Assessor
+Ravi Menon · Peer reviewer
+Elise Tan · Validation
+Kit Morrow · Delivery manager
+Lena Hartmann · Independent reviewer
+Priya Natarajan · CRO
+DH
+☰
+Privileged and confidential · prepared at the direction of counsel · worked example
+Askew Lane Partners (fictional)
+Corvane General Insurance (fictional) · AUA-CGI-2026-01
+Worked example: a fictional insurer, Corvane, and its providers, for practice only. Nothing is saved.
+Leave the worked example
+Uncalibrated: no calibration set is loaded, so the framework defaults apply
+Phase 3 · classify and test
+Classify and test
+
+Work through one entry at a time: authority, consequence, evidence rung, obtainability and blind re-derivation.
+
+Entry
+REG-001 · ARR-01 · Motor claims triage model
+REG-002 · ARR-01 · Claim scoring service behind the triage model
+REG-003 · ARR-02 · Drafting assistant for legal staff
+REG-004 · ARR-03 · system not recorded
+open in register
+1 · Authority
+2 · Consequence
+3 · Indicative rung
+4 · Obtainability
+5 · Blind re-derivation
+Facts · fields 11 to 13
+Field 11: What the AI does
+Routes each new motor claim to fast-track payment or investigation. No person reviews the routing.
+D7-ARR01 p.3
+Field 12: Human involvement
+The output is the decision
+IV-2 2026-10-15
+Field 13: Credentials and systems the AI can change
+Read access to claims intake; no write access
+D7-ARR01 p.4
+Field 5: function · field 4: where the AI acts
+Motor claims handling · critical operation: Claims payment · Provider
+Question 5 · authority
+Test 1 · Does a person act on the output, or does the output take effect without one?
+—
+A person acts on the output
+The output takes effect without one
+Test 2 · Does the output move money, change a policy or claim record, or commit the insurer?
+—
+Yes
+No
+Test 3 · Does the AI hold credentials to act across steps or systems without a person starting each step?
+—
+Yes
+No
+Field 13 · Does field 13 show that the AI can write to a system of record using its own credentials?
+—
+Yes
+No
+Proposed tier
+A3 Decision
+
+The highest tier any answer supports (section 7.2). Where a system fits two tiers, the higher one is recorded.
+
+Record the tier (field 15)
+Choose a tier
+A1 Productivity
+A2 Analytical
+A3 Decision
+A4 Transactional
+A5 Agentic
+A6 Actuation
+Reason for overriding (if you choose a tier other than the proposed one)
+Record tier
+Consequence →
+Result so far
+Tier
+A3 Decision
+Consequence
+C4 Policyholder harm
+Indicative rung
+E4 Audit
+Obtainable
+E2 Attestation
+Confidence
+medium
+Classified by
+Jordan Pike
+Peer reviewer
+Ravi Menon
+Phase 3 exit gate
+Fields 15 to 22 complete
+REG-002 · 8 to do
+REG-004 · 8 to do
+R3 (classification review) differences resolved
+R4 (validation) passed
+← Register
+Phase 3 open
+Counsel →
+Scope. A technical assessment prepared for counsel. It states what the documents show and how each AI use is classified. It gives no legal advice and recommends no product.
+Framework 12 October 2026
+User guide
+Reference
+Uncalibrated: framework defaults apply

@@ -1,0 +1,76 @@
+My actions 2
+Set-up
+Set
+Register
+Classify
+Counsel
+Findings
+Review
+Outputs
+Practice · not saved
+⌾
+Choose person
+Meredith Vance · Counsel
+Helen Brandt · GC
+Ana Duarte · Arrangement owner
+Sam Okoro · Method owner
+Jordan Pike · Assessor
+Ravi Menon · Peer reviewer
+Elise Tan · Validation
+Kit Morrow · Delivery manager
+Lena Hartmann · Independent reviewer
+Priya Natarajan · CRO
+DH
+☰
+Privileged and confidential · prepared at the direction of counsel · worked example
+Askew Lane Partners (fictional)
+Corvane General Insurance (fictional) · AUA-CGI-2026-01
+Worked example: a fictional insurer, Corvane, and its providers, for practice only. Nothing is saved.
+Leave the worked example
+Uncalibrated: no calibration set is loaded, so the framework defaults apply
+Phase 4 · questions to counsel
+Questions to counsel
+
+Any point that depends on what the law requires goes to counsel as a numbered written question. It is never answered in a working paper.
+
+Ref	Arrangement · entry	Q	Question	Response	Status
+QC-01	ARR-01
+REG-001	Q7	Does the audit clause reach an aggregate record of automated triage outcomes? What can the insurer require at renewal?		Open
+QC-02	ARR-02
+REG-003	Q7	What evidence can the insurer reasonably require of the drafting service at this boundary?	On the licence terms supplied, disclosure of use (E1) is the reasonable expectation at thi…	Answered
+New question to counsel
+Arrangement
+ARR-01
+ARR-02
+ARR-03
+Entry
+—
+REG-001
+REG-002
+REG-003
+REG-004
+Which of the seven questions
+1
+2
+3
+4
+7
+Field the determination fills
+None
+23 Nexus, relationship and location determination
+24 Rights the insurer holds
+25 Required rung and grading
+Facts: what the documents show, with sources and without characterisation
+Question: one question that counsel can answer with a determination
+Why it matters to the assessment
+Add to question log
+Phase 4 exit gate
+Every question to counsel answered, or left open with a named owner
+← Classify
+Phase 4 open
+Findings →
+Scope. A technical assessment prepared for counsel. It states what the documents show and how each AI use is classified. It gives no legal advice and recommends no product.
+Framework 12 October 2026
+User guide
+Reference
+Uncalibrated: framework defaults apply

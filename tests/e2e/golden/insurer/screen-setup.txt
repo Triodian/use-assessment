@@ -1,0 +1,529 @@
+My actions 2
+Set-up
+Set
+Register
+Classify
+Counsel
+Findings
+Review
+Outputs
+Practice · not saved
+⌾
+Choose person
+Meredith Vance · Counsel
+Helen Brandt · GC
+Ana Duarte · Arrangement owner
+Sam Okoro · Method owner
+Jordan Pike · Assessor
+Ravi Menon · Peer reviewer
+Elise Tan · Validation
+Kit Morrow · Delivery manager
+Lena Hartmann · Independent reviewer
+Priya Natarajan · CRO
+DH
+☰
+Privileged and confidential · prepared at the direction of counsel · worked example
+Askew Lane Partners (fictional)
+Corvane General Insurance (fictional) · AUA-CGI-2026-01
+Worked example: a fictional insurer, Corvane, and its providers, for practice only. Nothing is saved.
+Leave the worked example
+Uncalibrated: no calibration set is loaded, so the framework defaults apply
+Phase 0 · mobilise
+Set up the assessment
+
+Record the engagement details, the people and their roles, the independent reviewer, the calibration set, and the documents and interviews.
+
+Only the method owner or the delivery manager can change set-up and the people list. Why
+
+1 · Engagement
+Insurer
+Sector pack
+Authorised deposit-taking institution
+General insurer
+MAS-regulated financial institution (Singapore)
+Superannuation trustee
+Reference
+Counsel firm
+Start date
+Privilege marking (as counsel directs; printed on every output)
+The GC also acts as counsel
+
+When one person holds both roles, the second agreement to the set (R1) comes from a named second approver, and every output records that the GC held both roles.
+
+GC who confirmed the brief (recorded by Triodian)
+—
+Helen Brandt
+Confirmed on
+Brief reference
+Document request issued
+Practitioner
+
+The GC’s or advisory firm’s name, a line under it and a logo. They appear in the header and above the privilege marking on every Word and PDF output.
+
+Firm
+Line under the name
+Logo · PNG, 100 KB at most
+Remove the logo
+
+Shown in the header and on every Word and PDF output, above the privilege marking.
+
+Matter brief · obligations in scope
+Load the brief
+Paste instead
+
+Build the brief in the AI Obligations Atlas for the insurer’s jurisdictions, entity type and AI use cases, then load the file it downloads. The brief lists what sources say, by tier. Counsel decides what applies.
+
+No matter brief loaded.
+
+2 · People
+Add person
+
+Worked example: the person chosen under “Acting as” in the header decides what the app allows. Separation of duties is checked person by person, not role by role.
+
+Name
+Organisation
+Roles (one person may hold more than one Triodian role)
+Method owner (Triodian)
+Assessor (Triodian)
+Peer reviewer (Triodian)
+Validation (Triodian)
+Delivery manager (Triodian)
+Counsel
+GC
+Arrangement owner (insurer)
+Independent reviewer
+CRO (insurer)
+Second approver (company executive)
+Remove
+Name
+Organisation
+Roles (one person may hold more than one Triodian role)
+Method owner (Triodian)
+Assessor (Triodian)
+Peer reviewer (Triodian)
+Validation (Triodian)
+Delivery manager (Triodian)
+Counsel
+GC
+Arrangement owner (insurer)
+Independent reviewer
+CRO (insurer)
+Second approver (company executive)
+Remove
+Name
+Organisation
+Roles (one person may hold more than one Triodian role)
+Method owner (Triodian)
+Assessor (Triodian)
+Peer reviewer (Triodian)
+Validation (Triodian)
+Delivery manager (Triodian)
+Counsel
+GC
+Arrangement owner (insurer)
+Independent reviewer
+CRO (insurer)
+Second approver (company executive)
+Remove
+Name
+Organisation
+Roles (one person may hold more than one Triodian role)
+Method owner (Triodian)
+Assessor (Triodian)
+Peer reviewer (Triodian)
+Validation (Triodian)
+Delivery manager (Triodian)
+Counsel
+GC
+Arrangement owner (insurer)
+Independent reviewer
+CRO (insurer)
+Second approver (company executive)
+Remove
+Name
+Organisation
+Roles (one person may hold more than one Triodian role)
+Method owner (Triodian)
+Assessor (Triodian)
+Peer reviewer (Triodian)
+Validation (Triodian)
+Delivery manager (Triodian)
+Counsel
+GC
+Arrangement owner (insurer)
+Independent reviewer
+CRO (insurer)
+Second approver (company executive)
+Remove
+Name
+Organisation
+Roles (one person may hold more than one Triodian role)
+Method owner (Triodian)
+Assessor (Triodian)
+Peer reviewer (Triodian)
+Validation (Triodian)
+Delivery manager (Triodian)
+Counsel
+GC
+Arrangement owner (insurer)
+Independent reviewer
+CRO (insurer)
+Second approver (company executive)
+Remove
+Name
+Organisation
+Roles (one person may hold more than one Triodian role)
+Method owner (Triodian)
+Assessor (Triodian)
+Peer reviewer (Triodian)
+Validation (Triodian)
+Delivery manager (Triodian)
+Counsel
+GC
+Arrangement owner (insurer)
+Independent reviewer
+CRO (insurer)
+Second approver (company executive)
+Remove
+Name
+Organisation
+Roles (one person may hold more than one Triodian role)
+Method owner (Triodian)
+Assessor (Triodian)
+Peer reviewer (Triodian)
+Validation (Triodian)
+Delivery manager (Triodian)
+Counsel
+GC
+Arrangement owner (insurer)
+Independent reviewer
+CRO (insurer)
+Second approver (company executive)
+Remove
+Name
+Organisation
+Roles (one person may hold more than one Triodian role)
+Method owner (Triodian)
+Assessor (Triodian)
+Peer reviewer (Triodian)
+Validation (Triodian)
+Delivery manager (Triodian)
+Counsel
+GC
+Arrangement owner (insurer)
+Independent reviewer
+CRO (insurer)
+Second approver (company executive)
+Remove
+Name
+Organisation
+Roles (one person may hold more than one Triodian role)
+Method owner (Triodian)
+Assessor (Triodian)
+Peer reviewer (Triodian)
+Validation (Triodian)
+Delivery manager (Triodian)
+Counsel
+GC
+Arrangement owner (insurer)
+Independent reviewer
+CRO (insurer)
+Second approver (company executive)
+Remove
+3 · Independent reviewer
+
+The independent reviewer reviews the assessment on behalf of the CRO. Screens refer to the role, never to the firm.
+
+Person
+—
+Lena Hartmann
+Organisation filling the role
+Reporting line
+Through counsel
+Directly to the CRO
+CRO
+—
+Priya Natarajan
+
+The review pack is addressed to Askew Lane Partners (fictional). R7 (independent check) is confirmed by the independent reviewer, through counsel.
+
+4 · Calibration set
+Uncalibrated
+Load from the Risk Appetite app
+Load from a file
+
+The calibration set is a file issued by the AI Risk Appetite app. Until one is loaded, the framework defaults apply and every output is marked uncalibrated. When a new version is loaded, the app recalculates expected rungs, flags, priorities and due dates, and writes a difference report.
+
+5 · Documents D1 to D10
+Add document
+
+Give each received document a short ID to use in source references, for example D5-ARR02 p.14.
+
+ID	Ref	Document	Status	Date
+
+—
+D1
+D2
+D3
+D4
+D5
+D6
+D7
+D8
+D9
+D10
+
+—
+Requested
+Received
+Not held
+
+—
+D1
+D2
+D3
+D4
+D5
+D6
+D7
+D8
+D9
+D10
+
+—
+Requested
+Received
+Not held
+
+—
+D1
+D2
+D3
+D4
+D5
+D6
+D7
+D8
+D9
+D10
+
+—
+Requested
+Received
+Not held
+
+—
+D1
+D2
+D3
+D4
+D5
+D6
+D7
+D8
+D9
+D10
+
+—
+Requested
+Received
+Not held
+
+—
+D1
+D2
+D3
+D4
+D5
+D6
+D7
+D8
+D9
+D10
+
+—
+Requested
+Received
+Not held
+
+—
+D1
+D2
+D3
+D4
+D5
+D6
+D7
+D8
+D9
+D10
+
+—
+Requested
+Received
+Not held
+
+—
+D1
+D2
+D3
+D4
+D5
+D6
+D7
+D8
+D9
+D10
+
+—
+Requested
+Received
+Not held
+
+—
+D1
+D2
+D3
+D4
+D5
+D6
+D7
+D8
+D9
+D10
+
+—
+Requested
+Received
+Not held
+
+—
+D1
+D2
+D3
+D4
+D5
+D6
+D7
+D8
+D9
+D10
+
+—
+Requested
+Received
+Not held
+
+—
+D1
+D2
+D3
+D4
+D5
+D6
+D7
+D8
+D9
+D10
+
+—
+Requested
+Received
+Not held
+
+—
+D1
+D2
+D3
+D4
+D5
+D6
+D7
+D8
+D9
+D10
+
+—
+Requested
+Received
+Not held
+
+—
+D1
+D2
+D3
+D4
+D5
+D6
+D7
+D8
+D9
+D10
+
+—
+Requested
+Received
+Not held
+
+—
+D1
+D2
+D3
+D4
+D5
+D6
+D7
+D8
+D9
+D10
+
+—
+Requested
+Received
+Not held
+
+—
+D1
+D2
+D3
+D4
+D5
+D6
+D7
+D8
+D9
+D10
+
+—
+Requested
+Received
+Not held
+
+6 · Interviews
+Add interview
+IV-1
+Date held
+Notes reference
+IV-2
+Date held
+Notes reference
+IV-3
+Date held
+Notes reference
+IV-4
+Date held
+Notes reference
+IV-5
+Date held
+Notes reference
+Phase 0 exit gate
+Brief confirmed by the GC
+Privilege marking entered
+Document request issued
+Phase 0 met
+Overview →
+Scope. A technical assessment prepared for counsel. It states what the documents show and how each AI use is classified. It gives no legal advice and recommends no product.
+Framework 12 October 2026
+User guide
+Reference
+Uncalibrated: framework defaults apply

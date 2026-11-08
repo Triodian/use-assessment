@@ -1,0 +1,103 @@
+Privileged and confidential · prepared at the direction of counsel · worked example
+
+# DL5 · Technical annex
+
+**Uncalibrated: framework defaults apply** · Draft · [today] · WORKED EXAMPLE, FICTIONAL
+
+Corvane General Insurance (fictional) · AUA-CGI-2026-01
+
+Issued in Triodian’s name.
+
+## 1. Purpose, and the question the assessment answers
+
+The assessment answers one question: what evidence about AI can reach Corvane General Insurance (fictional) at each boundary in the set, and how firmly that is established.
+
+[Method owner’s text]
+
+## 2. What was and was not done: no data, no provider involvement, no production access, no legal advice
+
+No data was processed. No provider was approached. No production system was accessed. No legal advice is given.
+
+[Method owner’s text]
+
+## 3. The set, and why each arrangement was selected
+
+ARR-01 Outside claims manager · motor: AI inside a provider; a triage model decides routing
+
+ARR-02 Legal staff drafting assistant: Covers the insurer's own use; AI only assists
+
+ARR-03 Underwriting agency · SME property: Binder renewal in March sets a date
+
+[Method owner’s text]
+
+## 4. Method: register, seven questions, ladder, obtainability test
+
+A register of 26 fields for each entry, the seven questions asked in order, the evidence ladder (E0 to E6) and the five-part obtainability test (T1 to T5). Uncalibrated: framework defaults apply.
+
+[Method owner’s text]
+
+## 5. Summary table of findings
+
+| Arrangement | Tier | Consequence | Indicative rung | Required | Obtainable | Finding | Priority | Flags |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| ARR-01 | A3 Decision | C4 Policyholder harm | E4 Audit | — | E2 Attestation | Awaiting counsel | — | — |
+| ARR-02 | A1 Productivity | C2 Contract breach | E1 Disclosure | E1 Disclosure | E1 Disclosure | F1 Evidence obtainable | — | — |
+| ARR-03 | — | — | — | — | — | F4 Not determinable on documents | — | — |
+
+[Method owner’s text]
+
+## 6. Finding by arrangement
+
+ARR-01: Awaiting counsel
+
+ARR-02: F1 Evidence obtainable
+
+ARR-03: F4 Not determinable on documents
+
+[Method owner’s text]
+
+## 7. Patterns across the set: which test fails most often, and at which boundary
+
+T3 at B1: 1 · T1 at B1: 1
+
+[Method owner’s text]
+
+## 8. Routes available for each gap, without recommendation of any product
+
+No gaps recorded.
+
+[Method owner’s text]
+
+## 9. Limitations and confidence, including the not-known count
+
+Not-known fields by arrangement: ARR-01: 1; ARR-02: 0; ARR-03: 5. Obtainable rungs by confidence: low 0, medium 1, high 1.
+
+[Method owner’s text]
+
+## 10. Appendices: register extract, question log, source index
+
+Register extract (DL1), question log (QS), source index (DL1), exceptions log.
+
+[Method owner’s text]
+
+## Changes since V1 · Set agreed (R1) (13 October 2026)
+
+| Entry | What changed | Was | Now |
+| --- | --- | --- | --- |
+| REG-001 | 15 Authority tier | — | A3 Decision |
+| REG-001 | 16 Failure consequence | — | C4 Policyholder harm |
+| REG-001 | 18 Evidence currently received | — | E1 Disclosure · Due diligence response naming the triage tool |
+| REG-001 | 19 Evidence the system could produce | — | Routing outcomes by category, aggregated weekly in the triage platform |
+| REG-001 | 20 Independently checkable | — | partly · An auditor with access could verify; none appointed |
+| REG-003 | 15 Authority tier | — | A1 Productivity |
+| REG-003 | 16 Failure consequence | — | C2 Contract breach |
+| REG-003 | 18 Evidence currently received | — | E1 Disclosure · Licence terms and usage policy |
+| REG-003 | 19 Evidence the system could produce | — | Monthly usage report by team |
+| REG-003 | 20 Independently checkable | — | yes · Report can be checked against the insurer’s own logs |
+| REG-003 | 25 Required rung and grading | — | E1 Disclosure · expectation |
+
+## Exceptions log
+
+None.
+
+Signed for Triodian: [not signed]
