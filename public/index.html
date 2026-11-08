@@ -16,11 +16,12 @@
 <div id="sheetroot"></div>
 <div id="toast" class="hidden" aria-live="polite"></div>
 <input type="file" id="calIn" accept=".json,application/json" class="vh" tabindex="-1" aria-hidden="true">
+<input type="file" id="registerIn" accept=".csv,text/csv" class="vh" tabindex="-1" aria-hidden="true">
 <script src="/aua-content.js"></script>
 <script src="/shared/packs.js"></script>
 <script src="/brand.js"></script>
 <script src="/export.js"></script>
-<script type="module">import { merge3 } from "/shared/merge.js"; import * as brief from "/shared/matter-brief.js"; window.RAFMerge = { merge3 }; window.AUABrief = brief;</script>
+<script type="module">import { merge3 } from "/shared/merge.js"; import * as brief from "/shared/matter-brief.js"; import * as imp from "/shared/import.js"; window.RAFMerge = { merge3 }; window.AUABrief = brief; window.AUAImport = imp;</script>
 <input type="file" id="briefIn" accept=".json,application/json" class="vh" tabindex="-1" aria-hidden="true">
 <script src="/aua.js"></script>
 <script src="/suite.js" data-current="ua"></script>
