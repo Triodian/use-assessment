@@ -38,7 +38,10 @@ Only the method owner or the delivery manager can change set-up and the people l
 1 · Engagement
 Insurer
 Sector pack
+Authorised deposit-taking institution
 General insurer
+MAS-regulated financial institution (Singapore)
+Superannuation trustee
 Reference
 Counsel firm
 Start date
