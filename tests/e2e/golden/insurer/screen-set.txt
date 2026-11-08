@@ -39,6 +39,7 @@ B2 ✓
 B3 ✓
 Authority spread ✓
 Add arrangement
+Import the provider register (CSV)
 ARR-01
 No finding
 Name
