@@ -39,3 +39,19 @@ test('choosing the super trustee pack changes the labels and the documents reque
   expect(b.p._errors).toEqual([]);
   await b.ctx.close();
 });
+
+// The in-use feed (task 3.7) from the worked example: the v1 entries, plus the measures, gaps by priority and overdue items.
+test('the worked example gives an in-use feed v2 with the measures it can count', async ({ browser }) => {
+  const ctx = await browser.newContext({ extraHTTPHeaders: { 'X-Dev-User': ADMIN }, viewport: { width: 1280, height: 900 } });
+  await ctx.addInitScript(() => { try { sessionStorage.setItem('triodian.suite.seen', '1'); } catch (e) {} });
+  const p = await ctx.newPage(); const errs = []; p.on('pageerror', e => errs.push(String(e)));
+  await p.goto('/'); await expect(p.locator('.examplebar', { hasText: 'Worked example:' })).toBeVisible({ timeout: 15_000 });
+  const x = await p.evaluate(() => ({ v1: window.AUA.extract(), v2: window.AUA.extractV2() }));
+  expect(x.v2.schema).toBe('triodian.aua.extract.v2');
+  expect(x.v2.entries).toEqual(x.v1.entries);
+  expect(x.v2.measures.map(m => m.ref)).toEqual(['M1', 'M2', 'M3', 'M4', 'M5', 'M6', 'M7', 'M8', 'M9', 'M10']);
+  for (const m of x.v2.measures) { expect(typeof m.basis).toBe('string'); expect(m.value === null || typeof m.value === 'number').toBe(true); }
+  expect(Object.keys(x.v2.gapsByPriority)).toEqual(['High', 'Medium', 'Low']);
+  expect(errs).toEqual([]);
+  await ctx.close();
+});
