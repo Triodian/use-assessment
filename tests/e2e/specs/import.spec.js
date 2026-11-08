@@ -18,7 +18,10 @@ test('the provider register loads into the register, refuses bad rows, and round
   const p = await ctx.newPage(); const errs = []; p.on('pageerror', e => errs.push(String(e)));
   await p.goto('/'); await p.waitForTimeout(800);
   await p.locator('[data-act="new"]').first().click();
+  await expect(p.locator('body')).toContainText('Set up the assessment'); // the new assessment opens on set-up once saved
+  await expect.poll(() => rev).toBeGreaterThan(0);
   await p.evaluate(() => window.AUA.go('set'));
+  await expect(p.locator('[data-act="importRegister"]')).toBeVisible();
   await p.setInputFiles('#registerIn', FX);
   await expect(p.locator('#toast')).toContainText('50 register entries imported into 7 new arrangements; 2 rows refused');
   await expect(p.locator('body')).toContainText('Line 28: no provider');
