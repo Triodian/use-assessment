@@ -6,6 +6,8 @@ Privileged and confidential · prepared at the direction of counsel · worked ex
 
 Corvane General Insurance (fictional) · AUA-CGI-2026-01
 
+Evidence for: APRA letter G3 · ISO/IEC 42001 A.4.
+
 AI uses found that are not on the insurer's inventory, for the inventory owner.
 
 | Entry | Arrangement | On inventory | System | Supplier | What the AI does | Source |
