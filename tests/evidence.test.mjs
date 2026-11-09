@@ -2,7 +2,7 @@
 // ISO/IEC 42001 reference, and GET /api/evidence (and the service binding) lists the assessment's artefacts with
 // their status. Run: node tests/evidence.test.mjs
 import { assessmentEvidence } from '../lib/core/api.js';
-import { LETTER, ISO, TAGS, tagLine, indexMarkdown, assessmentArtefacts } from '../public/shared/evidence.js';
+import { LETTER, ISO, TAGS, tagLine, indexMarkdown, assessmentArtefacts, appetiteArtefacts } from '../public/shared/evidence.js';
 
 let fails = 0; const ok = (label, cond, extra) => { if (!cond) fails++; console.log((cond ? 'PASS' : 'FAIL') + ' · ' + label + (extra ? ' → ' + extra : '')); };
 const ids = new Set(LETTER.map(b => b.id)), iso = new Set(ISO.map(x => x[0]));
@@ -34,5 +34,18 @@ ok('a bullet with no evidence says none yet', /## S3 [^\n]*\n\n[^\n]*\n\nNone ye
 ok('review dates follow the AI management review (clause 9.3)', md.includes('clause 9.3), 2027-03-31') && /\| 2026-10-20 \| 2027-03-31 \|/.test(md));
 const mi = indexMarkdown({ artefacts: assessmentArtefacts(data, '2026-11-01'), by: 'iso', gatheredOn: '2026-11-08' });
 ok('by ISO/IEC 42001 control: A.5 lists the register, with its letter bullets', /## A\.5 · Assessing impacts of AI systems\n\nLetter bullets: A4\.[^]*AI dependency register/.test(mi));
+// Lite scope (task R.3): the assessment's artefacts say what they cover, so the index does not read as the whole estate
+const f5 = v => ({ 5: { value: v } });
+const lite = { engagement: { insurer: 'Coastline Super', scope: 'lite' }, arrangements: [{ id: 'ARR-01' }, { id: 'ARR-02' }, { id: 'ARR-03' }],
+  entries: [{ id: 'REG-001', arrangementId: 'ARR-01', fields: f5('Member services · critical operation: Benefit payments') }, { id: 'REG-002', arrangementId: 'ARR-02', fields: f5('Advice') }, { id: 'REG-003', arrangementId: 'ARR-03', fields: f5('Investments · critical operation: none') }],
+  versions: [{ label: 'Set agreed (R1)', at: '2026-10-05T01:00:00Z' }], feedback: { generated: '2026-11-08T00:00:00Z' } };
+const la = assessmentArtefacts(lite, '2026-11-01'), lby = id => la.find(a => a.id === id);
+ok('Lite scope: the register says it covers the arrangements behind critical operations', lby('DL1').note === 'Not yet signed off: Counsel review recorded (R6) · Lite scope: 1 of 3 arrangements, those behind critical operations; 2 left out for later triage', lby('DL1').note);
+ok('Lite scope: so do the findings issued in the feed', /Issued to AI Risk Appetite · Lite scope: 1 of 3/.test(lby('FN').note), lby('FN').note);
+ok('Lite scope: not on the engagement plan, nor on an artefact with none yet', !/Lite/.test(lby('EP').note) && lby('DL3').note === '');
+ok('Lite scope: the note reaches the index', /\| AI dependency register \|[^\n]*Lite scope: 1 of 3/.test(indexMarkdown({ artefacts: la, by: 'letter', gatheredOn: '2026-11-08' })));
+{ const ra = minute => appetiteArtefacts({ calibration: { status: 'approved', approvedOn: '2026-12-02', minuteRef: minute } }, '2026-12-02').find(a => a.id === 'calibration').note;
+  ok('a minute reference is prefixed with "minute" once', ra('2026/12-04') === 'Approved by the board, minute 2026/12-04' && ra('Board minute 2026/12-04') === 'Approved by the board, Board minute 2026/12-04', ra('Board minute 2026/12-04')); }
+ok('full scope: no scope note', !assessmentArtefacts(data, '2026-11-01').some(a => /Lite scope/.test(a.note)));
 ok('no "must" or "required" in the index', !/\b(must|required)\b/i.test(md + mi));
 console.log(fails ? `\n${fails} failed` : '\nall passed'); process.exit(fails ? 1 : 0);
