@@ -42,6 +42,9 @@ Authorised deposit-taking institution
 General insurer
 MAS-regulated financial institution (Singapore)
 Superannuation trustee
+Scope
+Full: every arrangement in the set
+Lite: the arrangements behind critical operations
 Reference
 Counsel firm
 Start date

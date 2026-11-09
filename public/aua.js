@@ -639,7 +639,7 @@ function screenSetup() {
   return `${opening('Phase 0 · mobilise', 'Set up the assessment', 'Record the engagement details, the people and their roles, the independent reviewer, the calibration set, and the documents and interviews.')}
   ${whyNote(why)}
   <div class="stack">
-  <section class="card"><h2 class="sh">1 · Engagement</h2><div class="fgrid">${fld(N.Entity, 'engagement.insurer', e.insurer)}${fld('Sector pack', 'engagement.sectorPack', packId(), { select: TriodianPacks.list(BASE).map(p => [p.id, p.name]), disabled: packLocked() || undefined })}${fld('Reference', 'engagement.reference', e.reference)}${fld('Counsel firm', 'engagement.counselFirm', e.counselFirm)}${fld('Start date', 'engagement.startDate', e.startDate, { type: 'date' })}</div>
+  <section class="card"><h2 class="sh">1 · Engagement</h2><div class="fgrid">${fld(N.Entity, 'engagement.insurer', e.insurer)}${fld('Sector pack', 'engagement.sectorPack', packId(), { select: TriodianPacks.list(BASE).map(p => [p.id, p.name]), disabled: packLocked() || undefined })}${fld('Scope', 'engagement.scope', S.engagement.scope || 'full', { select: [['full', 'Full: every arrangement in the set'], ['lite', 'Lite: the arrangements behind critical operations']] })}${fld('Reference', 'engagement.reference', e.reference)}${fld('Counsel firm', 'engagement.counselFirm', e.counselFirm)}${fld('Start date', 'engagement.startDate', e.startDate, { type: 'date' })}</div>
     <div style="margin-top:14px">${fld(T('privilege', 'Privilege marking') + ' (as counsel directs; printed on every output)', 'engagement.privilegeMarking', e.privilegeMarking, { raw: true })}</div>
     <div style="margin-top:14px"><label class="cb"><input type="checkbox" id="e-gcac" data-path="engagement.gcActsAsCounsel" ${e.gcActsAsCounsel ? 'checked' : ''} ${fs}> The GC also acts as counsel</label><p class="small soft" style="margin:4px 0 0">When one person holds both roles, the second agreement to the set (R1) comes from a named second approver, and every output records that the GC held both roles.</p>
       ${e.gcActsAsCounsel ? `<div class="fgrid" style="margin-top:8px">${fld('Second approver (a company executive with the second approver role)', 'engagement.secondApproverId', e.secondApproverId, { select: peopleOpts('executive') })}</div>${!peopleOpts('executive').some(o => o[0]) ? '<p class="small" style="color:var(--ochre)">No one has the second approver role yet. Give it to the executive in the people list.</p>' : ''}` : ''}</div>
@@ -730,7 +730,7 @@ function screenSet() {
   const ag = (who, on, act, label) => who ? `<div class="panel2" style="padding:12px 14px">${badge('agreed', 'b-green')} <strong>${esc(pname(who) || who)}</strong> <span class="mini">${esc(dAU(on))}</span></div>` : `<div class="panel2" style="padding:12px 14px"><button class="btn sm" data-act="${act}" ${deny(act) ? 'disabled title="' + esc(deny(act)) + '"' : ''}>${label}</button>${deny(act) ? whyNote(deny(act)) : ''}</div>`;
   return `${opening('Phase 1 · confirm the set', 'The representative set', 'The arrangements to be assessed, chosen against six criteria and agreed with the GC. The default is four arrangements.')}
   <div class="calstrip"><div class="row"><span class="sh" style="margin:0">Coverage</span>${['B1', 'B2', 'B3'].map(x => badge(x + (cv[x] ? ' ✓' : ' missing'), cv[x] ? 'b-green' : 'b-ochre')).join('')}${badge('authority spread' + (spread ? ' ✓' : ' not yet'), spread ? 'b-green' : 'b-grey')}</div><div class="row" style="gap:6px"><button class="btn sm" data-act="addArr" ${fs}>Add arrangement</button><button class="btn sm ghost" data-act="importRegister" ${fs || (deny('facts') ? 'disabled' : '')}>Import the provider register (CSV)</button></div></div>${importReport()}
-  ${whyNote(why)}
+  ${whyNote(why)}${liteCard()}
   <div class="stack" style="gap:12px">${S.arrangements.map(card).join('') || `<div class="soft"><p style="margin:0 0 6px">No arrangements yet. ${T('set', 'The representative set')} is chosen in this order:</p><ol style="margin:0;padding-left:22px;line-height:1.7">${C.criteria.slice(0, 5).map(t => `<li>${esc(t)}</li>`).join('')}</ol></div>`}</div>
   <section class="card" style="margin-top:18px"><h2 class="sh">Agree the set (R1)</h2><p class="small soft">${S.engagement.gcActsAsCounsel ? 'The GC also acts as counsel, so the GC and the second approver named in set-up each record their own agreement.' : 'The GC and counsel each record their own agreement.'}</p><div class="grid2">${ag(S.setAgreed.gcBy, S.setAgreed.gcOn, 'agreeGC', 'Record GC agreement')}${ag(S.setAgreed.counselBy, S.setAgreed.counselOn, 'agreeCounsel', S.engagement.gcActsAsCounsel ? 'Record second approver agreement' : 'Record counsel agreement')}</div>
     <p class="small soft" style="margin-top:8px">If the set does not cover a boundary type, record it in the exceptions log on the Review screen, naming its code (B1, B2 or B3).</p></section>
@@ -978,8 +978,37 @@ function screenFindings() {
 /* ---------- S8 review ---------- */
 /* R5 hits are keyed by phrase and source text, so clearing one clears it in every output built from that text. */
 let OUTC = { rev: -1, s: null, map: {}, hits: null }, REV = 0;
+/* ---------- Lite scope (task R.3) ----------
+   Set-up can scope the assessment to the arrangements behind critical operations (usually 10 to 15): an arrangement is
+   in scope when one of its register entries names a critical operation (field 5). The rest are listed for later
+   triage, highest authority tier first. In Lite scope every output covers the arrangements in scope only, and says
+   so in its heading, naming what was left out. */
+const isLite = () => !!(S && S.engagement && S.engagement.scope === 'lite');
+let FULL = null; // the whole assessment, while an output is generated in Lite scope
+function liteSplit(src) {
+  const X = src || FULL || S, inIds = new Set(X.entries.filter(e => opOf(e)).map(e => e.arrangementId));
+  const top = a => X.entries.filter(e => e.arrangementId === a.id).map(e => fv(e, 15)).filter(Boolean).sort().pop() || '';
+  const out = X.arrangements.filter(a => !inIds.has(a.id)).map(a => ({ a, tier: top(a) })).sort((p, q) => (q.tier || '').localeCompare(p.tier || '') || p.a.id.localeCompare(q.a.id));
+  return { inArr: X.arrangements.filter(a => inIds.has(a.id)), out };
+}
+function withScope(fn) {
+  if (!isLite() || FULL) return fn();
+  const { inArr } = liteSplit(S), ids = new Set(inArr.map(a => a.id));
+  FULL = S; S = Object.assign({}, FULL, { arrangements: inArr, entries: FULL.entries.filter(e => ids.has(e.arrangementId)) });
+  try { return fn(); } finally { S = FULL; FULL = null; }
+}
+function scopeLine() {
+  if (!isLite()) return '';
+  const { inArr, out } = liteSplit();
+  return `**Scope: Lite.** ${inArr.length} arrangement${inArr.length === 1 ? '' : 's'} behind critical operations ${inArr.length === 1 ? 'is' : 'are'} assessed${inArr.length ? ': ' + inArr.map(a => a.id).join(', ') : ''}. ` + (out.length ? `${out.length} ${out.length === 1 ? 'is' : 'are'} left out for later triage, highest authority first: ${out.map(x => `${x.a.id}${x.a.name ? ' ' + x.a.name : ''} (${x.tier || 'not yet classified'})`).join('; ')}.` : 'None is left out.') + '\n\n';
+}
+function liteCard() {
+  if (!isLite()) return '';
+  const { inArr, out } = liteSplit();
+  return `<div class="panel2" style="padding:10px 14px;margin:8px 0"><p class="small" style="margin:0 0 4px"><strong>Lite scope:</strong> ${inArr.length} arrangement${inArr.length === 1 ? '' : 's'} behind critical operations ${inArr.length === 1 ? 'is' : 'are'} assessed${inArr.length > 15 ? ' (more than the 10 to 15 Lite scope suits; consider a full assessment)' : ''}. An arrangement is in scope when one of its entries names a critical operation in field 5.</p>${out.length ? `<p class="small" style="margin:6px 0 2px">Left out for later triage, highest authority first:</p><ul class="small" style="margin:0 0 0 18px">${out.map(x => `<li>${esc(x.a.id)}${x.a.name ? ' · ' + esc(x.a.name) : ''} · ${esc(x.tier || 'not yet classified')}</li>`).join('')}</ul>` : ''}</div>`;
+}
 function outCache() { if (OUTC.rev !== REV || OUTC.s !== S) OUTC = { rev: REV, s: S, map: {}, hits: null }; return OUTC; }
-function outText(o) { const c = outCache(), k = o.id + '|' + (RAW ? 'raw' : FORCE || 'view'); if (!(k in c.map)) c.map[k] = o.gen(); return c.map[k]; }
+function outText(o) { const c = outCache(), k = o.id + '|' + (RAW ? 'raw' : FORCE || 'view') + '|' + (isLite() ? 'lite' : 'full'); if (!(k in c.map)) c.map[k] = withScope(() => o.gen()); return c.map[k]; }
 const nz = s => String(s).toLowerCase().replace(/\\\|/g, '|').replace(/\s+/g, ' ').trim();
 const hash = s => { let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0; return (h >>> 0).toString(36); };
 function textSources() {
@@ -1055,7 +1084,7 @@ function bothRoles() {
 }
 function mdHead(o) {
   const e = S.engagement, st = RAW ? '' : outStatus(o);
-  return `${e.privilegeMarking || '[Privilege marking not recorded in set-up]'}\n\n# ${o.id} · ${o.name}\n\n**${calLabel()}**${st ? ' · ' + st : ''} · ${dDoc(today())}${e.example ? ' · WORKED EXAMPLE, FICTIONAL' : ''}\n\n${e.insurer || '[' + N.Entity + ']'} · ${e.reference || '[reference]'}\n\n${bothRoles()}`;
+  return `${e.privilegeMarking || '[Privilege marking not recorded in set-up]'}\n\n# ${o.id} · ${o.name}\n\n**${calLabel()}**${st ? ' · ' + st : ''} · ${dDoc(today())}${e.example ? ' · WORKED EXAMPLE, FICTIONAL' : ''}\n\n${e.insurer || '[' + N.Entity + ']'} · ${e.reference || '[reference]'}\n\n${scopeLine()}${bothRoles()}`;
 }
 const OUTS = [
   { id: 'DL1', name: 'AI dependency register', gate: 3, gen: genDL1 }, { id: 'DL2', name: 'Evidence obtainable at each boundary', gate: 5, gen: genDL2 },
@@ -1190,7 +1219,10 @@ function diffSnap(a, b) {
     [...new Set([...Object.keys(x.f), ...Object.keys(y.f)])].sort((p, q) => p - q).forEach(n => { if ((x.f[n] || '') !== (y.f[n] || '')) rows.push({ entry: id, n: +n, what: n + ' ' + FLD(+n).name, was: x.f[n] || '', now: y.f[n] || '' }); }); });
   [...new Set([...Object.keys(a.findings || {}), ...Object.keys(b.findings || {})])].sort().forEach(id => { const w = (a.findings || {})[id] || '', n = (b.findings || {})[id] || ''; if (w !== n) rows.push({ entry: id, what: 'Finding', was: codeOpt(w), now: codeOpt(n) }); });
   [...new Set([...Object.keys(a.arrangements || {}), ...Object.keys(b.arrangements || {})])].sort().forEach(id => { const w = (a.arrangements || {})[id], n = (b.arrangements || {})[id]; if (w == null) rows.push({ entry: id, what: 'Arrangement added', was: '', now: n }); else if (n == null) rows.push({ entry: id, what: 'Arrangement removed', was: w, now: '' }); });
-  return rows;
+  if (!FULL) return rows;
+  // Lite scope: what is left out is not a change, so the rows for it are dropped.
+  const keep = new Set([...S.arrangements.map(x => x.id), ...S.entries.map(x => x.id)]), outIds = new Set([...FULL.arrangements.map(x => x.id), ...FULL.entries.map(x => x.id)].filter(id => !keep.has(id)));
+  return rows.filter(r => !outIds.has(r.entry));
 }
 const nowSnap = () => snapshotOf(snapshotForSave());
 const snapFor = id => id === 'now' ? nowSnap() : ((S.versions || []).find(v => v.id === id) || {}).snapshot || null;
