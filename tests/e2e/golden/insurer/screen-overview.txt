@@ -1,3 +1,4 @@
+AI Use Assessment
 My actions 2
 Set-up
 Set
@@ -7,7 +8,12 @@ Counsel
 Findings
 Review
 Outputs
-Practice · not saved
+Uncalibrated
+DH
+☰
+Askew Lane Partners
+Privileged and confidential · prepared at the direction of counsel
+Corvane General Insurance · AUA-CGI-2026-01
 ⌾
 Choose person
 Meredith Vance · Counsel
@@ -20,14 +26,6 @@ Elise Tan · Validation
 Kit Morrow · Delivery manager
 Lena Hartmann · Independent reviewer
 Priya Natarajan · CRO
-DH
-☰
-Privileged and confidential · prepared at the direction of counsel · worked example
-Askew Lane Partners (fictional)
-Corvane General Insurance (fictional) · AUA-CGI-2026-01
-Worked example: a fictional insurer, Corvane, and its providers, for practice only. Nothing is saved.
-Leave the worked example
-Uncalibrated: no calibration set is loaded, so the framework defaults apply
 Overview
 Eight phases, each with a gate
 

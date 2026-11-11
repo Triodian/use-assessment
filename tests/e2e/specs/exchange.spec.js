@@ -9,7 +9,7 @@ test('writes: the register extract v1 and the in-use feed v2, from the worked ex
   const ctx = await browser.newContext({ extraHTTPHeaders: { 'X-Dev-User': ADMIN } });
   await ctx.addInitScript(() => { try { sessionStorage.setItem('triodian.suite.seen', '1'); } catch (e) {} });
   const p = await ctx.newPage(); await p.goto('/');
-  await expect(p.locator('.examplebar', { hasText: 'Worked example:' })).toBeVisible({ timeout: 15_000 });
+  await expect(p.locator('.examplenote', { hasText: 'Worked example:' })).toBeVisible({ timeout: 15_000 });
   const x = await p.evaluate(() => ({ v1: window.AUA.extract(), v2: window.AUA.extractV2() }));
   expect(exchangeErrors('register-extract-v1.schema.json', x.v1)).toEqual([]);
   expect(exchangeErrors('register-extract-v2.schema.json', x.v2)).toEqual([]);

@@ -21,7 +21,7 @@ test('the engagement plan generates from the worked example and opens in Word', 
   await ctx.addInitScript(() => { try { sessionStorage.setItem('triodian.suite.seen', '1'); } catch (e) {} });
   const p = await ctx.newPage(); const errs = []; p.on('pageerror', e => errs.push(String(e))); p.on('dialog', d => d.accept());
   await p.goto('/');
-  await expect(p.locator('.examplebar', { hasText: 'Worked example:' })).toBeVisible({ timeout: 15_000 });
+  await expect(p.locator('.examplenote', { hasText: 'Worked example:' })).toBeVisible({ timeout: 15_000 });
   await p.selectOption('#who-hdr', 'p4');
   await p.locator('nav.steps [data-act="go"][data-to="outputs"]').first().click();
   await p.locator('[data-act="outTab"][data-t="EP"]').first().click();
