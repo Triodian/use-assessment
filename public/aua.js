@@ -432,15 +432,27 @@ const SEQ = ['setup','overview','set','register','classify','counsel','findings'
 const SNAME = { actions: 'My actions', setup: 'Set-up', overview: 'Overview', set: 'Set', register: 'Register', classify: 'Classify', counsel: 'Counsel', findings: 'Findings', review: 'Review', outputs: 'Outputs', reference: 'Reference' };
 function calBadge() { const c = cal(); return c ? badge(c.status === 'approved' ? 'approved v' + c.version : c.status === 'working' ? 'working v' + c.version : 'default v' + c.version, c.status === 'approved' ? 'b-green' : 'b-ochre') : badge('uncalibrated', 'b-grey'); }
 function personSelect(id) { return `<select id="${id}" data-act="person" aria-label="Acting as"><option value="">Choose person</option>${S.people.map(p => `<option value="${esc(p.id)}" ${UI.personId === p.id ? 'selected' : ''}>${esc(p.name || 'Unnamed')} · ${esc(p.roles.map(r => roleName(r).replace(/ \(.*\)/, '')).join(', ') || 'no role')}</option>`).join('')}</select>`; }
-/* Document band under the header: the privilege marking counsel directs, and which assessment this is. */
+/* The demo band (public/suite.js, on the demo and test sites) carries the worked example's note, so the app shows no
+   band of its own for it there. A client site has no demo band and keeps the app's band. */
+const suiteBand = () => (document.documentElement.getAttribute('data-suite-demo') || 'on') !== 'off';
+const EXAMPLE_NOTE = 'Worked example: a fictional insurer, Corvane, and its providers, for practice only. Nothing is saved.';
+function suiteNote() {
+  const h = S && S.engagement.example && suiteBand() ? `<span class="examplenote"><span class="tsu-long">${EXAMPLE_NOTE}</span><span class="tsu-short">Worked example, fictional. Nothing is saved.</span><button data-act="leaveExample">Leave<span class="tsu-long"> the worked example</span></button></span>` : '';
+  if (window.TriodianSuiteNote !== h) { window.TriodianSuiteNote = h; window.dispatchEvent(new Event('triodian:note')); }
+}
+/* In the header the worked example is named once, by its note. The names and the marking keep their "fictional" and
+   "worked example" wording everywhere else (the outputs and set-up); the header shows them without the repeat. */
+const hdrName = s => practice() ? String(s || '').replace(/\s*\(fictional\)\s*$/, '') : s;
+const hdrMarking = s => practice() ? String(s || '').replace(/\s*·\s*worked example\s*$/i, '') : s;
+/* Document band under the header: who prepared it, the privilege marking counsel directs, and which assessment this is. */
 function docband() {
   if (!S) return '';
   if (UI.archived) return `<div class="docband practice"><div class="docband-in"><span class="priv none" style="color:var(--ochre)"><strong>Earlier assessment · ${esc(UI.archived.label)} · read only</strong></span><span class="stat"><button class="lnk" data-act="leaveArchive">Back to the current assessment</button></span></div></div>`;
   const e = S.engagement, canSet = !deny('setup');
-  const priv = String(e.privilegeMarking || '').trim() ? `<span class="priv" title="Privilege marking · printed as the first line of every output">${esc(e.privilegeMarking)}</span>`
+  const priv = String(e.privilegeMarking || '').trim() ? `<span class="priv" title="Privilege marking · printed as the first line of every output">${esc(hdrMarking(e.privilegeMarking))}</span>`
     : `<span class="priv none">No privilege marking set.${canSet ? ' <button class="lnk" data-act="go" data-to="setup">Set it in set-up</button>' : ' Counsel directs the marking.'}</span>`;
-  const stat = e.insurer ? `<span class="stat"><strong>${esc(e.insurer)}</strong>${e.reference ? ' · ' + esc(e.reference) : ''}</span>` : '';
-  return `<div class="docband"><div class="docband-in"><span style="display:inline-flex;align-items:center;gap:14px;flex-wrap:wrap">${priv}${TriodianBrand.chip(e.practitioner)}</span>${stat}</div></div>`;
+  const stat = e.insurer ? `<span class="stat"><strong>${esc(hdrName(e.insurer))}</strong>${e.reference ? ' · ' + esc(e.reference) : ''}</span>` : '';
+  return `<div class="docband"><div class="docband-in"><span class="docband-l">${TriodianBrand.chip(e.practitioner && practice() ? Object.assign({}, e.practitioner, { firm: hdrName(e.practitioner.firm) }) : e.practitioner)}${priv}</span>${stat}${bp() !== 'phone' && (practice() || !SRV.user) ? `<label class="chip actingas" title="Practice only: choose whose view to try"><span aria-hidden="true">⌾</span>${personSelect('who-hdr')}</label>` : ''}</div></div>`;
 }
 /* ---------- My actions: what is waiting for the signed-in person (or the person being practised as) ---------- */
 function myActions() {
@@ -489,12 +501,10 @@ function header() {
     ${b !== 'phone' ? '<span class="vrule" aria-hidden="true"></span>' : ''}<span class="apptitle">AI Use Assessment</span>
     ${b === 'desk' ? `<nav class="steps" aria-label="Steps">${S && (SRV.user || practice()) ? `<button data-act="go" data-to="actions" ${UI.screen === 'actions' ? 'aria-current="page"' : ''}>My actions${nAct ? ` <span class="navcount">${nAct}</span>` : ''}</button>` : ''}${steps.map(s => `<button data-act="go" data-to="${s}" ${UI.screen === s ? 'aria-current="page"' : ''}>${SNAME[s]}</button>`).join('')}</nav>` : ''}
     <div class="hdr-r">${saveChip()}
-      ${b !== 'phone' ? `<button class="checkcount" style="border:0;padding:0" data-act="go" data-to="setup" aria-label="Calibration status">${calBadge()}</button>` : ''}
-      ${b !== 'phone' && (practice() || !SRV.user) ? `<label class="chip" title="Practice only: choose whose view to try"><span aria-hidden="true">⌾</span>${personSelect('who-hdr')}</label>` : ''}
+      ${cal() ? '' : `<button class="checkcount" id="calchip" style="border:0;padding:0" data-act="go" data-to="setup" title="Uncalibrated: no calibration set is loaded, so the framework defaults apply. Open set-up to load one." aria-label="Uncalibrated: no calibration set is loaded, so the framework defaults apply. Open set-up.">${badge('Uncalibrated', 'b-grey')}</button>`}
       ${account()}<button class="iconbtn" data-act="drawer" aria-label="Menu" aria-expanded="${UI.drawer}">☰</button></div></div>${docband()}</header>
     ${SRV.site ? `<div class="examplebar" style="background:#FDF0E1;color:#8A4B08;border-color:#F0D2AE">${esc(SRV.site)}: a test site for trying things out, not the live assessment</div>` : ''}
-    ${S.engagement.example ? `<div class="examplebar">Worked example: a fictional insurer, Corvane, and its providers, for practice only. Nothing is saved. <button class="lnk" data-act="leaveExample">Leave the worked example</button></div>` : ''}
-    ${cal() ? '' : '<div class="examplebar" style="background:var(--grey-bg);color:var(--grey);border-color:var(--rule)">Uncalibrated: no calibration set is loaded, so the framework defaults apply</div>'}
+    ${S.engagement.example && !suiteBand() ? `<div class="examplebar examplenote">${EXAMPLE_NOTE} <button class="lnk" data-act="leaveExample">Leave the worked example</button></div>` : ''}
     ${blindEntries().length ? `<div class="examplebar" style="background:var(--aubergine-bg);color:var(--aubergine);border-color:#D9CFE0">Blind re-derivation (R3): the classifier’s work on ${esc(blindEntries().map(e => e.id).join(', '))} is hidden until you record your own tier</div>` : ''}`;
 }
 function drawer() {
@@ -1385,6 +1395,7 @@ function switchPack() {
 }
 function doRender() {
   applyPack();
+  suiteNote();
   const app = document.getElementById('app'); lastBp = bp();
   // Until start-up has finished, show a quiet line rather than the welcome screen, so it doesn't flash before the assessment opens.
   if (!S) { app.innerHTML = SRV.ready ? entryOverlay() : `<p class="small soft" role="status" style="text-align:center;padding:30vh 16px 0">Opening AI Use Assessment…</p>`; return; }
@@ -1472,7 +1483,7 @@ function saveLabel() {
   if (!SRV.on) return ['b-ochre', 'Not saved', 'The server is not reachable.'];
   return { saved: ['b-green', 'Saved', SRV.lastAt ? 'Saved ' + fmtAt(SRV.lastAt) + ' by ' + SRV.lastBy : 'Saved'], pending: ['b-grey', 'Saving…', 'Changes will be saved in a moment'], saving: ['b-grey', 'Saving…', 'Saving'], error: ['b-red', 'Not saved', SRV.err], conflict: ['b-red', 'Changed elsewhere', SRV.err] }[SRV.state] || ['b-grey', '', ''];
 }
-function saveChip() { const l = saveLabel(); if (!l || !l[1]) return ''; return `<button class="badge ${l[0]}" id="savechip" data-act="saveChip" title="${esc(l[2])}" style="cursor:pointer">${esc(l[1])}</button>`; }
+function saveChip() { const l = saveLabel(); if (!l || !l[1] || practice()) return ''; return `<button class="badge ${l[0]}" id="savechip" data-act="saveChip" title="${esc(l[2])}" style="cursor:pointer">${esc(l[1])}</button>`; }
 function paintSave() { const el = document.getElementById('savechip'); if (el) el.outerHTML = saveChip(); }
 async function loadReal(quiet) {
   const r = await api('GET', '/api/engagement');

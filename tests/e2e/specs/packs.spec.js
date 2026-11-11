@@ -45,7 +45,7 @@ test('the worked example gives an in-use feed v2 with the measures it can count'
   const ctx = await browser.newContext({ extraHTTPHeaders: { 'X-Dev-User': ADMIN }, viewport: { width: 1280, height: 900 } });
   await ctx.addInitScript(() => { try { sessionStorage.setItem('triodian.suite.seen', '1'); } catch (e) {} });
   const p = await ctx.newPage(); const errs = []; p.on('pageerror', e => errs.push(String(e)));
-  await p.goto('/'); await expect(p.locator('.examplebar', { hasText: 'Worked example:' })).toBeVisible({ timeout: 15_000 });
+  await p.goto('/'); await expect(p.locator('.examplenote', { hasText: 'Worked example:' })).toBeVisible({ timeout: 15_000 });
   const x = await p.evaluate(() => ({ v1: window.AUA.extract(), v2: window.AUA.extractV2() }));
   expect(x.v2.schema).toBe('triodian.aua.extract.v2');
   expect(x.v2.entries).toEqual(x.v1.entries);
@@ -62,7 +62,7 @@ test('in Lite scope the outputs cover the arrangements behind critical operation
   const ctx = await browser.newContext({ extraHTTPHeaders: { 'X-Dev-User': ADMIN }, viewport: { width: 1280, height: 900 } });
   await ctx.addInitScript(() => { try { sessionStorage.setItem('triodian.suite.seen', '1'); } catch (e) {} });
   const p = await ctx.newPage(); const errs = []; p.on('pageerror', e => errs.push(String(e)));
-  await p.goto('/'); await expect(p.locator('.examplebar', { hasText: 'Worked example:' })).toBeVisible({ timeout: 15_000 });
+  await p.goto('/'); await expect(p.locator('.examplenote', { hasText: 'Worked example:' })).toBeVisible({ timeout: 15_000 });
   const full = await p.evaluate(() => window.AUA.output('DL1'));
   expect(full).not.toContain('Scope: Lite');
   const r = await p.evaluate(() => {
