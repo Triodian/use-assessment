@@ -44,7 +44,7 @@ test('set-up loads the matter brief; its questions are raised with counsel from 
   await expect(p.locator('#ask-facts')).toHaveValue(/From the AI Obligations Atlas matter brief/);
   await p.locator('[data-act="addQ"]').click();
   await expect(qs).toContainText('11 of 12 questions not yet raised');
-  await expect(p.locator('table.lg')).toContainText(question.slice(0, 60));
+  await expect(p.locator('table.lg').first()).toContainText(question.slice(0, 60));
 
   // back in set-up the question shows as raised
   await p.locator('nav.steps [data-act="go"][data-to="setup"]').first().click();

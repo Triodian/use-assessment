@@ -530,3 +530,13 @@ Register extract (DL1), question log (QS), source index (DL1), exceptions log.
 None.
 
 Signed for Triodian: [not signed]
+
+---
+
+## Points contested by the technology owner and the AI governance team
+
+Each point was raised on an update released by counsel. An assessor accepted it and revised, or kept the position and said why.
+
+| Ref | On | Contested by | Reason | Evidence | Answer | Answered by |
+| --- | --- | --- | --- | --- | --- | --- |
+| C1 | REG-001 | Tobias Reed, 21 October 2026 | The triage model only suggests a route; a claims handler at Harlow confirms it. We read that as a lower authority tier. | Harlow operating procedure CP-14, section 3; held by the claims team | Position kept. Position kept. CP-14 describes the handler’s review for complex claims only; for standard motor claims the route takes effect without one (due diligence response, p.4). CP-14 is added to the sources. | Jordan Pike, 22 October 2026 |

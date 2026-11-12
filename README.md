@@ -64,8 +64,15 @@ The server design is the same as the AI Risk Appetite app's (`Triodian/risk_appe
   (`lib/core/handover.js`: `GET /api/engagement` returns the hand-over view, and every other route but their own
   profile is refused). The hand-over is kept in the assessment as `handover` and changes only through
   `PUT /api/handover`; an ordinary save cannot change it. Nobody who holds either role, or who supplied or confirmed
-  the hand-over, can be the independent reviewer (task 7.5): Admin refuses the role and R7 refuses the person. The
-  updates, contested points, consultations and structured reviews of part B wait for counsel's confirmation.
+  the hand-over, can be the independent reviewer (task 7.5): Admin refuses the role and R7 refuses the person.
+- **Updates and consultation (task 7.4, part B; built for counsel to assess).** Counsel releases an update from the
+  Counsel screen: each entry's tier, consequence and rungs and where evidence is not yet known, drawn from the register
+  as it stands. Fields 23 to 26 go in only when counsel ticks the box; the server drops them otherwise. The two roles can
+  contest a point (an assessor or the method owner accepts and revises, or keeps the position and says why), ask for a
+  consultation (recorded as held, with its outcome) and confirm facts counsel names. The record is kept as `liaison`
+  and changes only through `PUT /api/liaison` (`lib/core/liaison.js`); a contested point changes nothing in the
+  register, and contested points go into the reviewer's pack. Emails say what happened, never the content.
+  `docs/management-roles-and-privilege.md` sets out, for counsel, what the two roles can and cannot read.
 - Two people editing at once: their changes are merged; only a change to the very same item by both is refused, naming the item.
 - The worked example runs in the browser only and is never saved.
 

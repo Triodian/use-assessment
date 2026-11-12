@@ -661,8 +661,9 @@ function hoLog(h) {
   return h.log.length ? `<details style="margin-top:12px"><summary class="small" style="cursor:pointer">Record of the hand-over · ${h.log.length} ${h.log.length === 1 ? 'entry' : 'entries'}</summary><ul class="small" style="margin:8px 0 0 18px">${h.log.map(l => `<li>${esc(hoDate(l.on))} · ${esc(l.by)} ${esc(words[l.action] || l.action)}${l.note && ['add', 'change', 'remove'].includes(l.action) ? ' ' + esc(l.note) : l.note ? ': ' + esc(l.note) : ''}</li>`).join('')}</ul></details>` : '';
 }
 /* The one screen a person with only a management role sees. */
-function handoverScreen() {
-  const V = SRV.ho.data, h = hoOf(V.handover), nm = id => ((V.people || []).find(p => p.id === id) || {}).name || '', done = !!h.complete.by, open = !done && !V.closed;
+function handoverScreen(V) {
+  V = V || SRV.ho.data;
+  const h = hoOf(V.handover), nm = id => ((V.people || []).find(p => p.id === id) || {}).name || '', done = !!h.complete.by, open = !done && !V.closed;
   const ed = UI.hoEdit ? h.items.find(i => i.id === UI.hoEdit) : null, x = ed || { kind: '', system: '', description: '', where: '' };
   const form = open ? `<section class="card"><h2 class="sh">${ed ? 'Change item ' + esc(ed.id) : 'Add to the hand-over'}</h2>
     <div class="fgrid"><label class="f" for="ho_kind"><span>What it is</span><select class="in" id="ho_kind">${[['', 'Choose…']].concat(HO_KINDS).map(k => `<option value="${k[0]}" ${x.kind === k[0] ? 'selected' : ''}>${esc(k[1])}${k[2] ? ' · ' + esc(k[2]) : ''}</option>`).join('')}</select></label>
@@ -670,7 +671,8 @@ function handoverScreen() {
     <label class="f" for="ho_description" style="margin-top:12px"><span>What you are supplying</span><textarea class="in" id="ho_description" rows="3" placeholder="For example: the provider’s due diligence response for 2026, pages 3 to 6 on its AI">${esc(x.description)}</textarea></label>
     <label class="f" for="ho_where" style="margin-top:12px"><span>Where it is held, or how it was sent</span><input class="in" id="ho_where" value="${esc(x.where)}" placeholder="For example: sent to the GC on 3 November; contracts system, reference C-2291"></label>
     <div class="row" style="gap:8px;margin-top:14px"><button class="btn primary" data-ho="save">${ed ? 'Save the change' : 'Add it'}</button>${ed ? '<button class="btn ghost" data-ho="cancel">Cancel</button>' : ''}</div></section>` : '';
-  return `<header class="hdr"><div class="hdr-in"><span class="brand" aria-hidden="true">${bp() !== 'phone' ? LOGO(22) : MARKSVG()}</span>${bp() !== 'phone' ? '<span class="vrule" aria-hidden="true"></span>' : ''}<span class="apptitle">AI Use Assessment</span><div class="hdr-r">${account()}</div></div></header>
+  return `<header class="hdr"><div class="hdr-in"><span class="brand" aria-hidden="true">${bp() !== 'phone' ? LOGO(22) : MARKSVG()}</span>${bp() !== 'phone' ? '<span class="vrule" aria-hidden="true"></span>' : ''}<span class="apptitle">AI Use Assessment</span><div class="hdr-r">${S && practice() ? personSelect('who-hdr') : account()}</div></div></header>
+  ${S && practice() ? `<div class="examplebar${suiteBand() ? '' : ' examplenote'}">${suiteBand() ? '' : EXAMPLE_NOTE + ' '}You are acting as ${esc(pname(UI.personId))}, who sees the hand-over and what counsel has released, and nothing else of the assessment. Choose another person at the top right to see the rest.</div>` : ''}
   <main id="main" tabindex="-1"><div class="wrap">
     <section class="card"><p class="mini" style="margin:0 0 4px">${esc(V.engagement.insurer || 'Your organisation')}${V.engagement.reference ? ' · ' + esc(V.engagement.reference) : ''}</p><h1 class="sh" style="font-size:24px;margin:0 0 8px">Your hand-over</h1>
       <p style="margin:0 0 8px">You supply what exists: the inventory of AI in use, the evidence for each arrangement, and what existing assurance already covers. When it is all here, confirm it complete. The assessment is then carried out from it${V.engagement.counselFirm ? ' at the direction of ' + esc(V.engagement.counselFirm) : ' at the direction of counsel'}, and the outcome returns to the arrangement owners as the hand-back list.</p>
@@ -681,8 +683,99 @@ function handoverScreen() {
       ${open && h.items.length ? `<div class="row" style="gap:8px;margin-top:14px"><button class="btn primary" data-ho="complete">${UI.hoConfirm ? 'Confirm: this is everything' : 'Confirm the hand-over complete'}</button>${UI.hoConfirm ? '<button class="btn ghost" data-ho="keepOpen">Not yet</button>' : ''}<span class="small soft">After that you change nothing here. Counsel or Triodian can reopen it if more is needed.</span></div>` : ''}
       ${done && !V.closed ? '<p class="small soft" style="margin:10px 0 0">To add or change an item, ask counsel or Triodian to reopen the hand-over.</p>' : ''}
       ${hoLog(h)}</section>
-    ${form}</div></main>`;
+    ${form}${liaisonMgmt(V)}</div></main>`;
 }
+/* ---------- updates and consultation after the hand-over (development plan task 7.4, part B) ----------
+   Counsel releases an update at each stage; the two roles can contest a point, ask for a consultation and confirm
+   facts counsel names. Every change goes through PUT /api/liaison (lib/core/liaison.js). */
+const liOf = l => ({ updates: (l || {}).updates || [], contests: (l || {}).contests || [], consultations: (l || {}).consultations || [], reviews: (l || {}).reviews || [] });
+const liMayRelease = () => !!SRV.user && !practice() && ((SRV.user.roles || []).includes('counsel') || ((SRV.user.roles || []).includes('gc') && !!S.engagement.gcActsAsCounsel));
+const liMayDecide = () => !!SRV.user && !practice() && (SRV.user.roles || []).some(r => r === 'assessor' || r === 'methodOwner');
+const liStatus = c => c.status === 'open' ? badge('Open', 'b-ochre') : c.status === 'accepted' ? badge('Accepted · revised', 'b-green') : badge('Position kept', 'b-grey');
+/* What an update says about each entry: the technical position and where evidence is missing. The legal
+   determinations (fields 23 to 26) go in only when counsel ticks the box. */
+function updateRows(includeLegal) {
+  return S.entries.map(e => { const miss = []; for (let n = 3; n <= 22; n++) { if (n === 17 || n === 21 || n === 22) continue; const f = e.fields[n]; if (f && f.notKnown) miss.push(FLD(n).name); }
+    const ob = obResult(e); if (!ob.done) miss.push(FLD(21).name);
+    const row = { entryId: e.id, arrangement: arr(e.arrangementId).name || e.arrangementId, system: fvs(e, 7), tier: fvs(e, 15), consequence: fvs(e, 16), indicativeRung: fieldOut(e, 17), obtainableRung: fieldOut(e, 21), confidence: fieldOut(e, 22), missing: miss };
+    if (includeLegal) row.legal = [23, 24, 25, 26].map(n => ({ label: FLD(n).name, value: fieldOut(e, n) })).filter(x => x.value && x.value !== 'not known');
+    return row; });
+}
+function updateTable(u, contest) {
+  const cell = v => v ? esc(v) : '<span class="soft">—</span>';
+  return `<div class="tw" style="margin-top:8px"><table class="lg"><thead><tr><th style="width:86px">Entry</th><th>Arrangement · system</th><th>Authority tier</th><th>Failure consequence</th><th>Rung: indicative · obtainable</th><th>Evidence not yet known</th>${contest ? '<th style="width:110px"></th>' : ''}</tr></thead><tbody>${u.rows.map(r => `<tr><td class="mono">${esc(r.entryId)}</td><td>${esc(r.arrangement)}<div class="small soft">${esc(r.system)}</div>${(r.legal || []).length ? `<div class="small" style="margin-top:6px"><strong>Counsel’s determinations</strong>${r.legal.map(x => `<div>${esc(x.label)}: ${esc(x.value)}</div>`).join('')}</div>` : ''}</td><td>${cell(r.tier)}</td><td>${cell(r.consequence)}</td><td>${cell(r.indicativeRung)} · ${cell(r.obtainableRung)}${r.confidence ? `<div class="small soft">Confidence: ${esc(r.confidence)}</div>` : ''}</td><td class="small">${r.missing.length ? r.missing.map(esc).join('; ') : '<span class="soft">Nothing marked not known</span>'}</td>${contest ? `<td><button class="btn sm ghost" data-li="startContest" data-update="${esc(u.id)}" data-entry="${esc(r.entryId)}">Contest</button></td>` : ''}</tr>`).join('')}</tbody></table></div>`;
+}
+const updateHead = (u, nm) => `<strong>Update ${esc(u.id)} · ${esc(u.stage)}</strong> <span class="small soft">released by ${esc(nm(u.releasedBy))} on ${esc(hoDate(u.releasedOn))}${u.includeLegal ? ' · counsel’s determinations included' : ' · no legal determination included'}</span>${u.note ? `<p style="margin:6px 0 0;white-space:pre-wrap">${esc(u.note)}</p>` : ''}`;
+function contestsTable(L, nm, decide) {
+  if (!L.contests.length) return '<p class="small soft" style="margin:6px 0 0">No point has been contested.</p>';
+  return `<div class="tw" style="margin-top:8px"><table class="lg"><thead><tr><th style="width:56px">Ref</th><th style="width:130px">On</th><th>Reason and evidence</th><th>Answer</th></tr></thead><tbody>${L.contests.map(c => `<tr><td class="mono">${esc(c.id)}</td><td>${esc(c.entryId || 'The update')}<div class="small soft">${esc(c.updateId)} · ${esc(nm(c.by))}, ${esc(hoDate(c.on))}</div></td><td>${esc(c.reason)}<div class="small soft">Evidence: ${esc(c.evidence)}</div></td><td>${liStatus(c)}${c.decision ? `<div style="margin-top:4px">${esc(c.decision)}</div><div class="small soft">${esc(nm(c.decidedBy))}, ${esc(hoDate(c.decidedOn))}</div>` : ''}${decide && c.status === 'open' ? `<label class="f" for="li_dec_${esc(c.id)}" style="margin-top:8px"><span>What is revised, or why the position is kept</span><textarea class="in" id="li_dec_${esc(c.id)}" rows="2"></textarea></label><div class="row" style="gap:8px;margin-top:6px"><button class="btn sm" data-li="decide" data-id="${esc(c.id)}" data-outcome="accepted">Accept and revise</button><button class="btn sm ghost" data-li="decide" data-id="${esc(c.id)}" data-outcome="kept">Keep the position</button></div>` : ''}</td></tr>`).join('')}</tbody></table></div>`;
+}
+function consultationsList(L, nm, hold) {
+  if (!L.consultations.length) return '<p class="small soft" style="margin:6px 0 0">No consultation has been asked for.</p>';
+  return L.consultations.map(s => `<div class="panel2" style="padding:12px 16px;margin-top:8px"><strong>${esc(s.id)}</strong> <span class="small soft">asked for by ${esc(nm(s.askedBy))} on ${esc(hoDate(s.askedOn))}</span> ${s.heldOn ? badge('Held ' + hoDate(s.heldOn), 'b-green') : badge('Not yet held', 'b-ochre')}<p style="margin:6px 0 0;white-space:pre-wrap">${esc(s.topic)}</p>${s.heldOn ? `<p class="small" style="margin:6px 0 0"><strong>Outcome.</strong> ${esc(s.outcome)} <span class="soft">· recorded by ${esc(nm(s.recordedBy))}</span></p>` : ''}${hold && !s.heldOn ? `<div class="fgrid" style="margin-top:8px"><label class="f" for="li_held_${esc(s.id)}"><span>Held on</span><input class="in" type="date" id="li_held_${esc(s.id)}"></label><label class="f" for="li_out_${esc(s.id)}"><span>Outcome</span><input class="in" id="li_out_${esc(s.id)}" placeholder="What was discussed and what follows"></label></div><div class="row" style="margin-top:6px"><button class="btn sm" data-li="hold" data-id="${esc(s.id)}">Record it as held</button></div>` : ''}</div>`).join('');
+}
+function reviewsList(L, nm, answer) {
+  if (!L.reviews.length) return '<p class="small soft" style="margin:6px 0 0">No facts have been sent for confirmation.</p>';
+  return L.reviews.map(r => `<div class="panel2" style="padding:12px 16px;margin-top:8px"><strong>${esc(r.id)}</strong> <span class="small soft">asked by ${esc(nm(r.askedBy))} on ${esc(hoDate(r.askedOn))}</span>${r.note ? `<p style="margin:6px 0 0;white-space:pre-wrap">${esc(r.note)}</p>` : ''}${r.facts.map(f => `<div style="border-top:1px solid var(--line, #E3E5EA);margin-top:10px;padding-top:10px"><p style="margin:0"><span class="mono">${esc(f.id)}</span> ${esc(f.text)}</p>${f.answer ? `<p class="small" style="margin:6px 0 0">${f.answer === 'correct' ? badge('Correct', 'b-green') : badge('Not correct', 'b-ochre')} <span class="soft">${esc(nm(f.answeredBy))}, ${esc(hoDate(f.answeredOn))}</span>${f.correction ? `<br><strong>Correction.</strong> ${esc(f.correction)}` : ''}</p>` : answer ? `<label class="f" for="li_cor_${esc(f.id)}" style="margin-top:8px"><span>If not correct, the correction</span><input class="in" id="li_cor_${esc(f.id)}"></label><div class="row" style="gap:8px;margin-top:6px"><button class="btn sm" data-li="fact" data-id="${esc(f.id)}" data-answer="correct">Correct</button><button class="btn sm ghost" data-li="fact" data-id="${esc(f.id)}" data-answer="incorrect">Not correct</button></div>` : `<p class="small soft" style="margin:6px 0 0">Not yet answered.</p>`}</div>`).join('')}</div>`).join('');
+}
+/* What the two roles see below their hand-over. */
+function liaisonMgmt(V) {
+  const L = liOf(V.liaison), nm = id => ((V.people || []).find(p => p.id === id) || {}).name || '', open = !V.closed, ct = UI.contest;
+  const contestForm = ct && open ? `<div class="panel2" id="li_contest" style="padding:14px 16px;margin-top:10px"><strong>Contest ${esc(ct.entry)} in update ${esc(ct.update)}</strong><p class="small soft" style="margin:4px 0 8px">An assessor accepts the point and revises, or keeps the position and says why. Both stay on the record and are shown to the independent reviewer.</p><label class="f" for="li_reason"><span>Why you contest it</span><textarea class="in" id="li_reason" rows="3"></textarea></label><label class="f" for="li_evidence" style="margin-top:10px"><span>The evidence it rests on, and where it is held</span><input class="in" id="li_evidence"></label><div class="row" style="gap:8px;margin-top:10px"><button class="btn primary" data-li="contest">Contest the point</button><button class="btn ghost" data-li="cancelContest">Cancel</button></div></div>` : '';
+  return `<section class="card" id="li_updates"><h2 class="sh">Updates from counsel</h2><p class="small soft" style="margin:0 0 8px">At each stage counsel releases an update: what was classified and how, and where evidence is not yet known. You decide nothing after the hand-over, and you can contest any point here.</p>
+      ${L.updates.length ? L.updates.slice().reverse().map(u => `<div style="margin-top:14px">${updateHead(u, nm)}${updateTable(u, open)}</div>`).join('') : '<p class="small soft" style="margin:0">No update has been released yet.</p>'}${contestForm}</section>
+    <section class="card" id="li_contests"><h2 class="sh">Points you have contested</h2>${contestsTable(L, nm, false)}</section>
+    <section class="card" id="li_consult"><h2 class="sh">Consultations</h2><p class="small soft" style="margin:0 0 8px">Ask for a session with counsel and Triodian. It is recorded here once it is held, with its outcome.</p>${consultationsList(L, nm, false)}
+      ${open ? `<label class="f" for="li_topic" style="margin-top:12px"><span>Ask for a consultation</span><textarea class="in" id="li_topic" rows="2" placeholder="What you want to discuss"></textarea></label><div class="row" style="margin-top:8px"><button class="btn sm" data-li="askConsultation">Ask for it</button></div>` : ''}</section>
+    <section class="card" id="li_reviews"><h2 class="sh">Facts to confirm</h2><p class="small soft" style="margin:0 0 8px">Counsel may ask you to confirm named facts. You see only those facts. Answer each as correct or not correct, with the correction.</p>${reviewsList(L, nm, open)}</section>`;
+}
+/* The same record as everyone else sees it, on the counsel screen. Counsel releases and asks; an assessor answers. */
+function liaisonCard() {
+  const L = liOf(S.liaison), nm = id => pname(id) || '', rel = liMayRelease() && !isClosed(), stages = C.phases.filter(p => p.n >= 1).map(p => `End of phase ${p.n} · ${p.name}`);
+  const draft = rel ? updateRows(!!UI.liLegal) : [];
+  const release = rel ? `<div class="panel2" id="li_release" style="padding:14px 16px;margin-top:10px"><strong>Release an update</strong><p class="small soft" style="margin:4px 0 8px">The update below is drawn from the register as it stands. It goes to the technology owner and the AI governance team when you release it, and cannot be recalled.</p>
+      <div class="fgrid"><label class="f" for="li_stage"><span>Stage</span><select class="in" id="li_stage">${stages.map(s => `<option ${UI.liStage === s ? 'selected' : ''}>${esc(s)}</option>`).join('')}</select></label></div>
+      <label class="f" for="li_note" style="margin-top:10px"><span>Note to go with it (optional)</span><textarea class="in" id="li_note" rows="2"></textarea></label>
+      <label class="cb" style="margin-top:10px;display:flex;gap:8px;align-items:flex-start"><input type="checkbox" id="li_legal" data-li-legal="1" ${UI.liLegal ? 'checked' : ''}><span><strong>Include counsel’s determinations (fields 23 to 26).</strong> <span class="small soft">Left unticked, the update carries the technical position only: tier, consequence, rungs and where evidence is not yet known.</span></span></label>
+      ${draft.length ? updateTable({ id: 'draft', rows: draft }, false) : '<p class="small soft" style="margin:8px 0 0">The register has no entries yet. An update can carry a note alone.</p>'}
+      <div class="row" style="gap:8px;margin-top:10px"><button class="btn primary" data-li="release">${UI.liConfirm ? 'Confirm: release it' : 'Release the update'}</button>${UI.liConfirm ? '<button class="btn ghost" data-li="cancelRelease">Not yet</button>' : ''}</div></div>` : '';
+  const ask = rel ? `<label class="f" for="li_facts" style="margin-top:12px"><span>Ask them to confirm facts, one to a line</span><textarea class="in" id="li_facts" rows="3" placeholder="For example: the triage model was last retrained in March 2026"></textarea></label><div class="row" style="margin-top:8px"><button class="btn sm" data-li="askReview">Send the facts</button></div>` : '';
+  return `<section class="card" id="liaison"><h2 class="sh">Updates and consultation with the technology owner and the AI governance team</h2>
+    <p class="small soft" style="margin:0 0 6px">After the hand-over they decide nothing. Counsel releases an update at each stage; they can contest a point, ask for a consultation, and confirm facts counsel names. They read only what is released here.</p>
+    <p class="mini" style="margin:14px 0 2px">Updates released</p>${L.updates.length ? L.updates.slice().reverse().map(u => `<details style="margin-top:8px"><summary style="cursor:pointer">${updateHead(u, nm)}</summary>${updateTable(u, false)}</details>`).join('') : '<p class="small soft" style="margin:6px 0 0">No update has been released yet.</p>'}${release}
+    <p class="mini" style="margin:18px 0 2px">Contested points</p>${contestsTable(L, nm, liMayDecide() && !isClosed())}
+    <p class="mini" style="margin:18px 0 2px">Consultations</p>${consultationsList(L, nm, hoMayDirect() && !isClosed())}
+    <p class="mini" style="margin:18px 0 2px">Facts sent for confirmation</p>${reviewsList(L, nm, false)}${ask}
+    ${practice() ? '<p class="small soft" style="margin:12px 0 0">Worked example: the record is shown as it stood. Act as Imogen Hart or Tobias Reed to see what the two roles see. Nothing is saved.</p>' : ''}</section>`;
+}
+async function liaisonAct(el) {
+  const a = el.dataset.li, d = el.dataset, val = id => { const x = document.getElementById(id); return x ? x.value : ''; };
+  if (a === 'startContest') { UI.contest = { update: d.update, entry: d.entry }; render(); const f = document.getElementById('li_reason'); if (f) { f.focus({ preventScroll: true }); document.getElementById('li_contest').scrollIntoView({ block: 'center' }); } return; }
+  if (a === 'cancelContest') { UI.contest = null; render(); return; }
+  if (a === 'cancelRelease') { UI.liConfirm = false; render(); return; }
+  if (!SRV.on || (S && practice())) return toast('The worked example is for practice. Nothing here is saved.');
+  if (!SRV.handoverOnly && SRV.state !== 'saved') return toast('Wait until your changes are saved.');
+  if (a === 'release' && !UI.liConfirm) { UI.liStage = val('li_stage'); UI.liNote = val('li_note'); UI.liConfirm = true; render(); const n = document.getElementById('li_note'); if (n) n.value = UI.liNote; return; }
+  const body = a === 'release' ? { action: 'release', stage: val('li_stage'), note: val('li_note'), includeLegal: !!UI.liLegal, rows: updateRows(!!UI.liLegal) }
+    : a === 'contest' ? { action: 'contest', updateId: UI.contest.update, entryId: UI.contest.entry, reason: val('li_reason'), evidence: val('li_evidence') }
+    : a === 'decide' ? { action: 'decide', id: d.id, outcome: d.outcome, decision: val('li_dec_' + d.id) }
+    : a === 'askConsultation' ? { action: 'askConsultation', topic: val('li_topic') }
+    : a === 'hold' ? { action: 'holdConsultation', id: d.id, heldOn: val('li_held_' + d.id), outcome: val('li_out_' + d.id) }
+    : a === 'askReview' ? { action: 'askReview', facts: val('li_facts').split('\n') }
+    : a === 'fact' ? { action: 'answerFact', id: d.id, answer: d.answer, correction: val('li_cor_' + d.id) } : null;
+  if (!body) return;
+  body.today = today();
+  const r = await api('PUT', '/api/liaison', body);
+  if (!r.ok) { toast(r.error); return; }
+  UI.contest = null; UI.liConfirm = false; UI.liNote = '';
+  if (SRV.handoverOnly) { SRV.ho.data = r.body.data; SRV.rev = r.body.revision; }
+  else { S.liaison = r.body.liaison; SRV.rev = r.body.revision; SRV.lastAt = r.body.updatedAt || SRV.lastAt; REV++; }
+  render();
+  toast({ release: 'The update is released.', contest: 'Your point is on the record. An assessor will answer it.', decide: 'The answer is on the record.', askConsultation: 'The consultation is asked for.', hold: 'The consultation is recorded as held.', askReview: 'The facts are sent.', fact: 'Your answer is recorded.' }[a] || 'Saved.');
+}
+/* The worked example: a person who holds only a management role sees what that role sees. */
+const practiceMgmt = () => { if (!S || !practice()) return false; const p = person(UI.personId); return !!p && p.roles.length > 0 && p.roles.every(r => r === 'technologyOwner' || r === 'aiGovernance'); };
+const practiceView = () => ({ engagement: { insurer: S.engagement.insurer, reference: S.engagement.reference, counselFirm: S.engagement.counselFirm }, people: S.people, handover: S.handover, liaison: S.liaison, closed: false });
 /* The hand-over as everyone else sees it, in set-up. */
 function handoverCard() {
   const h = hoOf(S.handover), nm = id => pname(id) || '', direct = hoMayDirect() && !isClosed();
@@ -1016,7 +1109,7 @@ function screenCounsel() {
   const form = awhy ? whyNote(awhy) : b === 'phone' ? `<div class="row" style="margin-top:18px"><button class="btn sm primary" id="openAsk" data-act="sheet" data-s="ask">New question to counsel</button></div>` : `<section class="card" style="margin-top:18px" id="askForm"><h2 class="sh">New ${T('qc', 'question to counsel')}</h2>${askForm('ask')}</section>`;
   return `${opening('Phase 4 · questions to counsel', 'Questions to counsel', 'Any point that depends on what the law requires goes to counsel as a numbered written question. It is never answered in a working paper.')}
   ${S.questions.length ? (b === 'phone' ? `<div class="stack" style="gap:10px">${rows}</div>` : `<div class="tw"><table class="lg"><thead><tr><th>Ref</th><th>Arrangement · entry</th>${b === 'desk' ? '<th>Q</th>' : ''}<th>Question</th>${b === 'desk' ? '<th>Response</th>' : ''}<th>Status</th></tr></thead><tbody>${rows}</tbody></table></div>`) : '<p class="soft">No questions yet. Use <em>ask counsel</em> beside any register field, or the form below.</p>'}
-  ${briefQuestions(awhy)}${form}${gateCard(4)}${stepbar(gate(gates()[4].ok, gates()[4].ok ? 'Phase 4 met' : 'Phase 4 open'))}`;
+  ${briefQuestions(awhy)}${form}${liaisonCard()}${gateCard(4)}${stepbar(gate(gates()[4].ok, gates()[4].ok ? 'Phase 4 met' : 'Phase 4 open'))}`;
 }
 
 /* ---------- worksheets and S7 findings ---------- */
@@ -1269,7 +1362,10 @@ function genDL5() {
 }
 function genDL6() { const h = S.entries.filter(e => ['no', 'partly'].includes(fv(e, 6))); return mdHead(O('DL6')) + `AI uses found that are not on the ${N.entity}'s inventory, for the inventory owner.\n\n` + (h.length ? tbl(['Entry', 'Arrangement', 'On inventory', 'System', 'Supplier', 'What the AI does', 'Source'], h.map(e => [e.id, e.arrangementId, fvs(e, 6), fvs(e, 7), fvs(e, 8), fvs(e, 11), (e.fields[6] || {}).source])) : 'None found.\n\n') + `Accepted: ${S.engagement.handBack.by ? pname(S.engagement.handBack.by) + ', ' + S.engagement.handBack.on : '[not yet accepted]'}\n`; }
 function genQS() { const q = S.questions.filter(x => x.status !== 'answered'); return mdHead(O('QS')) + (q.length ? q.map(x => `## ${x.ref}\n\n` + tbl(['Field', 'Contents'], [['Arrangement and entry', `${x.arrangementId} · ${x.entryId || '—'}`], ['Which of the seven questions', x.question7], ['Facts', x.facts], ['Question', x.question], ['Why it matters to the assessment', x.why], ['Response', x.response || ''], ['Status', x.status + (x.owner ? ' · ' + pname(x.owner) : '')]])).join('') : 'No open questions.\n\n'); }
-function genRP() { const e = S.engagement, cro = pname(e.croPersonId), to = e.independentReviewerReportsTo === 'cro' ? `the CRO${cro ? ', ' + cro : ''}` : `counsel${e.counselFirm ? ', ' + e.counselFirm : ''}`; const strip = s => s.split('\n').slice(4).join('\n'); return mdHead(O('RP')) + `Addressed to ${to}, for the independent reviewer${e.irOrganisation ? ' (' + e.irOrganisation + ')' : ''}. The reviewer’s queries and Triodian’s answers go through the same reporting line. R7 is confirmed by ${e.independentReviewerReportsTo === 'cro' ? 'the CRO' : 'the independent reviewer, through counsel'}.\n\n---\n\n` + strip(genDL1()) + '\n---\n\n' + strip(genDL2()) + '\n---\n\n' + strip(genDL5()); }
+function genRP() { const e = S.engagement, cro = pname(e.croPersonId), to = e.independentReviewerReportsTo === 'cro' ? `the CRO${cro ? ', ' + cro : ''}` : `counsel${e.counselFirm ? ', ' + e.counselFirm : ''}`; const strip = s => s.split('\n').slice(4).join('\n'); return mdHead(O('RP')) + `Addressed to ${to}, for the independent reviewer${e.irOrganisation ? ' (' + e.irOrganisation + ')' : ''}. The reviewer’s queries and Triodian’s answers go through the same reporting line. R7 is confirmed by ${e.independentReviewerReportsTo === 'cro' ? 'the CRO' : 'the independent reviewer, through counsel'}.\n\n---\n\n` + strip(genDL1()) + '\n---\n\n' + strip(genDL2()) + '\n---\n\n' + strip(genDL5()) + contestedMd(); }
+/* The points the technology owner and the AI governance team contested, with the assessor's answer to each, for the
+   independent reviewer (development plan task 7.4, part B). */
+function contestedMd() { const L = liOf(S.liaison); if (!L.contests.length) return ''; return '\n---\n\n## Points contested by the technology owner and the AI governance team\n\nEach point was raised on an update released by counsel. An assessor accepted it and revised, or kept the position and said why.\n\n' + tbl(['Ref', 'On', 'Contested by', 'Reason', 'Evidence', 'Answer', 'Answered by'], L.contests.map(c => [c.id, c.entryId || c.updateId, `${pname(c.by)}, ${dDoc(c.on)}`, c.reason, c.evidence, c.status === 'open' ? 'Not yet answered' : (c.status === 'accepted' ? 'Accepted and revised. ' : 'Position kept. ') + c.decision, c.decidedBy ? `${pname(c.decidedBy)}, ${dDoc(c.decidedOn)}` : ''])) + '\n'; }
 function genCM() {
   const es = S.entries, cnt = (f) => { const o = {}; es.forEach(e => { const k = f(e); if (k) o[k] = (o[k] || 0) + 1; }); return Object.entries(o).map(([k, n]) => `${k}: ${n}`).join(' · ') || '—'; };
   const ft = {}; es.forEach(e => Object.values(e.obtainability.rungs || {}).forEach(t => C.tests.forEach(k => { if (t[k.id] && t[k.id].pass === false) { const key = k.id + '/' + (fv(e, 3) || '?'); ft[key] = (ft[key] || 0) + 1; } })));
@@ -1481,6 +1577,7 @@ function doRender() {
   const app = document.getElementById('app'); lastBp = bp();
   // Until start-up has finished, show a quiet line rather than the welcome screen, so it doesn't flash before the assessment opens.
   if (SRV.handoverOnly && SRV.ho) { app.innerHTML = handoverScreen(); return; }
+  if (practiceMgmt()) { app.innerHTML = handoverScreen(practiceView()); return; }
   if (!S) { app.innerHTML = SRV.ready ? entryOverlay() : `<p class="small soft" role="status" style="text-align:center;padding:30vh 16px 0">Opening AI Use Assessment…</p>`; return; }
   if (UI.personId && !person(UI.personId) && (practice() || !SRV.user)) UI.personId = '';
   if (S && !practice()) applyIdentity();
@@ -1606,6 +1703,7 @@ function hydrate(o) {
   Object.keys(d).forEach(k => { const v = o[k], dv = d[k]; m[k] = v == null ? dv : Array.isArray(dv) ? (Array.isArray(v) ? v : dv) : dv && typeof dv === 'object' ? (v && typeof v === 'object' && !Array.isArray(v) ? Object.assign({}, dv, v) : dv) : v; });
   m.engagement.briefConfirmed = Object.assign({ by: '', on: '', ref: '' }, m.engagement.briefConfirmed); m.engagement.annexSigned = Object.assign({ by: '', on: '' }, m.engagement.annexSigned); m.engagement.handBack = Object.assign({ by: '', on: '' }, m.engagement.handBack);
   if (!Array.isArray(m.engagement.legalPhrases)) m.engagement.legalPhrases = C.legalPhrases.slice();
+  if (o.liaison && typeof o.liaison === 'object') m.liaison = o.liaison;
   if (o.handover && typeof o.handover === 'object') m.handover = o.handover;   // kept by the server; changed only through PUT /api/handover
   if (m.setAgreed.on && !m.setAgreed.gcOn && m.setAgreed.gcBy) m.setAgreed.gcOn = m.setAgreed.on; if (m.setAgreed.on && !m.setAgreed.counselOn && m.setAgreed.counselBy) m.setAgreed.counselOn = m.setAgreed.on;
   m.people = m.people.map(p => Object.assign({ id: 'p' + uid(), name: '', organisation: '', roles: [] }, p, { roles: Array.isArray(p.roles) ? p.roles : [] }));
@@ -1679,6 +1777,13 @@ function buildExample() {
     { ref: 'QC-02', arrangementId: 'ARR-02', entryId: 'REG-003', question7: 7, facts: 'D8-ARR02 cl.7 provides usage reports on request.', question: 'What evidence can the insurer reasonably require of the drafting service at this boundary?', why: 'Field 25', response: 'On the licence terms supplied, disclosure of use (E1) is the reasonable expectation at this boundary.', respondedOn: '2026-10-21', status: 'answered', owner: '', sentOn: '2026-10-19', targetField: '25', enteredBy: 'p1' }];
   X.entries[2].fields[25] = { value: 'E1', detail: 'expectation', source: 'QC-02', notKnown: false, by: 'p1', on: '2026-10-21', locked: true };
   X.history = [{ at: '2026-10-13T09:00:00.000Z', by: 'Sam Okoro', action: 'mobilise', target: 'engagement', from: null, to: 'started' }];
+  // Updates and consultation after the hand-over (plan task 7.4, part B): one update, one point contested and kept,
+  // one consultation held and two facts confirmed. No legal determination is included.
+  { const rows = updateRows(false), first = (rows[0] || {}).entryId || '';
+    X.liaison = { updates: [{ id: 'U1', stage: 'End of phase 3 · Classify and test', note: 'The tiers and consequences as classified and peer-reviewed. Counsel’s determinations follow in the report and are not part of this update.', includeLegal: false, rows, releasedBy: 'p1', releasedOn: '2026-10-20' }],
+      contests: [{ id: 'C1', updateId: 'U1', entryId: first, by: 'p12', on: '2026-10-21', reason: 'The triage model only suggests a route; a claims handler at Harlow confirms it. We read that as a lower authority tier.', evidence: 'Harlow operating procedure CP-14, section 3; held by the claims team', status: 'kept', decision: 'Position kept. CP-14 describes the handler’s review for complex claims only; for standard motor claims the route takes effect without one (due diligence response, p.4). CP-14 is added to the sources.', decidedBy: 'p5', decidedOn: '2026-10-22' }],
+      consultations: [{ id: 'S1', askedBy: 'p11', askedOn: '2026-10-21', topic: 'How the obtainable rung was reached for the claims manager, and what would move it.', heldOn: '2026-10-23', outcome: 'Walked through the five tests. The audit clause is what holds the rung; the CIO will raise it at the March renewal.', recordedBy: 'p8' }],
+      reviews: [{ id: 'F1', askedBy: 'p1', askedOn: '2026-10-19', note: '', facts: [{ id: 'F1.1', text: 'The triage model is run by Quillon Analytics on Harlow’s behalf, in Australia.', answer: 'correct', correction: '', answeredBy: 'p11', answeredOn: '2026-10-19' }, { id: 'F1.2', text: 'Corvane staff have no access to the triage model’s settings.', answer: 'incorrect', correction: 'Two people in claims operations can change the routing thresholds through Harlow’s portal.', answeredBy: 'p12', answeredOn: '2026-10-20' }] }] }; }
   S = old; return X;
 }
 
@@ -1686,6 +1791,7 @@ function buildExample() {
 function curEntry() { return S ? ent(UI.entryId) : null; }
 function onClick(ev) {
   { const ho = ev.target.closest('[data-ho]'); if (ho) { handoverAct(ho); return; } }
+  { const li = ev.target.closest('[data-li]'); if (li) { liaisonAct(li); return; } }
   if (SRV.handoverOnly) { const el = ev.target.closest('[data-act="acct"]'); if (el) { UI.acct = !UI.acct; render(); } else if (UI.acct && !ev.target.closest('.acct')) { UI.acct = false; render(); } return; }
   const pt = ev.target.closest('[data-pact]');
   if (pt) { const a = pt.dataset.pact; if (a === 'close') closePop(); else if (a === 'back') { UI.pop.stack.pop(); renderPop(); } else if (a === 'more') { const id = pt.dataset.id; closePop(true); popAnchor = null; go('reference'); const el = document.getElementById('g-' + id); if (el) { window.scrollTo(0, el.getBoundingClientRect().top + scrollY - 90); el.style.background = 'var(--aubergine-bg)'; } } return; }
@@ -1789,6 +1895,8 @@ function onClick(ev) {
 }
 function onChange(ev) { inChange = true; try { changeHandler(ev); } finally { inChange = false; } }
 function changeHandler(ev) {
+  if (ev.target.dataset && ev.target.dataset.liLegal) { const v = id => { const x = document.getElementById(id); return x ? x.value : ''; }, note = v('li_note'); UI.liStage = v('li_stage'); UI.liLegal = ev.target.checked; UI.liConfirm = false; render(); const n = document.getElementById('li_note'); if (n) n.value = note; return; }
+  if (SRV.handoverOnly || (ev.target.id || '').startsWith('li_') || (ev.target.id || '').startsWith('ho_')) return;
   const t = ev.target, d = t.dataset, e = curEntry(); if (t.id) UI.lastCtl = t.id;
   if (t.id === 'briefIn') { const f = t.files[0]; t.value = ''; if (f) f.text().then(loadBriefText, () => toast('The file could not be read.')); return; }
   if (t.id === 'registerIn') { const f = t.files[0]; t.value = ''; if (!f) return; if (deny('set') || deny('facts')) { toast(deny('set') || deny('facts')); return; } const fr = new FileReader(); fr.onload = () => importRegister(String(fr.result), f.name); fr.readAsText(f); return; }
