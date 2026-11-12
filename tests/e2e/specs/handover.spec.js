@@ -25,7 +25,7 @@ test('a person with only a management role is sent the hand-over and nothing els
   expect(me.handoverOnly).toBe(true);
   const e = (await api('GET', '/api/engagement', undefined, U.aiGovernance)).body;
   expect(e.handoverOnly).toBe(true);
-  expect(Object.keys(e.data).sort()).toEqual(['closed', 'engagement', 'handover', 'people', 'schema']);
+  expect(Object.keys(e.data).sort()).toEqual(['closed', 'engagement', 'handover', 'liaison', 'people', 'schema']);
   for (const [m, path] of [['GET', '/api/archive'], ['GET', '/api/evidence'], ['GET', '/api/appetite-feedback'], ['GET', '/api/admin/users']]) expect((await api(m, path, undefined, U.aiGovernance)).status).toBe(403);
   const put = await api('PUT', '/api/engagement', { revision: e.revision, data: { schema: 'triodian.aua.v1', engagement: { id: 'x' } } }, U.technologyOwner);
   expect(put.status).toBe(403);

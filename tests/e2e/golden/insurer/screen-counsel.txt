@@ -65,6 +65,50 @@ Facts: what the documents show, with sources and without characterisation
 Question: one question that counsel can answer with a determination
 Why it matters to the assessment
 Add to question log
+Updates and consultation with the technology owner and the AI governance team
+
+After the hand-over they decide nothing. Counsel releases an update at each stage; they can contest a point, ask for a consultation, and confirm facts counsel names. They read only what is released here.
+
+Updates released
+
+Update U1 · End of phase 3 · Classify and test released by Meredith Vance on 20 October 2026 · no legal determination included
+
+The tiers and consequences as classified and peer-reviewed. Counsel’s determinations follow in the report and are not part of this update.
+
+Contested points
+
+Ref	On	Reason and evidence	Answer
+C1	REG-001
+U1 · Tobias Reed, 21 October 2026
+	The triage model only suggests a route; a claims handler at Harlow confirms it. We read that as a lower authority tier.
+Evidence: Harlow operating procedure CP-14, section 3; held by the claims team
+	Position kept
+Position kept. CP-14 describes the handler’s review for complex claims only; for standard motor claims the route takes effect without one (due diligence response, p.4). CP-14 is added to the sources.
+Jordan Pike, 22 October 2026
+
+Consultations
+
+S1 asked for by Imogen Hart on 21 October 2026 Held 23 October 2026
+
+How the obtainable rung was reached for the claims manager, and what would move it.
+
+Outcome. Walked through the five tests. The audit clause is what holds the rung; the CIO will raise it at the March renewal. · recorded by Kit Morrow
+
+Facts sent for confirmation
+
+F1 asked by Meredith Vance on 19 October 2026
+
+F1.1 The triage model is run by Quillon Analytics on Harlow’s behalf, in Australia.
+
+Correct Imogen Hart, 19 October 2026
+
+F1.2 Corvane staff have no access to the triage model’s settings.
+
+Not correct Tobias Reed, 20 October 2026
+Correction. Two people in claims operations can change the routing thresholds through Harlow’s portal.
+
+Worked example: the record is shown as it stood. Act as Imogen Hart or Tobias Reed to see what the two roles see. Nothing is saved.
+
 Phase 4 exit gate
 Every question to counsel answered, or left open with a named owner
 ← Classify
