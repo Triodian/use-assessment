@@ -5,8 +5,9 @@ export const ADMIN = 'damian.hickey@triodian.com';
 export const U = {
   mo: 'mo@ua.test', assessor: 'assessor@ua.test', peer: 'peer@ua.test', validation: 'validation@ua.test', delivery: 'delivery@ua.test',
   counsel: 'counsel@ua.test', gc: 'gc@ua.test', owner: 'owner@ua.test', ir: 'ir@ua.test', cro: 'cro@ua.test',
+  technologyOwner: 'cio@ua.test', aiGovernance: 'aigov@ua.test', aiGovernance2: 'aigov2@ua.test',
 };
-export const ROLES = { mo: ['methodOwner'], assessor: ['assessor'], peer: ['peer'], validation: ['validation'], delivery: ['delivery'], counsel: ['counsel'], gc: ['gc'], owner: ['owner'], ir: ['ir'], cro: ['cro'] };
+export const ROLES = { mo: ['methodOwner'], assessor: ['assessor'], peer: ['peer'], validation: ['validation'], delivery: ['delivery'], counsel: ['counsel'], gc: ['gc'], owner: ['owner'], ir: ['ir'], cro: ['cro'], technologyOwner: ['technologyOwner'], aiGovernance: ['aiGovernance'], aiGovernance2: ['aiGovernance'] };
 
 export async function api(method, path, body, as = ADMIN) {
   const r = await fetch(BASE + path, { method, headers: { 'X-Dev-User': as, 'Content-Type': 'application/json' }, body: body === undefined ? undefined : JSON.stringify(body) });

@@ -213,6 +213,8 @@ Triodian’s assessor attends every interview. Counsel convenes the opening brie
 | Independent reviewer | Lena Hartmann (Independent reviewer) |
 | CRO (insurer) | Priya Natarajan (Corvane General · CRO) |
 | Second approver (company executive) | Not yet named |
+| Technology owner (insurer) | Imogen Hart (Corvane General · chief information officer) |
+| AI governance team (insurer) | Tobias Reed (Corvane General · AI governance); Wei Ling Chua (Corvane General · AI governance) |
 
 ## Documents needed from the insurer
 

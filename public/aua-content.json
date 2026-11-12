@@ -46,6 +46,14 @@
     {
       "id": "executive",
       "name": "Second approver (company executive)"
+    },
+    {
+      "id": "technologyOwner",
+      "name": "Technology owner ({entity})"
+    },
+    {
+      "id": "aiGovernance",
+      "name": "AI governance team ({entity})"
     }
   ],
   "boundaries": [

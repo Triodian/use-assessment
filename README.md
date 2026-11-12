@@ -57,6 +57,15 @@ The server design is the same as the AI Risk Appetite app's (`Triodian/risk_appe
 - Every change is saved to the server within about a second. The server checks each save against the signed-in person's
   roles, including the rules that depend on who did what: blind peer re-derivation (R3), independent validation (R4),
   confirmations in one's own name. History is append-only and signed by the server.
+- **The hand-over (development plan task 7.4, part A).** The technology owner (one person) and the AI governance team
+  (several) supply the inventory, the evidence for each arrangement and what existing assurance covers, and confirm it
+  complete; after that they change nothing unless counsel, the GC, the method owner or the delivery manager reopens it
+  with the reason. A person who holds only those roles is sent the hand-over and nothing else of the assessment
+  (`lib/core/handover.js`: `GET /api/engagement` returns the hand-over view, and every other route but their own
+  profile is refused). The hand-over is kept in the assessment as `handover` and changes only through
+  `PUT /api/handover`; an ordinary save cannot change it. Nobody who holds either role, or who supplied or confirmed
+  the hand-over, can be the independent reviewer (task 7.5): Admin refuses the role and R7 refuses the person. The
+  updates, contested points, consultations and structured reviews of part B wait for counsel's confirmation.
 - Two people editing at once: their changes are merged; only a change to the very same item by both is refused, naming the item.
 - The worked example runs in the browser only and is never saved.
 

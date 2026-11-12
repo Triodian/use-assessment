@@ -907,6 +907,14 @@
   {
    "id": "executive",
    "name": "Second approver (company executive)"
+  },
+  {
+   "id": "technologyOwner",
+   "name": "Technology owner (insurer)"
+  },
+  {
+   "id": "aiGovernance",
+   "name": "AI governance team (insurer)"
   }
  ],
  "rungs": [
