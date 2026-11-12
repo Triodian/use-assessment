@@ -23,6 +23,9 @@ test('?example=superannuation opens Coastline Super with the super pack and the 
   const { ctx, p } = await start(browser, '/?example=superannuation');
   await expect(p.locator('.examplenote').first()).toContainText('a fictional superannuation trustee, Coastline Super');
   await expect(p).toHaveURL(/\/(#.*)?$/);                          // the parameter is tidied away
+  await p.goto('/?other=1&example=superannuation');                // only its own parameter is removed, so the suite's stays for the suite to read
+  await expect(p).toHaveURL(/\/\?other=1(#.*)?$/);
+  await expect(p.locator('.examplenote', { hasText: 'Coastline Super' }).first()).toBeVisible({ timeout: 15_000 });
   const s = await facts(p);
   expect(s.name).toBe('Coastline Super (fictional)'); expect(s.pack).toBe('superTrustee');
   expect(s.cal).toBe('approved v1'); expect(s.minute).toBe('Board minute 2026/11-07');   // the set the Risk Appetite example approves
