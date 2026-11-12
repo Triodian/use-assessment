@@ -25,12 +25,13 @@ for (const id of ids) {
   ok(`${id}: names the documents D1 to D12`, c.documents.map(d => d.ref).join() === BASE.packs.generalInsurer.replace.documents.map(d => d.ref).join());
 }
 
-// No sector wording outside the packs. The worked example is a general insurer, so its own lines may say so.
+// No sector wording outside the packs. One worked example is a general insurer and the other a fund with a group insurer, so their own lines may say so.
 const SECTOR = /\b(insurers?|policyholders?)\b/i;
 const left = (file, skip = () => false) => readFileSync(at(file), 'utf8').split('\n').map((l, i) => [i + 1, l]).filter(([n, l]) => SECTOR.test(l.replace(/\b(e|S\.engagement|X\.engagement|meta|engagement|data\.engagement|newData\.engagement)\.insurer\b|\binsurer:|'engagement\.insurer'|'insurer'/g, '')) && !skip(n, l));
 ok('aua-content.json names no sector', left('public/aua-content.json').length === 0, left('public/aua-content.json').map(x => x[0]).join(', '));
 const app = readFileSync(at('public/aua.js'), 'utf8').split('\n');
-const exStart = app.findIndex(l => l.startsWith('function buildExample(') || l.startsWith('function exampleState(')) + 1, exEnd = exStart + app.slice(exStart).findIndex(l => l === '}') + 1;
+// The worked examples run from the first builder to the line that picks one. The superannuation example names the fund's group insurer.
+const exStart = app.findIndex(l => l.startsWith('function buildExampleInsurer(')) + 1, exEnd = app.findIndex(l => l.startsWith('function buildExample()')) + 1;
 const example = (n, l) => (n >= exStart && n <= exEnd) || /fictional|Corvane|WORKED EXAMPLE|N\.entity is "insurer"|"generalInsurer":"General insurer"/i.test(l);
 ok('aua.js names no sector outside the worked example', left('public/aua.js', example).length === 0, left('public/aua.js', example).map(x => x[0]).join(', '));
 for (const f of ['lib/core/roles.js', 'lib/core/notify.js', 'lib/core/review.js', 'lib/identity/people.js', 'public/export.js']) ok(`${f} names no sector`, left(f).length === 0, left(f).map(x => x[0]).join(', '));
