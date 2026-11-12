@@ -26,6 +26,9 @@ Elise Tan · Validation
 Kit Morrow · Delivery manager
 Lena Hartmann · Independent reviewer
 Priya Natarajan · CRO
+Imogen Hart · Technology owner
+Tobias Reed · AI governance team
+Wei Ling Chua · AI governance team
 Phase 0 · mobilise
 Set up the assessment
 
@@ -95,6 +98,8 @@ Arrangement owner (insurer)
 Independent reviewer
 CRO (insurer)
 Second approver (company executive)
+Technology owner (insurer)
+AI governance team (insurer)
 Remove
 Name
 Organisation
@@ -110,6 +115,8 @@ Arrangement owner (insurer)
 Independent reviewer
 CRO (insurer)
 Second approver (company executive)
+Technology owner (insurer)
+AI governance team (insurer)
 Remove
 Name
 Organisation
@@ -125,6 +132,8 @@ Arrangement owner (insurer)
 Independent reviewer
 CRO (insurer)
 Second approver (company executive)
+Technology owner (insurer)
+AI governance team (insurer)
 Remove
 Name
 Organisation
@@ -140,6 +149,8 @@ Arrangement owner (insurer)
 Independent reviewer
 CRO (insurer)
 Second approver (company executive)
+Technology owner (insurer)
+AI governance team (insurer)
 Remove
 Name
 Organisation
@@ -155,6 +166,8 @@ Arrangement owner (insurer)
 Independent reviewer
 CRO (insurer)
 Second approver (company executive)
+Technology owner (insurer)
+AI governance team (insurer)
 Remove
 Name
 Organisation
@@ -170,6 +183,8 @@ Arrangement owner (insurer)
 Independent reviewer
 CRO (insurer)
 Second approver (company executive)
+Technology owner (insurer)
+AI governance team (insurer)
 Remove
 Name
 Organisation
@@ -185,6 +200,8 @@ Arrangement owner (insurer)
 Independent reviewer
 CRO (insurer)
 Second approver (company executive)
+Technology owner (insurer)
+AI governance team (insurer)
 Remove
 Name
 Organisation
@@ -200,6 +217,8 @@ Arrangement owner (insurer)
 Independent reviewer
 CRO (insurer)
 Second approver (company executive)
+Technology owner (insurer)
+AI governance team (insurer)
 Remove
 Name
 Organisation
@@ -215,6 +234,8 @@ Arrangement owner (insurer)
 Independent reviewer
 CRO (insurer)
 Second approver (company executive)
+Technology owner (insurer)
+AI governance team (insurer)
 Remove
 Name
 Organisation
@@ -230,6 +251,59 @@ Arrangement owner (insurer)
 Independent reviewer
 CRO (insurer)
 Second approver (company executive)
+Technology owner (insurer)
+AI governance team (insurer)
+Remove
+Name
+Organisation
+Roles (one person may hold more than one Triodian role)
+Method owner (Triodian)
+Assessor (Triodian)
+Peer reviewer (Triodian)
+Validation (Triodian)
+Delivery manager (Triodian)
+Counsel
+GC
+Arrangement owner (insurer)
+Independent reviewer
+CRO (insurer)
+Second approver (company executive)
+Technology owner (insurer)
+AI governance team (insurer)
+Remove
+Name
+Organisation
+Roles (one person may hold more than one Triodian role)
+Method owner (Triodian)
+Assessor (Triodian)
+Peer reviewer (Triodian)
+Validation (Triodian)
+Delivery manager (Triodian)
+Counsel
+GC
+Arrangement owner (insurer)
+Independent reviewer
+CRO (insurer)
+Second approver (company executive)
+Technology owner (insurer)
+AI governance team (insurer)
+Remove
+Name
+Organisation
+Roles (one person may hold more than one Triodian role)
+Method owner (Triodian)
+Assessor (Triodian)
+Peer reviewer (Triodian)
+Validation (Triodian)
+Delivery manager (Triodian)
+Counsel
+GC
+Arrangement owner (insurer)
+Independent reviewer
+CRO (insurer)
+Second approver (company executive)
+Technology owner (insurer)
+AI governance team (insurer)
 Remove
 3 · Independent reviewer
 
@@ -517,6 +591,50 @@ Notes reference
 IV-5
 Date held
 Notes reference
+Hand-over from the technology owner and the AI governance team
+
+They supply the inventory, the evidence for each arrangement and what existing assurance covers, and confirm it complete. They see the hand-over only, and change nothing after it. Both roles are optional: without them the documents and interviews above carry the facts, as before.
+
+Supplying: Imogen Hart (Technology owner (insurer)); Tobias Reed (AI governance team (insurer)); Wei Ling Chua (AI governance team (insurer)).
+
+Asked for by Meredith Vance on 6 October 2026: The inventory of AI in use at Corvane and its providers, the contracts and due diligence for each arrangement, and what existing assurance covers. By 10 October.
+
+Complete Confirmed complete by Imogen Hart on 10 October 2026.
+
+Item	What it is	System, use or arrangement	What is supplied, and where it is held	Supplied by
+H1	Inventory	Motor claims triage model at Harlow Claims Services	A provider’s model routes motor claims; built by Quillon Analytics for Harlow.
+AI inventory, row 14; sent to the GC on 8 October
+	Tobias Reed
+8 October 2026
+
+H2	Inventory	Legal staff drafting assistant (Lexmere)	Licensed drafting assistant used by the legal team.
+AI inventory, row 3
+	Tobias Reed
+8 October 2026
+
+H3	Inventory	Pricing model at Fenwick Underwriting	The underwriting agency’s pricing model for SME property.
+AI inventory, row 21
+	Wei Ling Chua
+8 October 2026
+
+H4	Evidence for an arrangement	Outside claims manager · motor	Claims management agreement and Harlow’s 2026 due diligence response.
+Contracts system C-1182; sent to counsel on 9 October
+	Wei Ling Chua
+9 October 2026
+
+H5	Evidence for an arrangement	Legal staff drafting assistant (Lexmere)	Licence terms and the security pack.
+Contracts system C-2291
+	Tobias Reed
+9 October 2026
+
+H6	Existing assurance	Outside claims manager · motor	The 2026 internal audit of outsourced claims covers payment controls and financial records. It does not cover the triage model.
+Internal audit report IA-2026-07
+	Imogen Hart
+10 October 2026
+Record of the hand-over · 2 entries
+
+Worked example: the hand-over is shown as supplied. Nothing is saved.
+
 Phase 0 exit gate
 Brief confirmed by the GC
 Privilege marking entered

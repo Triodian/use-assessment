@@ -636,6 +636,87 @@ function briefQuestions(awhy) {
   return `<section class="card" style="margin-top:18px" id="briefQs"><h2 class="sh">From the matter brief</h2><p class="small soft" style="margin:4px 0 10px">${open.length ? `${open.length} of ${qs.length} questions not yet raised. Choosing one fills the form below; pick the arrangement and which of the seven questions it belongs to, then add it.` : `All ${qs.length} questions from the brief are raised.`}</p>
     ${open.length ? `<ul class="small" style="margin:0 0 0 18px">${open.map(([q, i]) => `<li style="margin:4px 0">${esc(q.question)} ${awhy ? '' : `<button class="btn sm ghost" data-act="askBrief" data-i="${i}">Use this question</button>`}</li>`).join('')}</ul>` : ''}</section>`;
 }
+/* ---------- the hand-over (development plan task 7.4, part A) ----------
+   The technology owner and the AI governance team supply the inventory, the evidence for each arrangement and what
+   existing assurance covers, and confirm it complete. A person who holds only those roles is sent the hand-over and
+   nothing else of the assessment (lib/core/handover.js), and sees the one screen below. Everyone else sees the
+   hand-over as a card in set-up; counsel, the GC, the method owner and the delivery manager ask for it and reopen it.
+   Every change goes through PUT /api/handover, one at a time, never through an ordinary save. */
+const HO_KINDS = [['inventory', 'Inventory', 'A system or use of AI, yours or a provider’s'], ['evidence', 'Evidence for an arrangement', 'A contract, a due diligence response, test results, a report'], ['assurance', 'Existing assurance', 'What an audit, a certification or a control test already covers']];
+const hoKind = id => (HO_KINDS.find(k => k[0] === id) || [])[1] || id;
+const hoDate = s => (s ? fmtYMD(s, prefDF()) : '');
+const hoOf = h => ({ request: Object.assign({ by: '', on: '', note: '' }, (h || {}).request), items: ((h || {}).items) || [], complete: Object.assign({ by: '', on: '' }, (h || {}).complete), log: ((h || {}).log) || [] });
+const hoMayDirect = () => !!SRV.user && !practice() && (SRV.user.roles || []).some(r => ['counsel', 'gc', 'methodOwner', 'delivery'].includes(r));
+function hoStatus(h, nm) {
+  return h.complete.by ? `${badge('Complete', 'b-green')} <span class="small">Confirmed complete by ${esc(nm(h.complete.by))} on ${esc(hoDate(h.complete.on))}.</span>`
+    : h.items.length ? `${badge('Open', 'b-ochre')} <span class="small">${h.items.length} item${h.items.length === 1 ? '' : 's'} supplied, not yet confirmed complete.</span>`
+    : `${badge('Not started', 'b-grey')} <span class="small">Nothing has been handed over yet.</span>`;
+}
+function hoItems(h, nm, edit) {
+  if (!h.items.length) return '';
+  return `<div class="tw" style="margin-top:10px"><table class="lg"><thead><tr><th style="width:64px">Item</th><th style="width:170px">What it is</th><th>System, use or arrangement</th><th>What is supplied, and where it is held</th><th style="width:190px">Supplied by</th>${edit ? '<th style="width:150px"></th>' : ''}</tr></thead><tbody>${h.items.map(i => `<tr><td class="mono">${esc(i.id)}</td><td>${esc(hoKind(i.kind))}</td><td>${esc(i.system)}</td><td>${esc(i.description)}${i.where ? `<div class="small soft">${esc(i.where)}</div>` : ''}</td><td class="small">${esc(nm(i.suppliedBy))}<div class="soft">${esc(hoDate(i.suppliedOn))}</div></td>${edit ? `<td><button class="btn sm ghost" data-ho="edit" data-id="${esc(i.id)}">Edit</button> <button class="btn sm ghost" data-ho="remove" data-id="${esc(i.id)}">${UI.hoDel === i.id ? 'Confirm' : 'Remove'}</button></td>` : ''}</tr>`).join('')}</tbody></table></div>`;
+}
+function hoLog(h) {
+  const words = { request: 'asked for the hand-over', add: 'added', change: 'changed', remove: 'removed', complete: 'confirmed the hand-over complete', reopen: 'reopened the hand-over' };
+  return h.log.length ? `<details style="margin-top:12px"><summary class="small" style="cursor:pointer">Record of the hand-over · ${h.log.length} ${h.log.length === 1 ? 'entry' : 'entries'}</summary><ul class="small" style="margin:8px 0 0 18px">${h.log.map(l => `<li>${esc(hoDate(l.on))} · ${esc(l.by)} ${esc(words[l.action] || l.action)}${l.note && ['add', 'change', 'remove'].includes(l.action) ? ' ' + esc(l.note) : l.note ? ': ' + esc(l.note) : ''}</li>`).join('')}</ul></details>` : '';
+}
+/* The one screen a person with only a management role sees. */
+function handoverScreen() {
+  const V = SRV.ho.data, h = hoOf(V.handover), nm = id => ((V.people || []).find(p => p.id === id) || {}).name || '', done = !!h.complete.by, open = !done && !V.closed;
+  const ed = UI.hoEdit ? h.items.find(i => i.id === UI.hoEdit) : null, x = ed || { kind: '', system: '', description: '', where: '' };
+  const form = open ? `<section class="card"><h2 class="sh">${ed ? 'Change item ' + esc(ed.id) : 'Add to the hand-over'}</h2>
+    <div class="fgrid"><label class="f" for="ho_kind"><span>What it is</span><select class="in" id="ho_kind">${[['', 'Choose…']].concat(HO_KINDS).map(k => `<option value="${k[0]}" ${x.kind === k[0] ? 'selected' : ''}>${esc(k[1])}${k[2] ? ' · ' + esc(k[2]) : ''}</option>`).join('')}</select></label>
+    <label class="f" for="ho_system"><span>System, use or arrangement</span><input class="in" id="ho_system" value="${esc(x.system)}" placeholder="For example: the claims triage model at our outside claims manager"></label></div>
+    <label class="f" for="ho_description" style="margin-top:12px"><span>What you are supplying</span><textarea class="in" id="ho_description" rows="3" placeholder="For example: the provider’s due diligence response for 2026, pages 3 to 6 on its AI">${esc(x.description)}</textarea></label>
+    <label class="f" for="ho_where" style="margin-top:12px"><span>Where it is held, or how it was sent</span><input class="in" id="ho_where" value="${esc(x.where)}" placeholder="For example: sent to the GC on 3 November; contracts system, reference C-2291"></label>
+    <div class="row" style="gap:8px;margin-top:14px"><button class="btn primary" data-ho="save">${ed ? 'Save the change' : 'Add it'}</button>${ed ? '<button class="btn ghost" data-ho="cancel">Cancel</button>' : ''}</div></section>` : '';
+  return `<header class="hdr"><div class="hdr-in"><span class="brand" aria-hidden="true">${bp() !== 'phone' ? LOGO(22) : MARKSVG()}</span>${bp() !== 'phone' ? '<span class="vrule" aria-hidden="true"></span>' : ''}<span class="apptitle">AI Use Assessment</span><div class="hdr-r">${account()}</div></div></header>
+  <main id="main" tabindex="-1"><div class="wrap">
+    <section class="card"><p class="mini" style="margin:0 0 4px">${esc(V.engagement.insurer || 'Your organisation')}${V.engagement.reference ? ' · ' + esc(V.engagement.reference) : ''}</p><h1 class="sh" style="font-size:24px;margin:0 0 8px">Your hand-over</h1>
+      <p style="margin:0 0 8px">You supply what exists: the inventory of AI in use, the evidence for each arrangement, and what existing assurance already covers. When it is all here, confirm it complete. The assessment is then carried out from it${V.engagement.counselFirm ? ' at the direction of ' + esc(V.engagement.counselFirm) : ' at the direction of counsel'}, and the outcome returns to the arrangement owners as the hand-back list.</p>
+      <p class="small soft" style="margin:0 0 10px">Your role sees this hand-over and not the rest of the assessment. Describe each item and where it is held; documents are sent to counsel in the usual way, not uploaded here.</p>
+      ${h.request.by ? `<div class="panel2" style="padding:12px 16px;margin:0 0 10px"><strong>Asked for by ${esc(nm(h.request.by))} on ${esc(hoDate(h.request.on))}</strong>${h.request.note ? `<p style="margin:6px 0 0;white-space:pre-wrap">${esc(h.request.note)}</p>` : ''}</div>` : ''}
+      <p id="ho_status" style="margin:0">${V.closed ? badge('Closed', 'b-grey') + ' <span class="small">The assessment is closed.</span>' : hoStatus(h, nm)}</p>
+      ${hoItems(h, nm, open)}
+      ${open && h.items.length ? `<div class="row" style="gap:8px;margin-top:14px"><button class="btn primary" data-ho="complete">${UI.hoConfirm ? 'Confirm: this is everything' : 'Confirm the hand-over complete'}</button>${UI.hoConfirm ? '<button class="btn ghost" data-ho="keepOpen">Not yet</button>' : ''}<span class="small soft">After that you change nothing here. Counsel or Triodian can reopen it if more is needed.</span></div>` : ''}
+      ${done && !V.closed ? '<p class="small soft" style="margin:10px 0 0">To add or change an item, ask counsel or Triodian to reopen the hand-over.</p>' : ''}
+      ${hoLog(h)}</section>
+    ${form}</div></main>`;
+}
+/* The hand-over as everyone else sees it, in set-up. */
+function handoverCard() {
+  const h = hoOf(S.handover), nm = id => pname(id) || '', direct = hoMayDirect() && !isClosed();
+  const mgmt = S.people.filter(p => p.roles.some(r => r === 'technologyOwner' || r === 'aiGovernance'));
+  return `<section class="card" id="handover"><h2 class="sh">Hand-over from the technology owner and the AI governance team</h2>
+    <p class="small soft" style="margin:0 0 10px">They supply the inventory, the evidence for each arrangement and what existing assurance covers, and confirm it complete. They see the hand-over only, and change nothing after it. Both roles are optional: without them the documents and interviews above carry the facts, as before.</p>
+    <p class="small" style="margin:0 0 8px">${mgmt.length ? 'Supplying: ' + esc(mgmt.map(p => `${p.name} (${p.roles.filter(r => r === 'technologyOwner' || r === 'aiGovernance').map(roleName).join(', ')})`).join('; ')) + '.' : 'No one holds the technology owner or AI governance team role. An administrator gives the roles in Admin.'}</p>
+    ${h.request.by ? `<p class="small" style="margin:0 0 8px">Asked for by ${esc(nm(h.request.by))} on ${esc(hoDate(h.request.on))}${h.request.note ? ': ' + esc(h.request.note) : '.'}</p>` : ''}
+    <p id="ho_status" style="margin:0">${hoStatus(h, nm)}</p>${hoItems(h, nm, false)}${hoLog(h)}
+    ${direct && !h.complete.by ? `<label class="f" for="ho_note" style="margin-top:12px"><span>${h.request.by ? 'Change what is asked for' : 'Ask for the hand-over'}</span><textarea class="in" id="ho_note" rows="2" placeholder="What you are asking them to supply, and by when">${esc(h.request.note)}</textarea></label><div class="row" style="margin-top:8px"><button class="btn sm" data-ho="request">${h.request.by ? 'Update the request' : 'Ask for the hand-over'}</button></div>` : ''}
+    ${direct && h.complete.by ? `<label class="f" for="ho_reason" style="margin-top:12px"><span>Reopen the hand-over, with the reason</span><input class="in" id="ho_reason" placeholder="For example: the binder renewal papers are still to come"></label><div class="row" style="margin-top:8px"><button class="btn sm" data-ho="reopen">Reopen it</button></div>` : ''}
+    ${practice() ? '<p class="small soft" style="margin:10px 0 0">Worked example: the hand-over is shown as supplied. Nothing is saved.</p>' : ''}</section>`;
+}
+async function handoverAct(el) {
+  const a = el.dataset.ho, val = id => { const x = document.getElementById(id); return x ? x.value : ''; };
+  if (a === 'edit') { UI.hoEdit = el.dataset.id; UI.hoDel = ''; render(); const f = document.getElementById('ho_system'); if (f) f.focus(); return; }
+  if (a === 'cancel') { UI.hoEdit = ''; render(); return; }
+  if (a === 'keepOpen') { UI.hoConfirm = false; render(); return; }
+  if (a === 'remove' && UI.hoDel !== el.dataset.id) { UI.hoDel = el.dataset.id; render(); return; }
+  if (a === 'complete' && !UI.hoConfirm) { UI.hoConfirm = true; render(); return; }
+  if (!SRV.on || practice()) return toast('The worked example is for practice. Nothing here is saved.');
+  if (!SRV.handoverOnly && SRV.state !== 'saved') return toast('Wait until your changes are saved.');
+  const body = a === 'save' ? { action: 'item', id: UI.hoEdit || undefined, kind: val('ho_kind'), system: val('ho_system'), description: val('ho_description'), where: val('ho_where') }
+    : a === 'remove' ? { action: 'remove', id: el.dataset.id } : a === 'complete' ? { action: 'complete' } : a === 'request' ? { action: 'request', note: val('ho_note') } : a === 'reopen' ? { action: 'reopen', reason: val('ho_reason') } : null;
+  if (!body) return;
+  body.today = today();
+  const r = await api('PUT', '/api/handover', body);
+  if (!r.ok) { toast(r.error); return; }
+  UI.hoEdit = ''; UI.hoDel = ''; UI.hoConfirm = false;
+  if (SRV.handoverOnly) { SRV.ho.data = r.body.data; SRV.rev = r.body.revision; }
+  else { S.handover = r.body.handover; SRV.rev = r.body.revision; SRV.lastAt = r.body.updatedAt || SRV.lastAt; REV++; }
+  render();
+  toast({ save: 'Saved to the hand-over.', remove: 'Removed from the hand-over.', complete: 'The hand-over is confirmed complete. Thank you.', request: 'The hand-over is asked for.', reopen: 'The hand-over is open again.' }[a] || 'Saved.');
+}
 function screenSetup() {
   const e = S.engagement, b = bp(), c = cal(), why = deny('setup'), fs = why ? 'disabled' : '';
   const people = savesHere() || UI.archived ? S.people.map(p => `<div class="panel2" style="padding:12px 16px"><strong>${esc(p.name || 'Unnamed')}</strong>${p.organisation ? ` <span class="soft">· ${esc(p.organisation)}</span>` : ''}<div class="small soft" style="margin-top:4px">${esc(p.roles.map(roleName).join(', '))}</div></div>`).join('') : S.people.map((p, i) => `<div class="panel2" style="padding:14px 16px"><div class="fgrid">${fld('Name', `people.${i}.name`, p.name)}${fld('Organisation', `people.${i}.organisation`, p.organisation)}</div>
@@ -667,6 +748,7 @@ function screenSetup() {
   <section class="card"><div class="row between"><h2 class="sh" style="margin:0">5 · Documents D1 to D10</h2><button class="btn sm" data-act="addDoc" ${fs}>Add document</button></div><p class="small soft" style="margin:8px 0 12px">Give each received document a short ID to use in source references, for example <span class="mono">D5-ARR02 p.14</span>.</p>
     ${b === 'phone' ? `<div class="stack" style="gap:10px">${docs}</div>` : `<div class="tw"><table class="lg"><thead><tr><th>ID</th><th style="width:96px">Ref</th><th>Document</th><th style="width:150px">Status</th><th style="width:160px">Date</th></tr></thead><tbody>${docs}</tbody></table></div>`}</section>
   <section class="card"><div class="row between"><h2 class="sh" style="margin:0">6 · Interviews</h2><button class="btn sm" data-act="addIv" ${fs}>Add interview</button></div><div class="stack" style="gap:8px;margin-top:12px">${S.interviews.map((v, i) => `<div class="fgrid" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr))">${fld(v.id, `interviews.${i}.who`, v.who)}${fld('Date held', `interviews.${i}.date`, v.date, { type: 'date' })}${fld('Notes reference', `interviews.${i}.notesRef`, v.notesRef)}</div>`).join('')}</div></section>
+  ${handoverCard()}
   </div>${nextAssessmentCard()}${gateCard(0)}${stepbar(gate(gates()[0].ok, gates()[0].ok ? 'Phase 0 met' : 'Phase 0 open'))}`;
 }
 
@@ -1398,6 +1480,7 @@ function doRender() {
   suiteNote();
   const app = document.getElementById('app'); lastBp = bp();
   // Until start-up has finished, show a quiet line rather than the welcome screen, so it doesn't flash before the assessment opens.
+  if (SRV.handoverOnly && SRV.ho) { app.innerHTML = handoverScreen(); return; }
   if (!S) { app.innerHTML = SRV.ready ? entryOverlay() : `<p class="small soft" role="status" style="text-align:center;padding:30vh 16px 0">Opening AI Use Assessment…</p>`; return; }
   if (UI.personId && !person(UI.personId) && (practice() || !SRV.user)) UI.personId = '';
   if (S && !practice()) applyIdentity();
@@ -1488,6 +1571,7 @@ function paintSave() { const el = document.getElementById('savechip'); if (el) e
 async function loadReal(quiet) {
   const r = await api('GET', '/api/engagement');
   if (!r.ok) { if (!quiet) toast('Could not load the assessment: ' + r.error); return false; }
+  if (r.body.handoverOnly) { SRV.handoverOnly = true; SRV.ho = r.body; SRV.exists = true; SRV.rev = r.body.revision || 0; S = null; return true; }
   SRV.exists = !!r.body.exists; SRV.rev = r.body.revision || 0; SRV.state = 'saved'; SRV.err = ''; SRV.conflict = null; SRV.lastAt = r.body.updatedAt || ''; SRV.lastBy = r.body.updatedBy || ''; SRV.people = r.body.people || [];
   UI.dirty = false;
   if (r.body.exists) { try { S = hydrate(r.body.data); } catch (e) { S = null; toast('The saved assessment could not be read: ' + e.message); return false; } applyIdentity(); REV++; }
@@ -1522,6 +1606,7 @@ function hydrate(o) {
   Object.keys(d).forEach(k => { const v = o[k], dv = d[k]; m[k] = v == null ? dv : Array.isArray(dv) ? (Array.isArray(v) ? v : dv) : dv && typeof dv === 'object' ? (v && typeof v === 'object' && !Array.isArray(v) ? Object.assign({}, dv, v) : dv) : v; });
   m.engagement.briefConfirmed = Object.assign({ by: '', on: '', ref: '' }, m.engagement.briefConfirmed); m.engagement.annexSigned = Object.assign({ by: '', on: '' }, m.engagement.annexSigned); m.engagement.handBack = Object.assign({ by: '', on: '' }, m.engagement.handBack);
   if (!Array.isArray(m.engagement.legalPhrases)) m.engagement.legalPhrases = C.legalPhrases.slice();
+  if (o.handover && typeof o.handover === 'object') m.handover = o.handover;   // kept by the server; changed only through PUT /api/handover
   if (m.setAgreed.on && !m.setAgreed.gcOn && m.setAgreed.gcBy) m.setAgreed.gcOn = m.setAgreed.on; if (m.setAgreed.on && !m.setAgreed.counselOn && m.setAgreed.counselBy) m.setAgreed.counselOn = m.setAgreed.on;
   m.people = m.people.map(p => Object.assign({ id: 'p' + uid(), name: '', organisation: '', roles: [] }, p, { roles: Array.isArray(p.roles) ? p.roles : [] }));
   m.arrangements = m.arrangements.map(a => Object.assign({ name: '', parties: '', boundaries: [], criteria: [], reason: '', nextContracting: '', function: '', findingOwner: '' }, a));
@@ -1558,7 +1643,18 @@ function seedExampleVersion() {
 function buildExample() {
   const X = newAssessment(), old = S; S = X;
   Object.assign(X.engagement, { insurer: 'Corvane General Insurance (fictional)', reference: 'AUA-CGI-2026-01', counselFirm: 'Askew Lane Partners (fictional)', practitioner: { firm: 'Askew Lane Partners (fictional)', line: 'Prepared by Askew Lane Partners using the Triodian method', logo: TriodianBrand.EXAMPLE_LOGO }, privilegeMarking: 'Privileged and confidential · prepared at the direction of counsel · worked example', startDate: '2026-10-13', briefConfirmed: { by: 'p2', on: '2026-10-09', ref: 'Brief v1, 9 Oct 2026' }, documentsRequestedOn: '2026-10-09', irPersonId: 'p9', irOrganisation: 'Independent reviewer (fictional firm)', croPersonId: 'p10', example: true });
-  X.people = [['p1', 'Meredith Vance', 'Askew Lane Partners', ['counsel']], ['p2', 'Helen Brandt', 'Corvane General · GC', ['gc']], ['p3', 'Ana Duarte', 'Corvane General · claims executive', ['owner']], ['p4', 'Sam Okoro', 'Triodian', ['methodOwner']], ['p5', 'Jordan Pike', 'Triodian', ['assessor']], ['p6', 'Ravi Menon', 'Triodian', ['peer']], ['p7', 'Elise Tan', 'Triodian', ['validation']], ['p8', 'Kit Morrow', 'Triodian', ['delivery']], ['p9', 'Lena Hartmann', 'Independent reviewer', ['ir']], ['p10', 'Priya Natarajan', 'Corvane General · CRO', ['cro']]].map(([id, name, organisation, roles]) => ({ id, name, organisation, roles }));
+  X.people = [['p1', 'Meredith Vance', 'Askew Lane Partners', ['counsel']], ['p2', 'Helen Brandt', 'Corvane General · GC', ['gc']], ['p3', 'Ana Duarte', 'Corvane General · claims executive', ['owner']], ['p4', 'Sam Okoro', 'Triodian', ['methodOwner']], ['p5', 'Jordan Pike', 'Triodian', ['assessor']], ['p6', 'Ravi Menon', 'Triodian', ['peer']], ['p7', 'Elise Tan', 'Triodian', ['validation']], ['p8', 'Kit Morrow', 'Triodian', ['delivery']], ['p9', 'Lena Hartmann', 'Independent reviewer', ['ir']], ['p10', 'Priya Natarajan', 'Corvane General · CRO', ['cro']], ['p11', 'Imogen Hart', 'Corvane General · chief information officer', ['technologyOwner']], ['p12', 'Tobias Reed', 'Corvane General · AI governance', ['aiGovernance']], ['p13', 'Wei Ling Chua', 'Corvane General · AI governance', ['aiGovernance']]].map(([id, name, organisation, roles]) => ({ id, name, organisation, roles }));
+  // The hand-over (plan task 7.4, part A): asked for by counsel, supplied by the AI governance team and the CIO, and confirmed complete.
+  const hi = (id, kind, system, description, where, suppliedBy, suppliedOn) => ({ id, kind, system, description, where, suppliedBy, suppliedOn });
+  X.handover = { request: { by: 'p1', on: '2026-10-06', note: 'The inventory of AI in use at Corvane and its providers, the contracts and due diligence for each arrangement, and what existing assurance covers. By 10 October.' },
+    items: [hi('H1', 'inventory', 'Motor claims triage model at Harlow Claims Services', 'A provider’s model routes motor claims; built by Quillon Analytics for Harlow.', 'AI inventory, row 14; sent to the GC on 8 October', 'p12', '2026-10-08'),
+      hi('H2', 'inventory', 'Legal staff drafting assistant (Lexmere)', 'Licensed drafting assistant used by the legal team.', 'AI inventory, row 3', 'p12', '2026-10-08'),
+      hi('H3', 'inventory', 'Pricing model at Fenwick Underwriting', 'The underwriting agency’s pricing model for SME property.', 'AI inventory, row 21', 'p13', '2026-10-08'),
+      hi('H4', 'evidence', 'Outside claims manager · motor', 'Claims management agreement and Harlow’s 2026 due diligence response.', 'Contracts system C-1182; sent to counsel on 9 October', 'p13', '2026-10-09'),
+      hi('H5', 'evidence', 'Legal staff drafting assistant (Lexmere)', 'Licence terms and the security pack.', 'Contracts system C-2291', 'p12', '2026-10-09'),
+      hi('H6', 'assurance', 'Outside claims manager · motor', 'The 2026 internal audit of outsourced claims covers payment controls and financial records. It does not cover the triage model.', 'Internal audit report IA-2026-07', 'p11', '2026-10-10')],
+    complete: { by: 'p11', on: '2026-10-10' },
+    log: [{ on: '2026-10-06', by: 'Meredith Vance', byId: 'p1', action: 'request' }, { on: '2026-10-10', by: 'Imogen Hart', byId: 'p11', action: 'complete' }] };
   X.documents.forEach(d => { d.status = 'received'; d.date = '2026-10-10'; });
   X.documents.push({ id: 'D5-ARR01', ref: 'D5', title: 'Claims management agreement, Harlow Claims Services', status: 'received', date: '2026-10-10' }, { id: 'D7-ARR01', ref: 'D7', title: 'Harlow due diligence response 2026', status: 'received', date: '2026-10-10' }, { id: 'D8-ARR02', ref: 'D8', title: 'Lexmere licence terms and security pack', status: 'received', date: '2026-10-10' }, { id: 'D6-ARR03', ref: 'D6', title: 'Fenwick binder delegated authority schedule', status: 'received', date: '2026-10-10' });
   X.interviews.forEach((v, i) => { v.date = '2026-10-1' + (4 + Math.min(i, 3)); v.notesRef = 'IN-0' + (i + 1); });
@@ -1589,6 +1685,8 @@ function buildExample() {
 /* ---------- events ---------- */
 function curEntry() { return S ? ent(UI.entryId) : null; }
 function onClick(ev) {
+  { const ho = ev.target.closest('[data-ho]'); if (ho) { handoverAct(ho); return; } }
+  if (SRV.handoverOnly) { const el = ev.target.closest('[data-act="acct"]'); if (el) { UI.acct = !UI.acct; render(); } else if (UI.acct && !ev.target.closest('.acct')) { UI.acct = false; render(); } return; }
   const pt = ev.target.closest('[data-pact]');
   if (pt) { const a = pt.dataset.pact; if (a === 'close') closePop(); else if (a === 'back') { UI.pop.stack.pop(); renderPop(); } else if (a === 'more') { const id = pt.dataset.id; closePop(true); popAnchor = null; go('reference'); const el = document.getElementById('g-' + id); if (el) { window.scrollTo(0, el.getBoundingClientRect().top + scrollY - 90); el.style.background = 'var(--aubergine-bg)'; } } return; }
   const term = ev.target.closest('.term');
@@ -1755,7 +1853,7 @@ function openExample() { S = buildExample(); seedExampleVersion(); UI.personId =
 async function connect() {
   const r = await api('GET', '/api/me');
   SRV.checked = true;
-  if (r.ok) { SRV.on = true; SRV.user = r.body.user; SRV.site = r.body.site || ''; await loadReal(); await loadArchives(); if (S) { const h = location.hash.slice(1); UI.screen = h && SNAME[h] ? h : 'overview'; } }
+  if (r.ok) { SRV.on = true; SRV.user = r.body.user; SRV.site = r.body.site || ''; SRV.handoverOnly = !!r.body.handoverOnly; await loadReal(); if (SRV.handoverOnly) { SRV.ready = true; render(); return; } await loadArchives(); if (S) { const h = location.hash.slice(1); UI.screen = h && SNAME[h] ? h : 'overview'; } }
   else { SRV.on = false; SRV.code = r.code || ''; SRV.reason = r.error; }
   if (SRV.code !== 'no_access' && openExampleByDefault()) { SRV.ready = true; openExample(); return; }
   SRV.ready = true;

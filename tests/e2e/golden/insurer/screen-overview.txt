@@ -26,6 +26,9 @@ Elise Tan · Validation
 Kit Morrow · Delivery manager
 Lena Hartmann · Independent reviewer
 Priya Natarajan · CRO
+Imogen Hart · Technology owner
+Tobias Reed · AI governance team
+Wei Ling Chua · AI governance team
 Overview
 Eight phases, each with a gate
 
