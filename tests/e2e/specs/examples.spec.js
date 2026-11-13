@@ -83,3 +83,31 @@ test('the default is the insurer example; the menu switches between them, each w
   expect(p._errors).toEqual([]);
   await ctx.close();
 });
+
+test('?example=banking opens Wattlebrook Bank with the ADI pack and the board’s approved appetite', async ({ browser }) => {
+  const { ctx, p } = await start(browser, '/?example=banking');
+  await expect(p.locator('.examplenote').first()).toContainText('a fictional bank, Wattlebrook Bank');
+  const s = await facts(p);
+  expect(s.name).toBe('Wattlebrook Bank (fictional)'); expect(s.pack).toBe('adi');
+  expect(s.cal).toBe('approved v1'); expect(s.minute).toBe('Board minute 2026/11-09');   // the set the Risk Appetite example approves
+  expect(s.diff).toBe(0);
+  expect(s.fns).toEqual(['Financial crime (AML/CTF, fraud and scams)', 'Customer service and complaints', 'Collections and financial hardship']);
+  expect(s.findings).toEqual(['Awaiting counsel', 'F1', 'F4']);
+  expect(s.tiers).toEqual(['A3', '', 'A1', '']);
+  expect(s.people).toEqual(expect.arrayContaining(['Naomi Fitzgerald', 'Dylan Kruger', 'Sana Malik', 'Leila Haddad', 'Thomas Achterberg']));
+  expect(s.docs).toContain('Credit and lending delegations');
+  expect(s.broken).toBe(0);
+  expect(s.handover).toBe(6); expect(s.update).toBeGreaterThan(0); expect(s.includeLegal).toBe(false);
+  await p.evaluate(() => window.AUA.go('register'));
+  await expect(p.locator('body')).toContainText('Scam screening model');
+  await expect(p.locator('body')).toContainText('E3 Event notification');          // the expected rung, from the bank's appetite
+  await expect(p.locator('body')).not.toContainText('Coastline');
+  await expect(p.locator('body')).not.toContainText('Above ceiling ·');
+  for (const scr of ['overview', 'setup', 'classify', 'counsel', 'findings', 'outputs']) expect(await p.evaluate(x => { try { window.AUA.go(x); return true; } catch (e) { return String(e); } }, scr)).toBe(true);
+  await p.evaluate(() => window.AUA.go('overview'));
+  await p.locator('#who, [data-act="person"]').first().selectOption('p11');
+  await expect(p.locator('body')).toContainText('You are acting as Naomi Fitzgerald');
+  await expect(p.locator('body')).toContainText('Scam screening model at Ironbark Payments');
+  expect(p._errors).toEqual([]);
+  await ctx.close();
+});
