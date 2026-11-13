@@ -29,3 +29,16 @@ test('the server accepts a stored brief and refuses a broken one', () => {
   assert.equal(structureError({ engagement: { matterBrief: brief } }), '');
   assert.match(structureError({ engagement: { matterBrief: { tiers: 'x' } } }), /no obligations by tier/);
 });
+
+// Task ISO.8: a brief built with the client's Statement of Applicability loaded carries a fourth list, the controls of
+// a standard the client has adopted for itself. It is kept when present; a brief without it reads as before.
+test('an adopted-standard list in the brief is kept, under its own name', () => {
+  const b = JSON.parse(raw);
+  b.obligationsByTier.adopted = [{ obligationID: 'OBL-INT-ISO42001-A-10-3', title: 'A.10.3 Suppliers', instrument: 'ISO/IEC 42001:2023', citation: 'Annex A, control A.10.3', status: 'inForce', sourceURL: 'https://www.iso.org/standard/42001', lastVerified: '2026-11-13', governedRecordID: 'OBL-INT-ISO42001-A-10-3@1', statementOfApplicability: { applicable: true, justification: 'Material service providers', implementation: 'Implemented in part' } }];
+  const { brief, error } = readBrief(b, {}, '2026-11-13', 'Sam Okoro');
+  assert.equal(error, undefined);
+  assert.deepEqual(brief.tiers.map((t) => t.tier), ['Binding', 'Expected', 'Anticipated', 'Adopted standard']);
+  assert.equal(brief.tiers[3].refs[0][0], 'OBL-INT-ISO42001-A-10-3');
+  assert.deepEqual(readBrief(raw).brief.tiers.map((t) => t.tier), ['Binding', 'Expected', 'Anticipated'], 'a brief without one is unchanged');
+  assert.match(readBrief({ ...b, obligationsByTier: { ...b.obligationsByTier, adopted: 'x' } }).error, /adopted-standard references/);
+});

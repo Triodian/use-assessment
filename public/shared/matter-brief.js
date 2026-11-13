@@ -5,6 +5,9 @@
 
 export const BRIEF_FORMAT = 'triodian.matterBrief/1';
 const TIERS = [['binding', 'Binding'], ['expected', 'Expected'], ['anticipated', 'Anticipated']];
+// A fourth list, present only when the lawyer loaded the client's Statement of Applicability in the Atlas (plan task ISO.8):
+// the controls of a standard the client has adopted for itself, such as ISO/IEC 42001:2023 Annex A.
+const ADOPTED = ['adopted', 'Adopted standard'];
 const isObj = v => !!v && typeof v === 'object' && !Array.isArray(v);
 const str = (v, n = 400) => typeof v === 'string' ? v.slice(0, n) : '';
 
@@ -19,7 +22,9 @@ export function readBrief(text, names = {}, loadedOn = '', loadedBy = '') {
   if (b.briefFormat !== BRIEF_FORMAT) return { error: b.briefFormat ? `This brief is in format ${String(b.briefFormat).slice(0, 40)}. This app reads ${BRIEF_FORMAT}. Export it again from the AI Obligations Atlas.` : 'This file is not a matter brief from the AI Obligations Atlas: it has no briefFormat.' };
   if (!isObj(b.scope) || !Array.isArray(b.scope.jurisdictions) || !Array.isArray(b.scope.entityTypes) || !Array.isArray(b.scope.useCases)) return { error: 'The brief has no scope (jurisdictions, entity types and use cases). Export it again from the AI Obligations Atlas.' };
   if (!isObj(b.obligationsByTier) || TIERS.some(([k]) => !Array.isArray(b.obligationsByTier[k]))) return { error: 'The brief has no obligations by tier (binding, expected and anticipated).' };
-  for (const [k, label] of TIERS) for (const [i, o] of b.obligationsByTier[k].entries()) {
+  if (b.obligationsByTier.adopted != null && !Array.isArray(b.obligationsByTier.adopted)) return { error: 'The adopted-standard references in the brief are not a list.' };
+  const tiers = Array.isArray(b.obligationsByTier.adopted) ? TIERS.concat([ADOPTED]) : TIERS;
+  for (const [k, label] of tiers) for (const [i, o] of b.obligationsByTier[k].entries()) {
     if (!isObj(o) || typeof o.obligationID !== 'string' || !o.obligationID || typeof o.title !== 'string') return { error: `Reference ${i + 1} under ${label} has no obligation ID or title.` };
   }
   if (b.questionsForCounsel != null && !Array.isArray(b.questionsForCounsel)) return { error: 'The questions for counsel in the brief are not a list.' };
@@ -30,7 +35,7 @@ export function readBrief(text, names = {}, loadedOn = '', loadedBy = '') {
     format: BRIEF_FORMAT, loadedOn, loadedBy, generatedAt: str(b.generatedAt, 40), scope,
     scopeCodes: { jurisdictions: jur.slice(0, 20), entityTypes: ets.slice(0, 20), useCases: ucs.slice(0, 20) },
     dataset: isObj(b.dataset) ? { generatedAt: str(b.dataset.generatedAt, 40), preview: !!b.dataset.preview } : {},
-    tiers: TIERS.map(([k, label]) => ({ tier: label, refs: b.obligationsByTier[k].slice(0, 200).map(o => [str(o.obligationID, 80), str(o.title, 300), str(o.instrument, 300), str(o.citation, 200), str(o.status, 40), /^https:\/\//.test(o.sourceURL || '') ? str(o.sourceURL, 500) : '']) })),
+    tiers: tiers.map(([k, label]) => ({ tier: label, refs: b.obligationsByTier[k].slice(0, 200).map(o => [str(o.obligationID, 80), str(o.title, 300), str(o.instrument, 300), str(o.citation, 200), str(o.status, 40), /^https:\/\//.test(o.sourceURL || '') ? str(o.sourceURL, 500) : '']) })),
     questions: (b.questionsForCounsel || []).filter(q => isObj(q) && typeof q.question === 'string').slice(0, 60).map(q => ({ about: str(q.about, 80), question: str(q.question, 600) })),
     coverage: Array.isArray(b.coverage) ? b.coverage.filter(isObj).slice(0, 20).map(c => ({ jurisdiction: str(c.jurisdiction, 8), note: str(c.note, 400) })) : [],
     notices: Array.isArray(b.notices) ? b.notices.filter(x => typeof x === 'string').slice(0, 10).map(x => x.slice(0, 600)) : [],
