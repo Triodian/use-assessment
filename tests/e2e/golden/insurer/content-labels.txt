@@ -779,6 +779,7 @@
    "where": "Counsel"
   }
  },
+ "governingBody": "board",
  "interviews": [
   {
    "length": "60 min",

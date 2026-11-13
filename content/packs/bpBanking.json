@@ -1,0 +1,211 @@
+{
+  "id": "bpBanking",
+  "name": "Banking (best-practice baseline)",
+  "jurisdiction": "any",
+  "entityTypes": [],
+  "baseline": "BP-BANKING",
+  "governingBody": "board",
+  "note": "Generated from Triodian Metamodel 2.8.0 (reference-data/baseline-profiles.json) by tools/build-baseline-packs.mjs; do not edit by hand. A best-practice baseline for deposit-takers and lenders that holds in any jurisdiction; it names no regulator, and the jurisdiction's own obligations come from the matter brief.",
+  "nouns": {
+    "entity": "bank",
+    "Entity": "Bank",
+    "entities": "banks",
+    "Entities": "Banks",
+    "anEntity": "a bank",
+    "AnEntity": "A bank",
+    "customer": "customer",
+    "Customer": "Customer",
+    "customers": "customers",
+    "Customers": "Customers",
+    "aCustomer": "a customer",
+    "ACustomer": "A customer",
+    "customerHarm": "A customer is wrongly declined, delayed, charged or paid, or blocked from their money.",
+    "regulator": "the banking supervisor"
+  },
+  "replace": {
+    "documents": [
+      {
+        "ref": "D1",
+        "name": "Current AI inventory or register, with owner and date",
+        "usedFor": "First input to the register"
+      },
+      {
+        "ref": "D2",
+        "name": "AI governance framework and acceptable-use policy",
+        "usedFor": "Authority and the {entity}'s own rules at B3"
+      },
+      {
+        "ref": "D3",
+        "name": "Register of material service providers and outsourcing arrangements",
+        "usedFor": "Confirming the set and boundary types"
+      },
+      {
+        "ref": "D4",
+        "name": "Board risk appetite statement and tolerance levels for the critical operations in the set",
+        "usedFor": "The appetite the evidence is measured against"
+      },
+      {
+        "ref": "D5",
+        "name": "The agreement for each arrangement, with schedules, service descriptions and side letters",
+        "usedFor": "Rights, audit and information terms, sub-contracting terms"
+      },
+      {
+        "ref": "D6",
+        "name": "Delegations, and the authority each provider holds under its agreement",
+        "usedFor": "What authority the provider holds, and so what its AI can hold"
+      },
+      {
+        "ref": "D7",
+        "name": "Any provider disclosure about AI use already received: due diligence responses, attestations, notices",
+        "usedFor": "Evidence already obtainable"
+      },
+      {
+        "ref": "D8",
+        "name": "Licence terms and security documentation for each external AI service staff use",
+        "usedFor": "B3 entries"
+      },
+      {
+        "ref": "D9",
+        "name": "Existing assurance over the arrangements: audit reports, control reports, certifications",
+        "usedFor": "What existing assurance already covers"
+      },
+      {
+        "ref": "D10",
+        "name": "Incident and near-miss records involving AI in the set, last 24 months",
+        "usedFor": "Failure consequence"
+      }
+    ]
+  },
+  "override": {
+    "boundaries.0.parties": "The {entity} and a material service provider: a provider acting under an outsourcing arrangement, an agent or an introducer",
+    "boundaries.2.parties": "The {entity}'s business, financial crime and compliance staff and an external AI service",
+    "questions7.2.scale": "Passive · significant influence · contractual, including outsourcing and agency agreements · control or board seat",
+    "authorityTests.1": "Does the output move money, change a record or a system, or commit the {entity}?",
+    "fields.4.format": "Free text, plus the critical operation it supports, from the {entity}'s critical operations register, or \"none\"",
+    "questions7.0.q": "Is the party within the {entity}'s group, and is the arrangement an outsourcing arrangement under the outsourcing or third-party rules that apply to it?",
+    "questions7.1.q": "Is there a separate relationship that may make it a material outsourcing arrangement: a service to the {entity}, or part of a chain supporting one?",
+    "glossary.nexus.def": "Whether a party falls within the {entity}’s group, and whether the arrangement is a material outsourcing arrangement under the outsourcing or third-party rules that apply to it. Counsel determines this"
+  },
+  "edits": [
+    {
+      "at": "frameworkMarkdown",
+      "find": "Illustrative insurance example",
+      "replace": "Illustrative example"
+    },
+    {
+      "at": "frameworkMarkdown",
+      "find": "The insurance examples are illustrative",
+      "replace": "The examples are illustrative"
+    },
+    {
+      "at": "frameworkMarkdown",
+      "find": "A claims handler uses a copilot to summarise a file",
+      "replace": "A member of staff uses a copilot to summarise a file"
+    },
+    {
+      "at": "frameworkMarkdown",
+      "find": "A fraud score shown to an assessor",
+      "replace": "A score or recommendation shown to a person who decides"
+    },
+    {
+      "at": "frameworkMarkdown",
+      "find": "Automatic triage of a claim to fast-track or investigation",
+      "replace": "Automatic approval, decline or referral of a request"
+    },
+    {
+      "at": "frameworkMarkdown",
+      "find": "Automated pricing under a binder, or straight-through claim payment",
+      "replace": "A payment, price or allocation released with no person involved"
+    },
+    {
+      "at": "frameworkMarkdown",
+      "find": "An agent that gathers documents, contacts a repairer and books an assessment",
+      "replace": "An agent that gathers documents, runs checks and books the next step"
+    },
+    {
+      "at": "frameworkMarkdown",
+      "find": "An agent with write access to the policy administration system",
+      "replace": "An agent with write access to a system of record or to operational technology"
+    },
+    {
+      "at": "frameworkMarkdown",
+      "find": "The {entity} and a material service provider: claims manager, underwriting agency or broker acting under delegated authority",
+      "replace": "The {entity} and a material service provider: a provider acting under an outsourcing arrangement, an agent or an introducer"
+    },
+    {
+      "at": "frameworkMarkdown",
+      "find": "The {entity}'s legal, claims and compliance staff and an external AI service",
+      "replace": "The {entity}'s business, financial crime and compliance staff and an external AI service"
+    },
+    {
+      "at": "frameworkMarkdown",
+      "find": "Passive · significant influence · contractual, including binder and claims agreements · control or board seat",
+      "replace": "Passive · significant influence · contractual, including outsourcing and agency agreements · control or board seat"
+    },
+    {
+      "at": "frameworkMarkdown",
+      "find": "Delegated authority schedules for each binder or claims agreement",
+      "replace": "Delegations, and the authority each provider holds under its agreement"
+    },
+    {
+      "at": "frameworkMarkdown",
+      "find": "change a policy or claim record",
+      "replace": "an account, policy or transaction record"
+    },
+    {
+      "at": "frameworkMarkdown",
+      "find": "Business written through agencies or outside claims managers, where the agreement holds the audit rights.",
+      "replace": "Services run by a provider under a material outsourcing arrangement, where the agreement holds the audit rights."
+    },
+    {
+      "at": "frameworkMarkdown",
+      "find": "For example a group life {entity} answering to superannuation trustees.",
+      "replace": "For example a {entity} asked for evidence by a group entity or a counterparty."
+    },
+    {
+      "at": "frameworkMarkdown",
+      "find": "| D3 | Material service provider register |",
+      "replace": "| D3 | Register of material service providers and outsourcing arrangements |"
+    },
+    {
+      "at": "frameworkMarkdown",
+      "find": "| D4 | Board risk appetite statement and tolerance levels for the critical operations in the set |",
+      "replace": "| D4 | Board risk appetite statement and tolerance levels for the critical operations in the set |"
+    },
+    {
+      "at": "frameworkMarkdown",
+      "find": "Free text, plus the critical operation name from the {entity}'s CPS 230 list, or \"none\"",
+      "replace": "Free text, plus the critical operation it supports, from the {entity}'s critical operations register, or \"none\""
+    },
+    {
+      "at": "frameworkMarkdown",
+      "find": "Does a separate CPS 230 nexus exist? Is the party within the {entity}'s group (para 5)?",
+      "replace": "Is the party within the {entity}'s group, and is the arrangement an outsourcing arrangement under the outsourcing or third-party rules that apply to it?"
+    },
+    {
+      "at": "frameworkMarkdown",
+      "find": "Is there a separate relationship that may engage CPS 230: a service to the {entity}, or part of a chain supporting one (para 54)?",
+      "replace": "Is there a separate relationship that may make it a material outsourcing arrangement: a service to the {entity}, or part of a chain supporting one?"
+    },
+    {
+      "at": "frameworkMarkdown",
+      "find": "Two points from {regulator}'s guidance, as cited in the counsel briefing, are flagged",
+      "replace": "Two points are flagged"
+    },
+    {
+      "at": "frameworkMarkdown",
+      "find": "- **{Customer} or claims data.** The assessment works from documents and interviews.",
+      "replace": "- **{Customer} data.** The assessment works from documents and interviews."
+    },
+    {
+      "at": "frameworkMarkdown",
+      "find": "- No {customer}, claimant or staff personal data is collected.",
+      "replace": "- No {customer} or staff personal data is collected."
+    },
+    {
+      "at": "frameworkMarkdown",
+      "find": "- [ ] **CPS 230 paragraph references.** Paragraphs 5, 53(b), 54 and 60(b) are cited as they appear in the decks. Confirm each against the instrument in force.",
+      "replace": "- [ ] **The jurisdiction's own references.** A baseline cites no jurisdiction's rules; counsel confirms the references the matter brief brings in."
+    }
+  ]
+}

@@ -1592,11 +1592,15 @@ function renderPop() {
   const cl = root.querySelector('[data-pact="close"].iconbtn'); if (cl) cl.focus({ preventScroll: true });
 }
 
+// Words for the governing body in Markdown leaving the app (task BP.4); JSON and CSV are left as they are.
+function relabelOut(text, mime) { return window.TriodianTerms && (!mime || /markdown|text\/plain/.test(mime)) ? TriodianTerms.relabel(text, (C && C.governingBody) || 'board') : text; }
 function download(name, text, mime) {
+  text = relabelOut(text, mime);
   try { const blob = new Blob([text], { type: mime || 'text/markdown' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500); toast('Downloading ' + name); return true; }
   catch (e) { toast('This viewer blocked the download. Use Copy instead.'); return false; }
 }
 function copyText(text) {
+  text = relabelOut(text);
   const done = () => toast('Copied to clipboard');
   if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
   function fallback() { const ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); done(); } catch (e) { toast('Copy failed. Select the markdown and copy it manually.'); } ta.remove(); }
@@ -2136,6 +2140,8 @@ function boot() {
   BASE = window.AUA_CONTENT;
   if (!BASE || !BASE.packs || !window.TriodianPacks) { document.getElementById('app').innerHTML = '<p style="padding:40px">The app content (aua-content.js or shared/packs.js) could not be loaded. Reload the page.</p>'; return; }
   applyPack();
+  // A pack for a public body names its accountable authority where the app says "board" (baselines, task BP.4).
+  if (window.TriodianTerms) { const body = () => (C && C.governingBody) || 'board'; TriodianTerms.watch(document.getElementById('app'), body); TriodianTerms.wrapExport(window.RAFExport, body); }
   const tt = document.getElementById('toast'); if (tt) { tt.className = 'vh'; tt.setAttribute('role', 'status'); tt.setAttribute('aria-live', 'polite'); }
   document.addEventListener('click', onClick); document.addEventListener('change', onChange); document.addEventListener('input', onInput); TriodianBrand.bind(v => { if (setPath('engagement.practitioner.logo', v)) render(); }, toast); document.addEventListener('keydown', onKey); document.addEventListener('toggle', ev => { if (ev.target && ev.target.id === 'annexText') UI.annexOpen = ev.target.open; }, true);
   let sy0 = null; document.addEventListener('touchstart', e => { if (e.target.closest('.handle')) sy0 = e.touches[0].clientY; }, { passive: true });

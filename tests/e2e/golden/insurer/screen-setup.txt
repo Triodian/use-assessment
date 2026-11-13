@@ -43,6 +43,14 @@ Authorised deposit-taking institution
 General insurer
 MAS-regulated financial institution (Singapore)
 Superannuation trustee
+Banking (best-practice baseline)
+Critical infrastructure, corporate-managed (best-practice baseline)
+Critical infrastructure, government-managed (best-practice baseline)
+Government in general (best-practice baseline)
+Health care (best-practice baseline)
+Insurance (best-practice baseline)
+Payments and money transmission (best-practice baseline)
+Securities and investment advice (best-practice baseline)
 Scope
 Full: every arrangement in the set
 Lite: the arrangements behind critical operations
