@@ -87,3 +87,22 @@ test('in Lite scope the outputs cover the arrangements behind critical operation
   expect(errs).toEqual([]);
   await ctx.close();
 });
+
+test('a baseline for a public body names the accountable authority on screen and in its downloads', async ({ browser }) => {
+  const { ctx, p } = await open(browser, null);
+  await p.locator('[data-act="new"]').first().click();
+  await p.evaluate(() => window.AUA.go('setup'));
+  const pack = p.locator('#f_engagement_sectorPack');
+  await expect(pack.locator('option')).toHaveCount(12);
+  await pack.selectOption('bpCiGovernment');
+  await expect(p.locator('label:has(#f_engagement_insurer)').first()).toContainText('Operator');
+  await p.evaluate(() => window.AUA.go('reference'));
+  await expect(p.locator('#app')).toContainText('accountable authority');
+  expect(await p.evaluate(() => /\bboards?\b/.test(document.getElementById('app').innerText))).toBe(false);
+  const st = await p.evaluate(() => ({ body: window.AUA.content().governingBody, d4: window.AUA.state.documents.find(d => d.ref === 'D4').title }));
+  expect(st.body).toBe('accountableAuthority');
+  expect(st.d4).toContain('tolerance levels for the critical operations');
+  expect(await p.evaluate(() => window.TriodianTerms.relabel(window.AUA.state.documents.find(d => d.ref === 'D4').title, 'accountableAuthority'))).toMatch(/^Accountable authority risk appetite statement/);
+  expect(p._errors).toEqual([]);
+  await ctx.close();
+});
