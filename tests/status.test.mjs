@@ -37,7 +37,7 @@ const late = base(); late.setAgreed.counselBy = 'p3'; late.questions[0].status =
 late.reviews = [{ point: 'R2', result: 'passed' }, { point: 'R4', result: 'passed' }, { point: 'R6', on: '2026-11-08' }];
 late.independentReviewPoints = [{ ref: 'IR-1', status: 'open', response: '' }, { ref: 'IR-2', status: 'open', response: 'Responded' }];
 s = engagementStatus({ data: late }, at);
-ok('after counsel review: the independent check is the stage', s.stage.step === 7 && s.stage.label === 'The independent check (R7)', JSON.stringify(s.stage));
+ok('after counsel review: the independent review is the stage', s.stage.step === 7 && s.stage.label === 'The independent review (R7)', JSON.stringify(s.stage));
 ok('review points, the annex and the hand-back wait on their roles', JSON.stringify(s.waitingOn) === '[{"role":"Business owners","actions":2},{"role":"Triodian","actions":1},{"role":"Independent reviewer","actions":1},{"role":"Method owner","actions":1}]', JSON.stringify(s.waitingOn));
 late.reviews.push({ point: 'R7', result: 'complete' }); late.engagement.handBack.by = 'p5'; late.engagement.annexSigned.by = 'p1'; late.independentReviewPoints = []; late.entries[0].consequenceConfirmedBy = 'p5';
 s = engagementStatus({ data: late }, at);

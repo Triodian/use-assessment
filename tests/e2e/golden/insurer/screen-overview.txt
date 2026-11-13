@@ -87,8 +87,8 @@ R6 (counsel review) recorded
 Findings →
 6
 Open
-Independent check
-R7 (independent check) complete
+Independent review
+R7 (independent review) complete
 Review →
 7
 Open

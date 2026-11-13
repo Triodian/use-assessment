@@ -6,7 +6,7 @@ Privileged and confidential · prepared at the direction of counsel · worked ex
 
 Corvane General Insurance (fictional) · AUA-CGI-2026-01
 
-Evidence for: APRA letter B2, A4 · ISO/IEC 42001 6.2, 9.1.
+Evidence for: APRA letter B2, A4 · ISO/IEC 42001 6.2, 9.1, A.6.2.6, A.8.4.
 
 For each F1 and F2: the evidence item, its contents, frequency, the tolerance it is measured against, and the triggers and their timing. Written to sit beside counsel's flow-down clauses.
 

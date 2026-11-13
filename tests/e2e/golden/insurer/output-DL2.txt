@@ -6,11 +6,11 @@ Privileged and confidential · prepared at the direction of counsel · worked ex
 
 Corvane General Insurance (fictional) · AUA-CGI-2026-01
 
-Evidence for: APRA letter P2, P3, A4 · CPS 230 53, 54 · ISO/IEC 42001 A.10, 9.1.
+Evidence for: APRA letter P2, P3, A4 · CPS 230 53, 54 · ISO/IEC 42001 A.10.3, A.6.2.6, A.6.2.8, A.8.4, 9.1.
 
 ## Summary
 
-| Arrangement | Tier | Consequence | Indicative rung | Required | Obtainable | Finding | Priority | Flags |
+| Arrangement | Tier | Consequence | Indicative rung | Required | Obtainable | Finding | Grade | Flags |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | ARR-01 | A3 Decision | C4 Policyholder harm | E4 Audit | — | E2 Attestation | Awaiting counsel | — | — |
 | ARR-02 | A1 Productivity | C2 Contract breach | E1 Disclosure | E1 Disclosure | E1 Disclosure | F1 Evidence obtainable | — | — |

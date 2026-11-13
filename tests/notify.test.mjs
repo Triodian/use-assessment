@@ -24,7 +24,7 @@ const to = (msgs, subj) => msgs.filter(m => m.subject.includes(subj)).map(m => m
 { const a = base(); a.independentReviewPoints.push({ ref: 'IR-01', point: 'p', status: 'open', response: '' }); const b = structuredClone(a); b.independentReviewPoints[0].response = 'Fixed.';
   check('response → independent reviewer', to(eventsFromSave(a, b, users, users[0], 'https://x'), 'Response to review point') === 'ir'); }
 { const a = base(), b = base(); b.reviews.push({ point: 'R7', result: 'complete' });
-  check('R7 complete → counsel and GC', to(eventsFromSave(a, b, users, users[5], 'https://x'), 'Independent check complete') === 'co,gc'); }
+  check('R7 complete → counsel and GC', to(eventsFromSave(a, b, users, users[5], 'https://x'), 'Independent review complete') === 'co,gc'); }
 { const a = base(), b = base(); b.questions.push({ ref: 'QC-01', question: 'q', status: 'open' });
   check('the person saving is never emailed', to(eventsFromSave(a, b, users, users[3], 'https://x'), 'Question to counsel') === ''); }
 { const d = base(); d.questions.push({ ref: 'QC-01', question: 'q', status: 'open', sentOn: '2026-10-01' }, { ref: 'QC-02', question: 'q2', status: 'open', sentOn: '2026-10-16' });

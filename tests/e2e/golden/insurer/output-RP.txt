@@ -6,7 +6,7 @@ Privileged and confidential · prepared at the direction of counsel · worked ex
 
 Corvane General Insurance (fictional) · AUA-CGI-2026-01
 
-Evidence for: APRA letter A3 · ISO/IEC 42001 9.2.
+Evidence for: APRA letter A3.
 
 Addressed to counsel, Askew Lane Partners (fictional), for the independent reviewer (Independent reviewer (fictional firm)). The reviewer’s queries and Triodian’s answers go through the same reporting line. R7 is confirmed by the independent reviewer, through counsel.
 
@@ -16,7 +16,7 @@ Addressed to counsel, Askew Lane Partners (fictional), for the independent revie
 
 Corvane General Insurance (fictional) · AUA-CGI-2026-01
 
-Evidence for: APRA letter G3, P1, S4 · CPS 230 47(c), 52(b) · ISO/IEC 42001 6.1.4, A.5, A.10.
+Evidence for: APRA letter G3, P1, S4 · CPS 230 47(c), 52(b) · ISO/IEC 42001 A.10.3.
 
 Every entry, with all 26 fields and their sources. Fields recorded as not known: 6.
 
@@ -201,11 +201,11 @@ Flags: none · not known: 5
 
 Corvane General Insurance (fictional) · AUA-CGI-2026-01
 
-Evidence for: APRA letter P2, P3, A4 · CPS 230 53, 54 · ISO/IEC 42001 A.10, 9.1.
+Evidence for: APRA letter P2, P3, A4 · CPS 230 53, 54 · ISO/IEC 42001 A.10.3, A.6.2.6, A.6.2.8, A.8.4, 9.1.
 
 ## Summary
 
-| Arrangement | Tier | Consequence | Indicative rung | Required | Obtainable | Finding | Priority | Flags |
+| Arrangement | Tier | Consequence | Indicative rung | Required | Obtainable | Finding | Grade | Flags |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | ARR-01 | A3 Decision | C4 Policyholder harm | E4 Audit | — | E2 Attestation | Awaiting counsel | — | — |
 | ARR-02 | A1 Productivity | C2 Contract breach | E1 Disclosure | E1 Disclosure | E1 Disclosure | F1 Evidence obtainable | — | — |
@@ -433,7 +433,7 @@ None.
 
 Corvane General Insurance (fictional) · AUA-CGI-2026-01
 
-Evidence for: APRA letter P2, A1 · CPS 230 53 · ISO/IEC 42001 A.10, 6.1.3.
+Evidence for: APRA letter P2, A1 · CPS 230 53 · ISO/IEC 42001 A.10.3, 6.1.3.
 
 Issued in Triodian’s name.
 
@@ -467,7 +467,7 @@ A register of 26 fields for each entry, the seven questions asked in order, the 
 
 ## 5. Summary table of findings
 
-| Arrangement | Tier | Consequence | Indicative rung | Required | Obtainable | Finding | Priority | Flags |
+| Arrangement | Tier | Consequence | Indicative rung | Required | Obtainable | Finding | Grade | Flags |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | ARR-01 | A3 Decision | C4 Policyholder harm | E4 Audit | — | E2 Attestation | Awaiting counsel | — | — |
 | ARR-02 | A1 Productivity | C2 Contract breach | E1 Disclosure | E1 Disclosure | E1 Disclosure | F1 Evidence obtainable | — | — |
@@ -509,6 +509,79 @@ Register extract (DL1), question log (QS), source index (DL1), exceptions log.
 
 [Method owner’s text]
 
+## What this assessment is, and is not, in ISO terms
+
+In ISO/IEC 42001:2023 terms this assessment is evidence for the supplier control (A.10.3) and, where a provider’s AI is concerned, for operation and monitoring (A.6.2.6), event logs (A.6.2.8) and the communication of incidents (A.8.4). It is not an AI system impact assessment (clause 6.1.4 and A.5; ISO/IEC 42005:2025). The register can be used to choose which systems need one: those at a high authority tier or consequence level.
+
+The assessment does not assess likelihood, bias, data or model behaviour. It grades how far the obtainable evidence falls short of what is expected; that grade is not a risk rating.
+
+## Records: retention, storage and disposition
+
+| Item | As recorded in set-up |
+| --- | --- |
+| Retention period | Seven years from close |
+| Where the records are stored | This deployment, and counsel’s matter file for the outputs |
+| At the end of the period | Deleted, with a record of the deletion kept by counsel |
+
+## Re-assessment
+
+The assessment is a statement at a point in time. It is run again at this interval: Annual, in the same cycle as the risk appetite review, and when a change event in decision 8 occurs. Between assessments, the in-use measures and the triggers report against the appetite.
+
+## Independent reviewer
+
+Independent reviewer (fictional firm) · Lena Hartmann. Declaration of independence, 9 October 2026: No engagement with Corvane General Insurance, the providers in the set or Triodian in the last three years, other than this review. No part in setting the thresholds the findings are measured against.
+
+## Competence of the people in the engagement
+
+| Person | Role | Why competent for the role | Evidence |
+| --- | --- | --- | --- |
+| Meredith Vance | Counsel | Leads the firm’s technology and outsourcing practice; engaged for this matter | Practising certificate; engagement letter |
+| Helen Brandt | GC | General counsel; decides the brief and receives the outputs | Appointment |
+| Ana Duarte | Arrangement owner (insurer) | Accountable for the arrangement; confirms the failure consequence | Accountability statement |
+| Sam Okoro | Method owner (Triodian) | Wrote the method and has led each assessment under it | Method owner’s record of assessments |
+| Jordan Pike | Assessor (Triodian) | Trained in the method; six years assessing providers for regulated clients | Method training record, 2026 |
+| Ravi Menon | Peer reviewer (Triodian) | Trained in the method; has not seen the assessor’s classification before re-deriving it | Method training record, 2026 |
+| Elise Tan | Validation (Triodian) | Trained in the method; took no part in classification or peer review | Method training record, 2026 |
+| Kit Morrow | Delivery manager (Triodian) | Runs the engagement plan and the register completeness review | Delivery record |
+| Lena Hartmann | Independent reviewer | Lead implementer for ISO/IEC 42001:2023; ten years in assurance over outsourced services | Certificate of training; firm profile |
+| Priya Natarajan | CRO (insurer) | Chief risk officer; receives the review | Appointment |
+| Imogen Hart | Technology owner (insurer) | Accountable for the technology estate; confirmed the hand-over complete | Appointment |
+| Tobias Reed | AI governance team (insurer) | Keeps the AI inventory; supplied the hand-over | Role description |
+| Wei Ling Chua | AI governance team (insurer) | Keeps the AI inventory; supplied the hand-over | Role description |
+
+## The scales beside ISO vocabulary
+
+### Authority tiers A1 to A6 beside ISO/IEC 22989:2022 and ISO/IEC TS 8200:2024
+
+ISO/IEC 22989:2022 (clause 5.13) describes levels of automation of a system's task, from no automation to autonomy. ISO/IEC TS 8200:2024 describes controllability: whether, when and how a person or another system can intervene. The authority tiers describe something narrower: what the AI's output is allowed to do in the business before a person acts.
+
+| Tier | Here | Nearest level in ISO/IEC 22989:2022, 5.13 | The controllability question (ISO/IEC TS 8200:2024) |
+| --- | --- | --- | --- |
+| A1 Assists | Drafts, summarises, searches. A person still acts | Assistance: the system assists an operator | A person controls every action. Nothing is handed to the system |
+| A2 Recommends | Scores, ranks, recommends. A person decides | Assistance to partial automation: some sub-functions are automated and the operator stays in control | Can the person accept, change or reject each output before it takes effect? |
+| A3 Decides | Approves, declines, triages. No person reviews before it takes effect | Conditional automation: sustained performance by the system, with a person ready to take over | Can a person intervene before or after an outcome takes effect, and how quickly? |
+| A4 Moves money | Prices, allocates, pays | High automation: the system performs parts of its task without intervention | Are there limits on amount and number, and a way to stop or reverse? |
+| A5 Acts unattended | Plans and acts across steps and tools, unattended | Full automation: the system performs its whole task without intervention | Can the system be interrupted or constrained while it acts, and by whom? |
+| A6 Changes systems | Holds credentials that change systems, assets or infrastructure | Full automation, with authority over other systems. ISO/IEC 22989 keeps the word autonomy for a system that can change its own goals or scope without outside control, which no tier assumes | Can control be taken back, credentials withdrawn and changes rolled back? |
+
+The cross-walk gives the nearest term in each standard so that the two vocabularies can be read side by side. It is Triodian's reading, for the engagement's independent reviewer or another person with the relevant ISO competence to check, and it is not an equivalence. Read each term in a licensed copy of the standard.
+
+### Evidence rungs E0 to E6 beside ISO/IEC 27002:2022 supplier controls, ISO/IEC 27036-2:2022 and ISO/IEC 12792:2025
+
+ISO/IEC 27002:2022 controls 5.19 to 5.23 cover supplier relationships, supplier agreements, the ICT supply chain, the monitoring and review of supplier services, and cloud services. ISO/IEC 27036-2:2022 sets requirements for the acquirer and the supplier across the relationship. The ladder is the evidence side of both: what the insurer can hold to show that a provider's AI stayed within the appetite. ISO/IEC 42001:2023 control A.10.3 (suppliers) is the control the ladder serves in an AI management system.
+
+| Rung | Here | ISO/IEC 27002:2022 control it supports | In ISO/IEC 42001:2023 | Note |
+| --- | --- | --- | --- | --- |
+| E0 None | No evidence is held | None | None | A gap against 5.19 where the provider is material |
+| E1 Disclosure | A statement of what AI is used, where and for what | 5.19 Information security in supplier relationships; 5.21 Managing information security in the ICT supply chain | A.10.3; A.8.2 as the provider's information for users | A disclosure worth holding names: the system and what it is for; the provider and any party behind it; where it is established and where it runs; what it decides or does, and what a person does; the data it uses; its known limits; and how a change is notified. This list is arranged to be read against the transparency taxonomy of ISO/IEC 12792:2025 |
+| E2 Attestation | A signed statement that the AI operated within stated limits over a period | 5.20 Addressing information security within supplier agreements; 5.22 Monitoring, review and change management of supplier services | A.10.3 | A statement by the provider. It is not an assurance engagement and gives no independent opinion |
+| E3 Event notification | Notice when a defined trigger is crossed | 5.22 Monitoring, review and change management of supplier services; 5.21 for a change in the supply chain | A.8.4 Communication of incidents; A.6.2.6 AI system operation and monitoring | The trigger, the time allowed and who is told are set in decision 7 |
+| E4 Audit | A right to examine the aggregate record, used by the insurer or its verifier | 5.20 for the right in the agreement; 5.22 for its use | A.10.3; A.6.2.8 AI system recording of event logs | Can be met by the insurer's own audit right or by an independent assurance report over the same record, where the report's scope covers how the AI operated. Whether a given report does is for the insurer's assurance function |
+| E5 Continuous telemetry | A stream of aggregate measures against the declared appetite | 5.22; 8.15 Logging and 8.16 Monitoring activities on the provider's side | A.6.2.6; A.6.2.8 | Aggregate measures only: no individual decisions, policyholder data or the model |
+| E6 Deterministic actuation control | A control at the point of action, independent of the AI's reasoning, with a signed record | 5.15 Access control and 8.2 Privileged access rights at the point of action; 8.15 Logging | A.6.2.6; A.6.2.8; A.9.2 Processes for responsible use of AI systems | The record shows what was requested, what applied and what was allowed |
+
+The cross-walk gives the nearest term in each standard so that the two vocabularies can be read side by side. It is Triodian's reading, for the engagement's independent reviewer or another person with the relevant ISO competence to check, and it is not an equivalence. Read each term in a licensed copy of the standard.
+
 ## Changes since V1 · Set agreed (R1) (13 October 2026)
 
 | Entry | What changed | Was | Now |
@@ -527,7 +600,9 @@ Register extract (DL1), question log (QS), source index (DL1), exceptions log.
 
 ## Exceptions log
 
-None.
+| Ref | Departure | Reason | Approved by | Date | Root cause | Corrective action | Effectiveness checked on |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| EX-01 | The interview with procurement was not held; how agreements are renewed was taken from the documents | The procurement lead was on leave during phase 2 | Sam Okoro | 2026-10-13 | Interviews were booked after the set was agreed, without checking who was available | Availability is confirmed when the set is agreed (R1), and a second interviewee is named for each | 2027-01-11 |
 
 Signed for Triodian: [not signed]
 

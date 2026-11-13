@@ -142,6 +142,8 @@ dl.g-dl dd{margin:0;font-size:15px;color:var(--ink-soft)}
   <p>Every change is saved to the server within about a second. If two people edit at once, their changes are merged. A change is refused only when both people changed the very same item, and the app names that item. The history is kept in order, cannot be edited, and is signed by the server.</p>
   <p>Until the method owner, the delivery manager or an administrator starts the assessment, the opening screen says it has not been started yet.</p>
 
+  <h3>What set-up records for an ISO/IEC 42001 reader</h3>
+  <p>Four things are recorded in <span class="g-ui">Set-up</span> and printed on the technical annex: a competence statement for each person with a role; the independent reviewer’s firm and declaration of independence, without which R7 cannot be confirmed; how long the records are kept, where, and what happens to them at the end; and the interval at which the assessment is run again, taken from the board’s appetite when a calibration set is loaded. Each gap (F2) and each exception records its root cause, the corrective action and the date its effectiveness is checked; the <span class="g-ui">Nonconformity and corrective action register</span> output lists them. The annex says what the assessment is not: it is not an AI system impact assessment, and it does not assess likelihood, bias, data or model behaviour. <span class="g-ui">Reference</span> sets the authority tiers and the evidence ladder beside ISO vocabulary.</p>
   <h3>The worked example</h3>
   <p>Choose <span class="g-ui">Open the worked example</span> on the opening screen or in the menu. There are three, and the menu lets you move between them. <strong>General insurer</strong> is the framework’s illustration: a fictional insurer, Corvane General Insurance, whose outside claims manager uses a triage model to route motor claims. <strong>Superannuation trustee</strong> is a fictional fund, Coastline Super, whose group insurer uses a triage model to sort death and disablement claims; it is the same fund as the worked examples in AI Board Direction and AI Risk Appetite, and it is measured against the appetite its board approved there. <strong>Bank</strong> is a fictional bank, Wattlebrook Bank, whose payments provider uses a model to hold payments it reads as scams; it too is the same bank in all three apps. Each has three arrangements and people in each role.</p>
   <ul>
@@ -332,9 +334,9 @@ dl.g-dl dd{margin:0;font-size:15px;color:var(--ink-soft)}
   <p>The app sets one finding per arrangement and builds its worksheet, parts A to J. Triodian completes the named gap owner. Drafts go to counsel first, and the method owner clears the legal-line check.</p>
   <p><strong>Gate:</strong> every arrangement has a finding or is awaiting counsel; R5 legal-line check cleared; R6 counsel review recorded.</p>
 
-  <h3>6 Independent check · Review</h3>
+  <h3>6 Independent review · Review</h3>
   <p>The independent reviewer logs points, Triodian responds, and the reviewer closes or discloses each one. R7 is then confirmed.</p>
-  <p><strong>Gate:</strong> R7 independent check complete.</p>
+  <p><strong>Gate:</strong> R7 independent review complete.</p>
 
   <h3>7 Close · Outputs</h3>
   <p>Download the outputs. The arrangement owner accepts the hand-back list.</p>
@@ -416,7 +418,7 @@ dl.g-dl dd{margin:0;font-size:15px;color:var(--ink-soft)}
   <p>The app sets one finding per arrangement from the entries under it. The method owner and counsel never type a finding in.</p>
   <div class="tw"><table class="lg"><thead><tr><th>Finding</th><th>When</th></tr></thead><tbody>
     <tr><td class="code">F1 Evidence obtainable</td><td>The obtainable rung is at or above the required rung</td></tr>
-    <tr><td class="code">F2 Gap</td><td>The obtainable rung is below the required rung. The worksheet gives the gap in rungs, the priority, the test that failed, the gap owner, the routes, and any time limit from the appetite</td></tr>
+    <tr><td class="code">F2 Gap</td><td>The obtainable rung is below the required rung. The worksheet gives the gap in rungs, the evidence shortfall grade, the test that failed, the gap owner, the routes, and any time limit from the appetite</td></tr>
     <tr><td class="code">F3 No reasonable reach</td><td>Counsel has determined the insurer cannot reasonably require evidence at this boundary. This follows from counsel’s answers of no nexus, no relationship and passive rights only (questions 1 to 3), or from an explicit reach determination. A conclusion, not a gap</td></tr>
     <tr><td class="code">F4 Not determinable on documents</td><td>An entry is recorded as not determinable: the documents do not show whether AI is used, or what it can do. The specific question that would resolve it, and who could answer it, are recorded</td></tr>
   </tbody></table></div>
@@ -436,7 +438,7 @@ dl.g-dl dd{margin:0;font-size:15px;color:var(--ink-soft)}
     <tr><td class="code">R4 Validation</td><td>End of phase 3</td><td>Validation, who classified and reviewed nothing in the set</td><td>Rules applied consistently; every adjustment has a reason; every obtainable rung has five test results</td></tr>
     <tr><td class="code">R5 Legal-line check</td><td>Before any draft leaves Triodian</td><td>Method owner</td><td>No sentence states what the law requires</td></tr>
     <tr><td class="code">R6 Counsel review</td><td>Phase 5</td><td>Counsel</td><td>Draft seen by counsel first; determinations transcribed accurately</td></tr>
-    <tr><td class="code">R7 Independent check</td><td>Phase 6</td><td>Independent reviewer through counsel, or the CRO when the line is direct</td><td>Is the assessment sound, and are its findings supported?</td></tr>
+    <tr><td class="code">R7 Independent review</td><td>Phase 6</td><td>Independent reviewer through counsel, or the CRO when the line is direct</td><td>Is the assessment sound, and are its findings supported?</td></tr>
   </tbody></table></div>
 
   <h3>The legal-line check (R5)</h3>
@@ -492,7 +494,7 @@ dl.g-dl dd{margin:0;font-size:15px;color:var(--ink-soft)}
 <section class="g-sec" id="versions">
   <div class="g-eyebrow">Everyone</div>
   <h2>Comparing versions</h2>
-  <p>The app keeps a version of the assessment at each sign-off: when the set is agreed (R1), when counsel records review (R6), when the independent check (R7) is complete, when the technical annex is signed, and when the hand-back list is accepted. The server adds each version; no one can change or remove one.</p>
+  <p>The app keeps a version of the assessment at each sign-off: when the set is agreed (R1), when counsel records review (R6), when the independent review (R7) is complete, when the technical annex is signed, and when the hand-back list is accepted. The server adds each version; no one can change or remove one.</p>
   <p>On the Outputs screen, <span class="g-ui">Compare versions</span> compares any version with a later one, or with the assessment now. Each changed field, finding or arrangement is listed, with the old value struck through beside the new value. When comparing with now, the table also shows who last changed each field. Select an entry to open it. The register (DL1) and the technical annex (DL5) include a section listing the changes since the latest version.</p>
   <a class="g-top" href="#top">Back to contents</a>
 </section>
@@ -524,7 +526,7 @@ dl.g-dl dd{margin:0;font-size:15px;color:var(--ink-soft)}
     <tr><td>The classification review (R3) finds a different tier</td><td>The classifier and the method owner, to agree it with the peer reviewer, who records the resolution</td></tr>
     <tr><td>An independent review point is logged</td><td>The method owner and the delivery manager</td></tr>
     <tr><td>Triodian responds to a review point</td><td>The independent reviewer</td></tr>
-    <tr><td>The independent check (R7) is recorded as complete</td><td>Counsel and the GC</td></tr>
+    <tr><td>The independent review (R7) is recorded as complete</td><td>Counsel and the GC</td></tr>
     <tr><td>Daily at 07:00 Brisbane time, for questions open for a week or more</td><td>Counsel, one reminder listing them</td></tr>
   </tbody></table></div>
   <p>You are not emailed about your own saves. Each email links to My actions and to your profile. The same items always appear under My actions, whether or not emails are on.</p>

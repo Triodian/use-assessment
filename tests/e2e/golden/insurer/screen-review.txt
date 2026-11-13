@@ -30,7 +30,7 @@ Imogen Hart · Technology owner
 Tobias Reed · AI governance team
 Wei Ling Chua · AI governance team
 Phase 6 · review
-Quality control and independent check
+Quality control and independent review
 
 Seven review points (R1 to R7), including the legal-line check (R5), then the exceptions log and the points raised by the independent reviewer.
 
@@ -56,10 +56,10 @@ Draft seen by counsel first; determinations transcribed accurately
 	Counsel	Not recorded		Record counsel review
 Only counsel can record R6 (counsel review). Why
 
-R7	Independent check
+R7	Independent review
 Is the assessment sound, and are its findings supported?
 	Independent reviewer, through counsel	0 points open		Confirm R7 complete
-The independent reviewer reports through counsel, so only the independent reviewer can confirm R7 (independent check). Why
+The independent reviewer reports through counsel, so only the independent reviewer can confirm R7 (independent review). Why
 
 ✓ R1 complete · show
 R5 · Legal-line check
@@ -75,9 +75,28 @@ Clear
 C2 | Contract breach | The provider or insurer would be in breach of an agreement term | — | — |
 Exceptions log
 Add exception
-
-No exceptions recorded.
-
+EX-01: departure from the method
+Reason
+Approved by
+—
+Meredith Vance
+Helen Brandt
+Ana Duarte
+Sam Okoro
+Jordan Pike
+Ravi Menon
+Elise Tan
+Kit Morrow
+Lena Hartmann
+Priya Natarajan
+Imogen Hart
+Tobias Reed
+Wei Ling Chua
+Date
+Root cause
+Corrective action
+Effectiveness checked on
+Result of the check
 Independent review points
 Add point
 
@@ -88,7 +107,7 @@ The independent reviewer logs each point. Triodian responds. Only the independen
 No points logged.
 
 Phase 6 exit gate
-R7 (independent check) complete
+R7 (independent review) complete
 ← Findings
 Phase 6 open
 Outputs →

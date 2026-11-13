@@ -19,8 +19,8 @@ This plan follows the framework’s workplan. It is for everyone taking part: wh
 | 2. Map the AI | Week 1, day 3, to end of week 2 | Brief the AI, governance and safety teams. Take the insurer's inventory as the first input. Read each agreement. Interview arrangement owners. Extend the register down the chain | Every entry has a source and a date. Uses not on the inventory are logged for hand-back | Met |
 | 3. Classify and test | Weeks 2 to 3 | Classify authority and failure consequence. Set the indicative rung. Run the obtainability test at each boundary. Internal validation review | Validation review passed with no open exceptions | Open |
 | 4. Questions to counsel | Week 3 | Issue the numbered question set to counsel. Record counsel's determinations on nexus, rights, location and required evidence | Every question answered, or recorded as open with an owner | Open |
-| 5. Findings and report | Weeks 3 to 4 | Set one finding per arrangement. Draft the technical schedule and annex. Draft to counsel first | Counsel accepts the draft for independent check | Open |
-| 6. Independent check | Week 4 | The pack goes to the independent reviewer through the agreed reporting line. Triodian answers its queries through the same line. Corrections made and logged | The check is confirmed complete through the agreed reporting line | Open |
+| 5. Findings and report | Weeks 3 to 4 | Set one finding per arrangement. Draft the technical schedule and annex. Draft to counsel first | Counsel accepts the draft for independent review | Open |
+| 6. Independent review | Week 4 | The pack goes to the independent reviewer through the agreed reporting line. Triodian answers its queries through the same line. Corrections made and logged | The check is confirmed complete through the agreed reporting line | Open |
 | 7. Close | End of week 4 | Hand uses not on the inventory back to its owner. Hand the register to counsel. Archive working papers as counsel directs | GC receives counsel's advice with the annex attached | Open |
 | Ref | Document | Used for | — | — |
 | D1 | Current AI inventory or register, with owner and date | First input to the register | — | — |
@@ -137,7 +137,7 @@ This plan follows the framework’s workplan. It is for everyone taking part: wh
 | F. Obtainability | Result of T1 to T5 at each rung tested, the obtainable rung and confidence | — | — | — |
 | G. Questions to counsel | Each question, date sent, response, date received | — | — | — |
 | H. Counsel's determinations | Fields 23 to 25, transcribed with question references | — | — | — |
-| I. Finding | Finding type, gap size and priority, failed test, gap owner, routes available, and, when calibrated, the due date and interim position (P5) | — | — | — |
+| I. Finding | Finding type, gap size and grade, failed test, gap owner, routes available, and, when calibrated, the due date and interim position (P5) | — | — | — |
 | J. Not known | Every field recorded as not known, and what would resolve it | — | — | — |
 | Field | Contents | — | — | — |
 | Reference | QC-01 onward | — | — | — |
@@ -150,7 +150,7 @@ This plan follows the framework’s workplan. It is for everyone taking part: wh
 | Status | Open · answered · open with owner | — | — | — |
 | # | Deliverable | Contents | — | — |
 | DL1 | AI dependency register, including AI inside providers | All 26 fields for every entry in the set. Source index. Count of not-known fields | — | — |
-| DL2 | Evidence obtainable at each boundary | One finding worksheet per arrangement (section 9.4). A one-page summary table: arrangement, tier, consequence, indicative, required, obtainable, finding, priority | — | — |
+| DL2 | Evidence obtainable at each boundary | One finding worksheet per arrangement (section 9.4). A one-page summary table: arrangement, tier, consequence, indicative, required, obtainable, finding, grade | — | — |
 | DL3 | Control-library shape for the insurer's own AI boundary | For B3 entries only: the categories of rule the insurer would need to state for its own staff's use, and the record each would produce. Shape only, with no product specified | — | — |
 | DL4 | Technical schedule, tolerance and trigger design | For each F1 and F2: the evidence item, its contents, its frequency, the tolerance it is measured against, the triggers and their timing. Written to sit beside counsel's flow-down clauses | — | — |
 | DL5 | Technical annex, in Triodian's name | Method, set, summary table, findings, limitations, not-known count, statement of what was not done | — | — |
@@ -168,11 +168,11 @@ This plan follows the framework’s workplan. It is for everyone taking part: wh
 | R4 | Validation | End of phase 3 | Rules in sections 8.3 and 8.4 applied consistently across entries; every adjustment has a reason; every obtainable rung has five test results | — |
 | R5 | Legal-line check | Before any draft leaves Triodian | No sentence states what the law requires; "required" and "gap" used only as section 10.4 allows | — |
 | R6 | Counsel review | Phase 5 | Draft seen by counsel first; determinations transcribed accurately | — |
-| R7 | Independent check | Phase 6 | Is the assessment sound, and are its findings supported? | — |
+| R7 | Independent review | Phase 6 | Is the assessment sound, and are its findings supported? | — |
 | Measure | Purpose | — | — | — |
 | Entries by boundary type and authority tier | Shows what the set covered | — | — | — |
 | Fields not known, by arrangement | Shows how much rests on missing facts | — | — | — |
-| Findings by type and priority | The headline result | — | — | — |
+| Findings by type and grade | The headline result | — | — | — |
 | Obtainable rungs by confidence level | Shows how firm the result is | — | — | — |
 | Failed tests by type and boundary | Shows where evidence breaks down in the chain | — | — | — |
 | Classifier and reviewer differences | Shows how repeatable the classification was | — | — | — |
@@ -184,7 +184,7 @@ This plan follows the framework’s workplan. It is for everyone taking part: wh
 | Interview access | Insurer AI and risk teams | Weeks 1 to 2 | — | — |
 | Board appetite and tolerances for the operations in the set | Insurer operational risk | Week 2 | — | — |
 | Counsel's determinations | Counsel | Week 3 | — | — |
-| Independent check | Independent reviewer, on behalf of the CRO | Week 4 | — | — |
+| Independent review | Independent reviewer, on behalf of the CRO | Week 4 | — | — |
 
 ## Sessions
 
@@ -243,6 +243,6 @@ The document request was issued on 9 October 2026. No document needs to hold per
 | R4 | Validation | End of phase 3 | Validation (Triodian) | Not yet |
 | R5 | Legal-line check | Before any draft leaves Triodian | Method owner | Not yet |
 | R6 | Counsel review | Phase 5 | Counsel | Not yet |
-| R7 | Independent check | Phase 6 | Independent reviewer | Not yet |
+| R7 | Independent review | Phase 6 | Independent reviewer | Not yet |
 
 The technical annex is signed by the method owner once the phase 5 gate is met, and the insurer’s arrangement owner accepts the hand-back list at close.

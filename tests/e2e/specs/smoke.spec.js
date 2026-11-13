@@ -12,7 +12,7 @@ test('worked example: every screen and every output opens without errors', async
   for (const s of SCREENS) { await page.evaluate(s => window.AUA.go(s), s); await page.waitForTimeout(150); }
   await page.evaluate(() => window.AUA.go('outputs'));
   const n = await page.locator('.outrow').count();
-  expect(n).toBe(11);
+  expect(n).toBe(12);
   for (let i = 0; i < n; i++) { await page.locator('.outrow').nth(i).click(); await expect(page.locator('#out-back')).toBeVisible(); await page.click('#out-back'); }
   expect(page._errors).toEqual([]);
 });
