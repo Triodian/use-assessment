@@ -188,6 +188,7 @@ export function appetiteArtefacts(d, updatedAt) {
     ['session', 'Session record', (d.challenge || []).length ? ['recorded', updatedAt, `${d.challenge.length} challenge${d.challenge.length === 1 ? '' : 's'} recorded`] : started ? ['draft', updatedAt, ''] : ['none', null, '']],
     ['checks', 'Check report (K1 to K11)', withCal(true)], ['plan', 'Engagement plan', withCal(true)],
     ['inUse', 'In-use measures against the appetite (decision 8)', inUse ? ['recorded', inUse.on || inUse.generated, 'From the AI Use Assessment in-use feed'] : ['none', null, '']],
+    ['mgmtReview', 'Input to the AI management review (ISO/IEC 42001:2023, 9.3)', approved && inUse ? ['recorded', inUse.on || inUse.generated, 'From the approved appetite, the board’s directions and the in-use feed'] : started ? ['draft', updatedAt, approved ? 'No in-use feed loaded yet' : 'Not yet approved by the board'] : ['none', null, '']],
     ['limits', 'The client’s AI limits tested against the appetite (K11)', lim.length ? [approved ? 'recorded' : 'draft', approved ? c.approvedOn : updatedAt, `${lim.length} limit${lim.length === 1 ? '' : 's'} from the limits register (a Triodian input, separate from the Statement of Applicability)`] : ['none', null, '']],
   ];
   return rows.map(([id, name, [s, at, note]]) => art('RA', id, name, s, at, note));
