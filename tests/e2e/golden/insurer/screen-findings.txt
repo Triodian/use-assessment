@@ -36,7 +36,7 @@ Each arrangement has one finding. Flags are reported beside the finding, never a
 
 Concentration: 1 of 1 critical operations (100%) depend on Quillon Analytics (fictional) · unknown platform: REG-002 (Claims payment)
 No limit set (P9)
-Arrangement	Tier	Consequence	Indicative rung	Required	Obtainable	Priority	Finding	Flags
+Arrangement	Tier	Consequence	Indicative rung	Required	Obtainable	Grade	Finding	Flags
 ARR-01	A3 Decision	C4 Policyholder harm	E4 Audit	—	E2 Attestation	—	Awaiting counsel
 ARR-02	A1 Productivity	C2 Contract breach	E1 Disclosure	E1 Disclosure	E1 Disclosure	—	F1 Evidence obtainable
 ARR-03	—	—	—	—	—	—	F4 Not determinable on documents

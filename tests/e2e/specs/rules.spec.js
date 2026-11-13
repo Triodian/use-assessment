@@ -120,6 +120,16 @@ test('people without administrator rights cannot use the admin routes or start t
 });
 
 test('once closed, only the closing steps can change', async () => {
+  // Task ISO.6: R7 is not confirmed until the reviewer's firm and declaration of independence are recorded in set-up.
+  const early = await editAs(U.ir, d => setReview(d, 'R7', { by: ids[U.ir], on: '2026-10-18', result: 'complete' }));
+  expect(early.status).toBe(403); expect(early.body.error).toMatch(/independent reviewer’s firm/);
+  expect((await editAs(U.mo, d => { d.engagement.irOrganisation = 'Review firm (test)'; })).status).toBe(200);
+  const noDecl = await editAs(U.ir, d => setReview(d, 'R7', { by: ids[U.ir], on: '2026-10-18', result: 'complete' }));
+  expect(noDecl.status).toBe(403); expect(noDecl.body.error).toMatch(/declaration of independence/);
+  expect((await editAs(U.mo, d => { d.engagement.irDeclaration = { text: 'No interest in the client, its providers or Triodian.', on: '2026-10-17' }; d.engagement.retention = { period: '7 years', location: 'This deployment', disposition: 'Deleted' }; d.engagement.competence = { [ids[U.assessor]]: { statement: 'Trained in the method', evidence: 'Training record' } }; })).status).toBe(200);
+  // corrective action on an arrangement is recorded by a Triodian role, even once the set is agreed
+  expect((await editAs(U.assessor, d => { d.arrangements[0].corrective = { rootCause: 'The audit clause was drafted before the provider used AI', action: 'Raise the clause at renewal', checkOn: '2027-04-30', result: '' }; })).status).toBe(200);
+  expect((await editAs(U.owner, d => { d.arrangements[0].corrective.action = 'Changed by the owner'; })).status).toBe(403);
   const r7 = await editAs(U.ir, d => setReview(d, 'R7', { by: ids[U.ir], on: '2026-10-18', result: 'complete' }));
   expect(r7.status, JSON.stringify(r7.body)).toBe(200);
   const hb = await editAs(U.owner, d => { d.engagement.handBack = { by: ids[U.owner], on: '2026-10-18' }; });

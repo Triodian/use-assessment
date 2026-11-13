@@ -111,3 +111,45 @@ test('?example=banking opens Wattlebrook Bank with the ADI pack and the board’
   expect(p._errors).toEqual([]);
   await ctx.close();
 });
+
+// Development plan tasks ISO.3, ISO.4, ISO.6 and ISO.9, in the worked example.
+test('ISO readiness: the annex states what the assessment is, how records are kept and when it is run again; the register lists corrective actions', async ({ browser }) => {
+  const { ctx, p } = await start(browser, '/?example=superannuation');
+  const out = await p.evaluate(() => ({ annex: window.AUA.output('DL5'), nc: window.AUA.output('NC'), dl2: window.AUA.output('DL2'), all: ['DL1', 'DL2', 'DL3', 'DL4', 'DL5', 'DL6', 'QS', 'RP', 'CM', 'DR', 'EP', 'NC'].map(id => window.AUA.output(id)).join('\n') }));
+  // ISO.9: the three statements
+  expect(out.annex).toContain('It is not an AI system impact assessment');
+  expect(out.annex).toContain('The assessment does not assess likelihood, bias, data or model behaviour.');
+  expect(out.annex).toContain('| Retention period | Seven years from close |');
+  expect(out.annex).toContain('| At the end of the period | Deleted, with a record of the deletion kept by counsel |');
+  expect(out.annex).toContain('It is run again at this interval: Annual, in the same cycle as the main risk appetite statement (decision 8 of the board’s AI risk appetite)');
+  expect(out.annex).not.toContain('as counsel directs');
+  // ISO.6: the reviewer's firm and declaration, and competence, are printed on the annex
+  expect(out.annex).toContain('Independent reviewer (fictional firm) · Ingrid Solberg. Declaration of independence, 1 December 2026: No engagement with Coastline Super');
+  expect(out.annex).toMatch(/\| Jordan Pike \| Assessor[^|]*\| Trained in the method; six years assessing providers for regulated clients \| Method training record, 2026 \|/);
+  // ISO.4: the cross-walks are in the annex
+  expect(out.annex).toContain('Authority tiers A1 to A6 beside ISO/IEC 22989:2022 and ISO/IEC TS 8200:2024');
+  expect(out.annex).toContain('Evidence rungs E0 to E6 beside ISO/IEC 27002:2022 supplier controls');
+  // ISO.6: the nonconformity and corrective action register, clause 10.2
+  expect(out.nc).toContain('ISO/IEC 42001:2023, 10.2');
+  expect(out.nc).toMatch(/\| EX-01 \| Exception \|[^\n]*\| Interviews were booked after the set was agreed[^\n]*\| Not yet checked \|/);
+  // ISO.3: no output grades a gap as a "priority" or a "risk rating"
+  expect(out.all).not.toMatch(/priorit/i);
+  expect(out.all.replace(/It is not a risk rating|that grade is not a risk rating/g, '')).not.toMatch(/risk rating/i);
+  expect(out.dl2).toContain('| Grade |');
+  // the Reference screen carries a cross-walk for each scale, and set-up the new records
+  await p.evaluate(() => window.AUA.go('reference'));
+  await expect(p.locator('#crosswalks details')).toHaveCount(2);
+  await p.locator('#xw-authority > summary').click();
+  await expect(p.locator('#xw-authority')).toContainText('Conditional automation');
+  await p.evaluate(() => window.AUA.go('setup'));
+  await expect(p.locator('#competence')).toContainText('13 of 13 recorded');
+  await expect(p.locator('#records')).toContainText('The board’s appetite (decision 8) sets the review interval');
+  await expect(p.locator('#irDecl')).toBeVisible();
+  // without the firm or the declaration, R7 cannot be confirmed
+  const why = await p.evaluate(() => { const S = window.AUA.state; S.engagement.irDeclaration = { text: '', on: '' }; window.AUA.setState(S); return window.AUA.gates ? null : null; });
+  await p.locator('#who, [data-act="person"]').first().selectOption('p9');
+  await p.evaluate(() => window.AUA.go('review'));
+  await expect(p.locator('body')).toContainText('Record the independent reviewer’s declaration of independence in set-up before R7 is confirmed.');
+  expect(p._errors).toEqual([]);
+  await ctx.close();
+});

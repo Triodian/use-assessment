@@ -6,7 +6,7 @@ Privileged and confidential · prepared at the direction of counsel · worked ex
 
 Corvane General Insurance (fictional) · AUA-CGI-2026-01
 
-Evidence for: APRA letter G3, P1, S4 · CPS 230 47(c), 52(b) · ISO/IEC 42001 6.1.4, A.5, A.10.
+Evidence for: APRA letter G3, P1, S4 · CPS 230 47(c), 52(b) · ISO/IEC 42001 A.10.3.
 
 Every entry, with all 26 fields and their sources. Fields recorded as not known: 6.
 

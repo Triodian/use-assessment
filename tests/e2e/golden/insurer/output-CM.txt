@@ -12,7 +12,7 @@ Evidence for: APRA letter A4, B2 · ISO/IEC 42001 9.1.
 | --- | --- |
 | Entries by boundary type and authority tier | B1 A3: 1 · B2 ?: 1 · B3 A1: 1 · B1 ?: 1 |
 | Fields not known, by arrangement | ARR-01: 1 · ARR-02: 0 · ARR-03: 5 |
-| Findings by type and priority | ARR-01 Awaiting counsel · ARR-02 F1 · ARR-03 F4 |
+| Findings by type and grade | ARR-01 Awaiting counsel · ARR-02 F1 · ARR-03 F4 |
 | Obtainable rungs by confidence level | medium: 1 · high: 1 |
 | Failed tests by type and boundary | T3/B1: 1 · T1/B1: 1 |
 | Classifier and reviewer differences | 0 of 2 re-derived |

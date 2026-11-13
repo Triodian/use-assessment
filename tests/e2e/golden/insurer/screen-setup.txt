@@ -320,14 +320,75 @@ CRO
 —
 Priya Natarajan
 
-The review pack is addressed to Askew Lane Partners (fictional). R7 (independent check) is confirmed by the independent reviewer, through counsel.
+The review pack is addressed to Askew Lane Partners (fictional). R7 (independent review) is confirmed by the independent reviewer, through counsel.
 
+Declaration of independence: the reviewer’s own words, with any interest disclosed
+Declared on
+
+The firm and the declaration are printed on the technical annex. R7 cannot be confirmed until both are recorded. A party that advised on the thresholds the findings are measured against does not also review the findings.
+
+3a · Competence
+
+For each person with a role: why they are competent for it, and the evidence (ISO/IEC 42001:2023, 7.2). 13 of 13 recorded.
+
+Meredith Vance
+Counsel
+Why competent for the role
+Evidence
+Helen Brandt
+GC
+Why competent for the role
+Evidence
+Ana Duarte
+Arrangement owner (insurer)
+Why competent for the role
+Evidence
+Sam Okoro
+Method owner (Triodian)
+Why competent for the role
+Evidence
+Jordan Pike
+Assessor (Triodian)
+Why competent for the role
+Evidence
+Ravi Menon
+Peer reviewer (Triodian)
+Why competent for the role
+Evidence
+Elise Tan
+Validation (Triodian)
+Why competent for the role
+Evidence
+Kit Morrow
+Delivery manager (Triodian)
+Why competent for the role
+Evidence
+Lena Hartmann
+Independent reviewer
+Why competent for the role
+Evidence
+Priya Natarajan
+CRO (insurer)
+Why competent for the role
+Evidence
+Imogen Hart
+Technology owner (insurer)
+Why competent for the role
+Evidence
+Tobias Reed
+AI governance team (insurer)
+Why competent for the role
+Evidence
+Wei Ling Chua
+AI governance team (insurer)
+Why competent for the role
+Evidence
 4 · Calibration set
 Uncalibrated
 Load from the Risk Appetite app
 Load from a file
 
-The calibration set is a file issued by the AI Risk Appetite app. Until one is loaded, the framework defaults apply and every output is marked uncalibrated. When a new version is loaded, the app recalculates expected rungs, flags, priorities and due dates, and writes a difference report.
+The calibration set is a file issued by the AI Risk Appetite app. Until one is loaded, the framework defaults apply and every output is marked uncalibrated. When a new version is loaded, the app recalculates expected rungs, flags, grades and due dates, and writes a difference report.
 
 5 · Documents D1 to D10
 Add document
@@ -591,6 +652,17 @@ Notes reference
 IV-5
 Date held
 Notes reference
+7 · Records and re-assessment
+
+How long the assessment’s records are kept, where, and what happens to them at the end, as counsel directs. These are printed on the technical annex (ISO/IEC 42001:2023, 7.5.3), with the interval at which the assessment is run again.
+
+Retention period
+Where the records are stored
+At the end of the period
+Re-assessment interval
+
+No calibration set is loaded, so the interval is the one entered here.
+
 Hand-over from the technology owner and the AI governance team
 
 They supply the inventory, the evidence for each arrangement and what existing assurance covers, and confirm it complete. They see the hand-over only, and change nothing after it. Both roles are optional: without them the documents and interviews above carry the facts, as before.

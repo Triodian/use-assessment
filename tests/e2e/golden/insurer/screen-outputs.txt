@@ -34,17 +34,17 @@ Outputs
 
 Every output shows the privilege marking, the calibration status and version, whether it is draft or final, and the date. Open an output to read or download it.
 
-0 of 11 are ready as final. Until their gate is met, the rest are marked draft when downloaded.
+0 of 12 are ready as final. Until their gate is met, the rest are marked draft when downloaded.
 
 AI dependency register
 All 26 fields for every entry in the set. Source index. Count of not-known fields
-APRA letter G3, P1, S4 · CPS 230 47(c), 52(b) · ISO/IEC 42001 6.1.4, A.5, A.10
+APRA letter G3, P1, S4 · CPS 230 47(c), 52(b) · ISO/IEC 42001 A.10.3
 Draft
 Some R5 (legal-line check) hits are still open.
 →
 Evidence obtainable at each boundary
-One finding worksheet per arrangement (section 9.4). A one-page summary table: arrangement, tier, consequence, indicative, required, obtainable, finding, priority
-APRA letter P2, P3, A4 · CPS 230 53, 54 · ISO/IEC 42001 A.10, 9.1
+One finding worksheet per arrangement (section 9.4). A one-page summary table: arrangement, tier, consequence, indicative, required, obtainable, finding, grade
+APRA letter P2, P3, A4 · CPS 230 53, 54 · ISO/IEC 42001 A.10.3, A.6.2.6, A.6.2.8, A.8.4, 9.1
 Draft
 Some R5 (legal-line check) hits are still open.
 →
@@ -56,31 +56,31 @@ Some R5 (legal-line check) hits are still open.
 →
 Technical schedule, tolerance and trigger design
 For each F1 and F2: the evidence item, its contents, its frequency, the tolerance it is measured against, the triggers and their timing. Written to sit beside counsel's flow-down clauses
-APRA letter B2, A4 · ISO/IEC 42001 6.2, 9.1
+APRA letter B2, A4 · ISO/IEC 42001 6.2, 9.1, A.6.2.6, A.8.4
 Draft
 Some R5 (legal-line check) hits are still open.
 →
 Technical annex
 Method, set, summary table, findings, limitations, not-known count, statement of what was not done
-APRA letter P2, A1 · CPS 230 53 · ISO/IEC 42001 A.10, 6.1.3
+APRA letter P2, A1 · CPS 230 53 · ISO/IEC 42001 A.10.3, 6.1.3
 Draft
 Some R5 (legal-line check) hits are still open.
 →
 Hand-back list
 AI uses found that are not on the insurer's inventory
-APRA letter G3 · ISO/IEC 42001 A.4
+APRA letter G3 · ISO/IEC 42001 A.4.2
 Draft
 Some R5 (legal-line check) hits are still open.
 →
 Question set to counsel
 Every question put to counsel, with its status and the response.
-APRA letter P2 · CPS 230 53 · ISO/IEC 42001 A.10
+APRA letter P2 · CPS 230 53 · ISO/IEC 42001 A.10.3
 Draft
 Some R5 (legal-line check) hits are still open.
 →
 Review pack for the independent reviewer
 What the independent reviewer needs to test the assessment.
-APRA letter A3 · ISO/IEC 42001 9.2
+APRA letter A3
 Draft
 Some R5 (legal-line check) hits are still open.
 →
@@ -99,6 +99,11 @@ No difference reports have been made.
 Engagement plan
 The phases with their timing, the sessions and who attends, the documents needed from the insurer, and the sign-off points, with where each stands.
 APRA letter G2 · ISO/IEC 42001 5.3
+Draft
+Some R5 (legal-line check) hits are still open.
+→
+Nonconformity and corrective action register
+APRA letter A1 · ISO/IEC 42001 10.2
 Draft
 Some R5 (legal-line check) hits are still open.
 →
