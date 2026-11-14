@@ -34,7 +34,7 @@ Outputs
 
 Every output shows the privilege marking, the calibration status and version, whether it is draft or final, and the date. Open an output to read or download it.
 
-0 of 12 are ready as final. Until their gate is met, the rest are marked draft when downloaded.
+0 of 14 are ready as final. Until their gate is met, the rest are marked draft when downloaded.
 
 AI dependency register
 All 26 fields for every entry in the set. Source index. Count of not-known fields
@@ -104,6 +104,14 @@ Some R5 (legal-line check) hits are still open.
 →
 Nonconformity and corrective action register
 APRA letter A1 · ISO/IEC 42001 10.2
+Draft
+Some R5 (legal-line check) hits are still open.
+→
+Agent controls
+Draft
+Some R5 (legal-line check) hits are still open.
+→
+Evidence register, cross-walked
 Draft
 Some R5 (legal-line check) hits are still open.
 →

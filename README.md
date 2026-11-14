@@ -36,6 +36,8 @@ reach each other through Cloudflare service bindings.
 
 Beside the jurisdiction packs, set-up offers a pack for each [best-practice baseline](https://github.com/Triodian/Triodian_Metamodel/blob/main/docs/baselines.md): banking, insurance, securities and investment advice, health care, payments, critical infrastructure (run by government or by a company) and government in general. A baseline holds in any jurisdiction: it names no regulator, asks for documents in neutral terms and gives authority examples that fit any sector; the jurisdiction's own obligations come from the matter brief. Packs for a public body name the accountable authority where the app says "board", on screen and in every Markdown, Word and PDF download. The packs are written from the Metamodel with `node tools/build-baseline-packs.mjs ../triodian_metamodel && node tools/build-content.mjs`; do not edit `content/packs/bp*.json` by hand. To add a jurisdiction, see [adding a jurisdiction](https://github.com/Triodian/Triodian_Metamodel/blob/main/docs/adding-a-jurisdiction.md).
 
+Two of the [baseline controls](https://github.com/Triodian/Triodian_Metamodel/blob/main/reference-data/baseline-controls.json) live here. **Agent controls (BC1):** every entry at A3 and above records its permission scope, its action log and how it is stopped, and from A4 the human checkpoint before it acts; the Classify screen shows the card, and the **AC** output lists them. **One evidence register (BC3):** the **ER** output records each provider's evidence once and offers it against every regime in the matter brief.
+
 ## How it is built
 
 Single-assessment web app: each deployment holds one assessment for one insurer.

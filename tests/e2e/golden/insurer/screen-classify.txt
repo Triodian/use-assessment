@@ -105,6 +105,13 @@ Classified by
 Jordan Pike
 Peer reviewer
 Ravi Menon
+Agent controls · A3
+
+At A3 and above, record the controls on this use: its permission scope, where its actions are logged, the human checkpoint before actions at A4 and above, and how it is stopped. A blank is shown as not recorded in the Agent controls output.
+
+Permission scope
+Action log
+Way to stop it
 Phase 3 exit gate
 Fields 15 to 22 complete
 REG-002 · 8 to do

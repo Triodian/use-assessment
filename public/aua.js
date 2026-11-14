@@ -1059,6 +1059,7 @@ function screenClassify() {
   UI.entryId = e.id; const i = eIdx(e), b = bp(), m = me(), cwhy = deny('classify', e), canC = !cwhy, bl = blindFor(e), base = 'c-' + sid(e.id);
   const s = bl ? 5 : UI.step;
   const steps = ['Authority', 'Consequence', rungLabel(), 'Obtainability', 'Blind re-derivation'];
+  const agentCard = agentControlsCard(e);
   const facts = `<div class="card"><h2 class="sh">Facts · fields 11 to 13</h2>${[11, 12, 13].map(n => `<div style="margin-bottom:10px"><div class="mini">Field ${n}: ${esc(FLD(n).name)}</div><div class="small">${e.fields[n] && e.fields[n].notKnown ? '<em>not known</em>' : esc(optL(fv(e, n))) || '—'}</div><div class="mini">${esc((e.fields[n] || {}).source || '')}</div></div>`).join('')}
     ${bl ? '' : `<div class="mini">Field 5: function · field 4: where the AI acts</div><div class="small">${esc(fv(e, 5) || '—')} · ${esc(optL(fv(e, 4)) || '—')}</div>`}</div>`;
   const ex = expected(e), ob = obResult(e), fl = flags(e);
@@ -1116,7 +1117,7 @@ function screenClassify() {
   const layout = b === 'desk' ? `<div style="display:grid;grid-template-columns:260px minmax(0,1fr) 260px;gap:18px;align-items:start">${facts}<div style="min-width:0">${step}${stepNav}</div>${result}</div>`
     : b === 'tab' ? `<div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr);gap:18px;align-items:start"><div class="stack">${facts}${result}</div><div style="min-width:0">${step}${stepNav}</div></div>`
     : `<div class="stack">${s === 1 || s === 5 ? facts : ''}<div>${step}${stepNav}</div>${result}</div>`;
-  return `${opening('Phase 3 · classify and test', 'Classify and test', bl ? 'Blind re-derivation: set the tier from the facts alone.' : 'Work through one entry at a time: authority, consequence, evidence rung, obtainability and blind re-derivation.')}${picker}${srcList()}${stepTabs}${layout}${gateCard(3)}${stepbar(gate(gates()[3].ok, gates()[3].ok ? 'Phase 3 met' : 'Phase 3 open'))}`;
+  return `${opening('Phase 3 · classify and test', 'Classify and test', bl ? 'Blind re-derivation: set the tier from the facts alone.' : 'Work through one entry at a time: authority, consequence, evidence rung, obtainability and blind re-derivation.')}${picker}${srcList()}${stepTabs}${layout}${agentCard}${gateCard(3)}${stepbar(gate(gates()[3].ok, gates()[3].ok ? 'Phase 3 met' : 'Phase 3 open'))}`;
 }
 
 /* ---------- S6 questions to counsel ---------- */
@@ -1332,7 +1333,8 @@ const OUTS = [
   { id: 'QS', name: 'Question set to counsel', gate: 3, gen: genQS }, { id: 'RP', name: 'Review pack for the independent reviewer', gate: 5, gen: genRP },
   { id: 'CM', name: 'Closing measures', gate: 7, gen: genCM }, { id: 'DR', name: 'Difference report', gate: 0, gen: genDR },
   { id: 'EP', name: 'Engagement plan', gate: 0, gen: genEP },
-  { id: 'NC', name: 'Nonconformity and corrective action register', gate: 5, gen: genNC }
+  { id: 'NC', name: 'Nonconformity and corrective action register', gate: 5, gen: genNC },
+  { id: 'AC', name: 'Agent controls', gate: 3, gen: genAC }, { id: 'ER', name: 'Evidence register, cross-walked', gate: 5, gen: genER }
 ];
 const O = id => OUTS.find(o => o.id === id) || OUTS[0];
 function fieldOut(e, n) {
@@ -1346,6 +1348,32 @@ function fieldOut(e, n) {
 }
 const fieldSrc = (e, n) => n === 17 ? (expected(e) || {}).adjustment : n === 21 || n === 22 ? 'Obtainability test' : n === 26 ? 'Finding' : (e.fields[n] || {}).source;
 function summaryTable() { return tbl(['Arrangement', 'Tier', 'Consequence', rungLabel(), 'Required', 'Obtainable', 'Finding', 'Grade', 'Flags'], S.arrangements.map(a => { const fd = finding(a), es = S.entries.filter(e => e.arrangementId === a.id), w = ent(fd.entry) || es[0]; return [a.id, w && codeOpt(fv(w, 15)), w && codeOpt(fv(w, 16)), w && expected(w) ? codeOpt(expected(w).value) : '', w && codeOpt(fv(w, 25)), w && obResult(w).done ? codeOpt(obResult(w).rung) : '', fd.type ? codeOpt(fd.type) : fd.label, fd.priority, es.flatMap(e => flags(e).map(x => x.label)).join('; ')]; })); }
+/* Baseline controls (development plan task BP.5; Triodian Metamodel reference-data/baseline-controls.json).
+   BC1: for each use at A3 and above, its permission scope, action log, a human checkpoint before actions at A4 and
+   above, and a way to stop it. BC3: each provider's evidence recorded once and set beside every regime in the brief. */
+const AGENT_CONTROLS = [['scope', 'Permission scope', 'What it may read, change and spend, and where it may not act'], ['log', 'Action log', 'Where its actions are logged, and who can read the log'], ['checkpoint', 'Human checkpoint', 'Which actions wait for a person first (A4 and above)'], ['stop', 'Way to stop it', 'Who can stop it, how, and how fast']];
+const tierN = e => { const t = tierShown(e); return /^A[1-6]$/.test(t) ? +t[1] : 0; };
+const needsAgentControls = e => tierN(e) >= 3;
+const agentControlGaps = e => AGENT_CONTROLS.filter(([k]) => !(k === 'checkpoint' && tierN(e) < 4) && !String(((e.agentControls || {})[k]) || '').trim()).map(x => x[1]);
+function agentControlsCard(e) {
+  if (!needsAgentControls(e)) return '';
+  const i = eIdx(e), c = e.agentControls || {}, gaps = agentControlGaps(e);
+  return `<div class="card"><h2 class="sh">Agent controls · ${esc(tierShown(e))}</h2><p class="small soft" style="margin:0 0 8px">At A3 and above, record the controls on this use: its permission scope, where its actions are logged, the human checkpoint before actions at A4 and above, and how it is stopped. A blank is shown as not recorded in the Agent controls output.</p><div class="fgrid">${AGENT_CONTROLS.filter(([k]) => k !== 'checkpoint' || tierN(e) >= 4).map(([k, l, ph]) => fld(l, `entries.${i}.agentControls.${k}`, c[k] || '', { ph })).join('')}</div>${gaps.length ? `<p class="small" style="margin:8px 0 0">Not recorded: ${esc(gaps.join(', '))}.</p>` : ''}</div>`;
+}
+function genAC() {
+  const es = S.entries.filter(needsAgentControls);
+  let m = mdHead(O('AC')) + 'Every use at A3 (Decision) and above, with the four controls on it. A human checkpoint applies from A4 (Transactional). Blank means not recorded.\n\n';
+  if (!es.length) return m + 'No entry is at A3 or above.\n\n';
+  m += tbl(['Entry', 'Arrangement', 'Tier', 'Permission scope', 'Action log', 'Human checkpoint', 'Way to stop it'], es.map(e => { const c = e.agentControls || {}; return [e.id, e.arrangementId, tierShown(e), c.scope || 'not recorded', c.log || 'not recorded', tierN(e) >= 4 ? c.checkpoint || 'not recorded' : 'n/a (below A4)', c.stop || 'not recorded']; }));
+  const open = es.filter(e => agentControlGaps(e).length);
+  return m + (open.length ? `Not yet recorded for ${open.length} of ${es.length} entries: ${open.map(e => `${e.id} (${agentControlGaps(e).join(', ').toLowerCase()})`).join('; ')}.\n\n` : `All four controls are recorded for every entry at A3 and above.\n\n`);
+}
+function genER() {
+  const mb = S.engagement.matterBrief, regimes = mb ? mb.tiers.filter(t => t.refs.length).map(t => `${t.label || t.tier} (${t.refs.length})`) : [];
+  let m = mdHead(O('ER')) + `Each provider's evidence, recorded once. The same record is offered against every regime in the matter brief, rather than answered again for each.${mb ? ` Regimes in the brief: ${regimes.join('; ') || 'none'}.` : ' No matter brief is loaded, so the regimes are not listed; load one in set-up.'}\n\n`;
+  const rows = S.arrangements.map(a => { const es = S.entries.filter(e => e.arrangementId === a.id), sup = [...new Set(es.map(e => fvs(e, 8)).filter(Boolean))].join('; '), rec = [...new Set(es.map(e => fvs(e, 18)).filter(Boolean))].join('; '), ob = es.map(e => obResult(e)).filter(o => o.done).map(o => codeOpt(o.rung)); return [a.id, sup || 'not recorded', rec || 'not recorded', [...new Set(ob)].join('; ') || 'not known', mb ? 'Every regime in the brief' : 'Load the matter brief']; });
+  return m + (rows.length ? tbl(['Arrangement', 'Provider', 'Evidence received', 'Evidence obtainable', 'Offered against'], rows) : 'No arrangements yet.\n\n') + 'Counsel decides what each regime asks for; this register records only what evidence exists, once.\n\n';
+}
 function genDL1() {
   let m = mdHead(O('DL1')) + `Every entry, with all 26 fields and their sources. Fields recorded as not known: ${S.entries.reduce((n, e) => n + notKnownCount(e), 0)}.\n\n`;
   S.entries.forEach(e => { m += `## ${e.id} · ${e.arrangementId}\n\n` + tbl(['#', 'Field', 'Value', 'Source'], C.fields.map(d => [d.n, FLD(d.n).name, fieldOut(e, d.n), fieldSrc(e, d.n)])) + `Flags: ${flags(e).map(x => x.label).join('; ') || 'none'} · not known: ${notKnownCount(e)}\n\n`; });
@@ -1979,7 +2007,21 @@ function exampleChoice() {
   return EXAMPLES.find(x => x.id === id) || EXAMPLES[0];
 }
 const setExampleChoice = id => { try { sessionStorage.setItem(EX_SECTOR, id); } catch (e) {} };
-function buildExample() { return exampleChoice().build(); }
+function buildExample() { const d = exampleChoice().build(); exampleAgentControls(d); return d; }
+// The worked examples record the agent controls (BC1) on every entry at A3 and above.
+function exampleAgentControls(d) {
+  (d.entries || []).forEach(e => {
+    const t = ((e.fields || {})[15] || {}).value || '', n = /^A[1-6]$/.test(t) ? +t[1] : 0;
+    if (n < 3 || e.agentControls) return;
+    e.agentControls = {
+      scope: n >= 5 ? 'Acts only in the systems and queues named in the agreement schedule; holds no credentials outside them' : 'Decides within the rules set in its configuration; cannot change those rules',
+      log: "Every decision and action is logged in the provider's system; the arrangement owner receives an extract each month",
+      stop: 'The arrangement owner can switch it to manual handling the same day, under the agreement',
+      ...(n >= 4 ? { checkpoint: 'A person releases any payment, price or change above the limit in the agreement before it takes effect' } : {}),
+    };
+  });
+  return d;
+}
 // The people who hold the two management roles in the example, for the practice notes.
 const mgmtNames = () => { const of = r => ((S.people || []).find(p => p.roles.includes(r)) || {}).name; return [of('technologyOwner'), of('aiGovernance')].filter(Boolean).join(' or '); };
 
