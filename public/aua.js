@@ -1323,8 +1323,9 @@ function mdHead(o) {
   const e = S.engagement, st = RAW ? '' : outStatus(o);
   return `${e.privilegeMarking || '[Privilege marking not recorded in set-up]'}\n\n# ${o.id} · ${o.name}\n\n**${calLabel()}**${st ? ' · ' + st : ''} · ${dDoc(today())}${e.example ? ' · WORKED EXAMPLE, FICTIONAL' : ''}\n\n${e.insurer || '[' + N.Entity + ']'} · ${e.reference || '[reference]'}\n\n${scopeLine()}${evLine(o.id)}${bothRoles()}`;
 }
-/* The APRA letter bullet, CPS 230 paragraph and ISO/IEC 42001 control each output serves (task R.2; public/shared/evidence.js). */
-const evTags = id => (window.AUAEvidence ? window.AUAEvidence.tagLine('UA', id) : '');
+/* The APRA letter bullet, CPS 230 paragraph and ISO/IEC 42001 control each output serves (task R.2; public/shared/evidence.js).
+   Outside Australia (a pack with another jurisdiction, such as the US packs) only the ISO/IEC 42001 control is shown. */
+const evTags = id => (window.AUAEvidence ? window.AUAEvidence.tagLine('UA', id, (BASE.packs[C.pack] || {}).jurisdiction) : '');
 const evLine = id => { const t = evTags(id); return t ? `Evidence for: ${t}.\n\n` : ''; };
 const OUTS = [
   { id: 'DL1', name: 'AI dependency register', gate: 3, gen: genDL1 }, { id: 'DL2', name: 'Evidence obtainable at each boundary', gate: 5, gen: genDL2 },
@@ -1999,7 +2000,7 @@ function exampleIso(X) {
 const EXAMPLES = [
   { id: 'insurance', name: 'General insurer', build: buildExampleInsurer, note: 'Worked example: a fictional insurer, Corvane, and its providers, for practice only. Nothing is saved.', offer: 'Practise on the framework’s illustration: an outside claims manager whose triage model routes motor claims.' },
   { id: 'superannuation', name: 'Superannuation trustee', build: buildExampleSuper, note: 'Worked example: a fictional superannuation trustee, Coastline Super, and its providers, for practice only. Nothing is saved.', offer: 'Practise on a fund: a group insurer whose triage model sorts death and disablement claims, measured against the appetite the board approved.' },
-  { id: 'banking', name: 'Bank', build: buildExampleBank, note: 'Worked example: a fictional bank, Wattlebrook Bank, and its providers, for practice only. Nothing is saved.', offer: 'Practise on a bank: a payments provider whose model holds payments it reads as scams, measured against the appetite the board approved.' }];
+  { id: 'banking', name: 'Bank', build: buildExampleBank, note: 'Worked example: a fictional bank, Wattlebrook Bank, and its providers, for practice only. Nothing is saved.', offer: 'Practise on a bank: a payments provider whose model holds payments it reads as scams, measured against the appetite the board approved.' }].concat(window.AUAUSExamples ? window.AUAUSExamples({ applyPack, newAssessment, loadCalibration, newEntry, updateRows, exampleIso, swap: X => { const o = S; S = X; return o; } }) : []);  // the United States examples (aua-example-us.js, loaded first)
 const EX_SECTOR = 'triodian.example.sector';
 function exampleChoice() {
   let id = '';

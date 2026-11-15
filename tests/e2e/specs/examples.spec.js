@@ -112,6 +112,41 @@ test('?example=banking opens Wattlebrook Bank with the ADI pack and the board’
   await ctx.close();
 });
 
+// The United States examples (task US.5): the same bank and insurer as in AI Board Direction and AI Risk Appetite,
+// each on its US pack and measured against the calibration set its board approved in the Risk Appetite example.
+for (const [ex, name, pack, minute, fns, people, sys, cio] of [
+  ['us-banking', 'Harlow Ridge Bank', 'usBanking', 'Board minute 2026/12-07', ['Fraud and financial crime', 'Customer service', 'Retail lending'], ['Kevin Marsh', 'Tasha Greene', 'Owen Fitch', 'Dana Whitcombe', 'Michael Brandt'], 'Card and ACH fraud model at Keystone Card Services', 'Kevin Marsh'],
+  ['us-insurance', 'Ashgrove Mutual Insurance Company', 'usInsurance', 'Board minute 2026/12-11', ['Pricing', 'Customer service', 'Claims'], ['Laura Whitman', 'Isaac Burke', 'Nadia Hollis', 'Benjamin Tran', 'Rebecca Sloane'], 'Rating model at Meridale Rating Services', 'Laura Whitman'],
+]) {
+  test(`?example=${ex} opens ${name} on the US pack, measured against the board’s approved appetite`, async ({ browser }) => {
+    const { ctx, p } = await start(browser, `/?example=${ex}`);
+    await expect(p.locator('.examplenote').first()).toContainText(name);
+    const s = await facts(p);
+    expect(s.name).toBe(name + ' (fictional)'); expect(s.pack).toBe(pack);
+    expect(s.cal).toBe('approved v1'); expect(s.minute).toBe(minute);   // the set the Risk Appetite US example approves
+    expect(s.diff).toBe(0);
+    expect(s.fns).toEqual(fns);
+    expect(s.findings).toEqual(['Awaiting counsel', 'F1', 'F4']);
+    expect(s.tiers).toEqual(['A3', '', 'A1', '']);
+    expect(s.people).toEqual(expect.arrayContaining(people));
+    expect(s.broken).toBe(0);
+    expect(s.handover).toBe(6); expect(s.update).toBeGreaterThan(0); expect(s.includeLegal).toBe(false);
+    await p.evaluate(() => window.AUA.go('register'));
+    await expect(p.locator('body')).toContainText('E3 Event notification');          // A3 × C4 in the board's appetite
+    await expect(p.locator('body')).not.toContainText('Above ceiling ·');
+    for (const scr of ['overview', 'setup', 'classify', 'counsel', 'findings', 'outputs']) {
+      expect(await p.evaluate(x => { try { window.AUA.go(x); return true; } catch (e) { return String(e); } }, scr)).toBe(true);
+      for (const w of ['APRA', 'CPS 230', 'Wattlebrook', 'Coastline', 'Corvane', 'ADI']) await expect(p.locator('body')).not.toContainText(w);
+    }
+    await p.evaluate(() => window.AUA.go('overview'));
+    await p.locator('#who, [data-act="person"]').first().selectOption('p11');
+    await expect(p.locator('body')).toContainText('You are acting as ' + cio);
+    await expect(p.locator('body')).toContainText(sys);
+    expect(p._errors).toEqual([]);
+    await ctx.close();
+  });
+}
+
 // Development plan tasks ISO.3, ISO.4, ISO.6 and ISO.9, in the worked example.
 test('ISO readiness: the annex states what the assessment is, how records are kept and when it is run again; the register lists corrective actions', async ({ browser }) => {
   const { ctx, p } = await start(browser, '/?example=superannuation');
