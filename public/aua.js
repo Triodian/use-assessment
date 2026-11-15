@@ -1642,7 +1642,8 @@ let lastBp = null, inChange = false, pendingRender = false, LEAVING = false;
 function render() { if (inChange) { if (!pendingRender) { pendingRender = true; setTimeout(() => { pendingRender = false; doRender(); }, 0); } return; } doRender(); }
 const dsKey = el => el && el !== document.body && el.dataset && Object.keys(el.dataset).length ? el.tagName + '|' + JSON.stringify(Object.assign({}, el.dataset)) : null;
 // The sector pack follows the assessment: set-up picks it, and it is fixed once a register entry is recorded.
-function packId() { return (S && S.engagement && S.engagement.sectorPack) || TriodianPacks.DEFAULT; }
+// A new engagement starts on the pack of the jurisdiction and sector this deployment is set to (TriodianPacks.startPack).
+function packId() { return (S && S.engagement && S.engagement.sectorPack) || TriodianPacks.startPack(BASE, SRV.defaults) || TriodianPacks.DEFAULT; }
 function applyPack() {
   const id = packId(); if (C && C.pack === id) return;
   C = TriodianPacks.resolve(BASE, id); N = BASE.packs[C.pack].nouns;
@@ -2202,7 +2203,7 @@ function openExample() { S = buildExample(); seedExampleVersion(); UI.personId =
 async function connect() {
   const r = await api('GET', '/api/me');
   SRV.checked = true;
-  if (r.ok) { SRV.on = true; SRV.user = r.body.user; SRV.site = r.body.site || ''; SRV.handoverOnly = !!r.body.handoverOnly; await loadReal(); if (SRV.handoverOnly) { SRV.ready = true; render(); return; } await loadArchives(); if (S) { const h = location.hash.slice(1); UI.screen = h && SNAME[h] ? h : 'overview'; } }
+  if (r.ok) { SRV.on = true; SRV.user = r.body.user; SRV.site = r.body.site || ''; SRV.defaults = r.body.defaults || null; SRV.handoverOnly = !!r.body.handoverOnly; await loadReal(); if (SRV.handoverOnly) { SRV.ready = true; render(); return; } await loadArchives(); if (S) { const h = location.hash.slice(1); UI.screen = h && SNAME[h] ? h : 'overview'; } }
   else { SRV.on = false; SRV.code = r.code || ''; SRV.reason = r.error; }
   if (SRV.code !== 'no_access' && openExampleByDefault()) { SRV.ready = true; openExample(); return; }
   SRV.ready = true;
