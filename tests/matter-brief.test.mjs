@@ -42,3 +42,24 @@ test('an adopted-standard list in the brief is kept, under its own name', () => 
   assert.deepEqual(readBrief(raw).brief.tiers.map((t) => t.tier), ['Binding', 'Expected', 'Anticipated'], 'a brief without one is unchanged');
   assert.match(readBrief({ ...b, obligationsByTier: { ...b.obligationsByTier, adopted: 'x' } }).error, /adopted-standard references/);
 });
+
+test('provenance survives the import: sectors, the dataset ledger position and each reference’s applicability (S.6)', () => {
+  const src = JSON.parse(raw), { brief } = readBrief(raw);
+  assert.equal(brief.dataset.name, src.dataset.name);
+  assert.equal(brief.dataset.metamodelVersion, src.dataset.metamodelVersion);
+  assert.deepEqual(brief.dataset.ledgerHead, src.dataset.ledgerHead);
+  const first = src.obligationsByTier.binding[0], kept = brief.tiers[0].refs[0][6];
+  assert.equal(kept.governedRecordID, first.governedRecordID);
+  assert.equal(kept.provenanceRef, first.provenanceRef);
+  assert.deepEqual(kept.useCaseIDs, first.useCaseIDs);
+  assert.equal(kept.appliesToAnyAIUse, first.appliesToAnyAIUse);
+  assert.equal(kept.lastVerified, first.lastVerified);
+  assert.deepEqual(kept.keyDates.map(d => d.date), first.keyDates.map(d => d.date));
+  // a brief scoped to sectors keeps them
+  const withSectors = { ...src, scope: { ...src.scope, sectors: ['AU-INSURANCE'] } };
+  const b2 = readBrief(JSON.stringify(withSectors)).brief;
+  assert.deepEqual(b2.scopeCodes.sectors, ['AU-INSURANCE']);
+  assert.match(b2.scope, /sectors AU-INSURANCE/);
+  // the server still accepts the richer stored brief
+  assert.equal(structureError({ engagement: { matterBrief: brief } }), '');
+});
