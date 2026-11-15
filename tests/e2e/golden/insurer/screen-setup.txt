@@ -43,6 +43,11 @@ Authorised deposit-taking institution
 General insurer
 MAS-regulated financial institution (Singapore)
 Superannuation trustee
+Bank (United States)
+Critical infrastructure owner or operator (United States)
+Health care provider (United States)
+Insurer (United States)
+Broker-dealer or investment adviser (United States)
 Banking (best-practice baseline)
 Critical infrastructure, corporate-managed (best-practice baseline)
 Critical infrastructure, government-managed (best-practice baseline)
