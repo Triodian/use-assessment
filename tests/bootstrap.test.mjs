@@ -42,7 +42,7 @@ check('no administrator address is compiled into the app', !/BOOTSTRAP_ADMINS|@t
 }
 // S.3: an administrator cannot change a person's email
 { const admin = { id: 'a1', email: 'owner@client.example', name: 'Owner', organisation: '', roles: [], isAdmin: true, active: true };
-  const person = { id: 'p1', email: 'counsel@firm.example', name: 'Cass', organisation: 'Firm', roles: ['counsel'], isAdmin: false, active: true };
+  const person = { id: 'p1', email: 'counsel@firm.example', name: 'Cass', organisation: 'Firm', roles: ['gc'], isAdmin: false, active: true };
   const { store, s } = memStore([admin, person], true);
   const put = body => handle(req('owner@client.example', '/api/admin/users/p1', [], 'PUT', body), store);
   const r = await put({ ...person, email: 'attacker@evil.example' });
