@@ -29,8 +29,8 @@ The framework document is the source of truth for content: register fields, the 
 
 | # | Change | Source |
 | --- | --- | --- |
-| 1 | "NRF" and "Norton Rose Fulbright" become **counsel** throughout | Instruction of 12 October 2026 |
-| 2 | The independent reviewer (Finity, in the first engagement) reviews Triodian's assessment **on behalf of the CRO**. The app shows the role, never the firm. Whether it is engaged through counsel or directly by the CRO is a set-up choice (section 5.3) | Instruction of 12 October 2026; reporting line still open |
+| 1 | The law firm's name becomes **counsel** throughout | Instruction of 12 October 2026 |
+| 2 | The independent reviewer (a separate firm, in the first engagement) reviews Triodian's assessment **on behalf of the CRO**. The app shows the role, never the firm. Whether it is engaged through counsel or directly by the CRO is a set-up choice (section 5.3) | Instruction of 12 October 2026; reporting line still open |
 | 3 | A loaded calibration set replaces the **indicative rung** with the **expected rung** | AI Risk Appetite Framework, 2.5 and 11.4 |
 | 4 | **Above ceiling** and **location** flags added to each register entry and worksheet | AI Risk Appetite Framework, 2.4 and 11.4 |
 | 5 | A sixth selection criterion: arrangements likely to sit above the authority ceiling | AI Risk Appetite Framework, 2.3 |
