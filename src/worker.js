@@ -86,6 +86,8 @@ export default {
         demoAdmins: demoAdmins(env),
         firstAdmins: String(env.FIRST_ADMINS || '').split(',').map(e => e.trim().toLowerCase()).filter(Boolean),
         site: env.SITE_LABEL || '', readCalibration: calibrationReader(env),
+        // The jurisdiction and sector this deployment starts in (set at install); a new engagement starts on their pack.
+        defaults: { jurisdiction: String(env.DEFAULT_JURISDICTION || 'AU').toUpperCase(), sector: env.DEFAULT_SECTOR || '' },
         linkMissing: env.APPETITE ? [] : ['the APPETITE service binding'],
         origin: siteUrl(env, request), sender: emailSender(env), defer: p => ctx.waitUntil(p),
       }, storeFor(env));
