@@ -9,6 +9,20 @@ const TIERS = [['binding', 'Binding'], ['expected', 'Expected'], ['anticipated',
 // the controls of a standard the client has adopted for itself, such as ISO/IEC 42001:2023 Annex A.
 const ADOPTED = ['adopted', 'Adopted standard'];
 const isObj = v => !!v && typeof v === 'object' && !Array.isArray(v);
+// A state's records carry its ISO 3166-2 code (US-NY), as the Atlas files them. A state belongs to its country: a brief
+// for New York is a brief for a United States company.
+const US_STATES = { AL: 'Alabama', AK: 'Alaska', AZ: 'Arizona', AR: 'Arkansas', CA: 'California', CO: 'Colorado', CT: 'Connecticut', DE: 'Delaware', DC: 'District of Columbia', FL: 'Florida', GA: 'Georgia', HI: 'Hawaii', ID: 'Idaho', IL: 'Illinois', IN: 'Indiana', IA: 'Iowa', KS: 'Kansas', KY: 'Kentucky', LA: 'Louisiana', ME: 'Maine', MD: 'Maryland', MA: 'Massachusetts', MI: 'Michigan', MN: 'Minnesota', MS: 'Mississippi', MO: 'Missouri', MT: 'Montana', NE: 'Nebraska', NV: 'Nevada', NH: 'New Hampshire', NJ: 'New Jersey', NM: 'New Mexico', NY: 'New York', NC: 'North Carolina', ND: 'North Dakota', OH: 'Ohio', OK: 'Oklahoma', OR: 'Oregon', PA: 'Pennsylvania', RI: 'Rhode Island', SC: 'South Carolina', SD: 'South Dakota', TN: 'Tennessee', TX: 'Texas', UT: 'Utah', VT: 'Vermont', VA: 'Virginia', WA: 'Washington', WV: 'West Virginia', WI: 'Wisconsin', WY: 'Wyoming' };
+const AU_STATES = { ACT: 'Australian Capital Territory', NSW: 'New South Wales', NT: 'Northern Territory', QLD: 'Queensland', SA: 'South Australia', TAS: 'Tasmania', VIC: 'Victoria', WA: 'Western Australia' };
+export const countryOf = c => String(c || '').split('-')[0];
+/** "New York (United States)" for US-NY; the name in names for a country; the code where neither is known. */
+export function jurisdictionLabel(names, c) {
+  const map = names || {}, code = String(c || '');
+  if (map[code]) return map[code];
+  const [k, s] = code.split('-');
+  if (!s) return code;
+  const sub = k === 'US' ? US_STATES[s] : k === 'AU' ? AU_STATES[s] : '';
+  return `${sub || code} (${map[k] || k})`;
+}
 const str = (v, n = 400) => typeof v === 'string' ? v.slice(0, n) : '';
 
 /**
@@ -30,7 +44,7 @@ export function readBrief(text, names = {}, loadedOn = '', loadedBy = '') {
   if (b.questionsForCounsel != null && !Array.isArray(b.questionsForCounsel)) return { error: 'The questions for counsel in the brief are not a list.' };
   const n = (map, c) => (map && map[c]) || c;
   const jur = b.scope.jurisdictions.map(String), ets = b.scope.entityTypes.map(String), ucs = b.scope.useCases.filter(isObj).map(u => str(u.useCaseID, 8)).filter(Boolean);
-  const scope = [ets.length ? ets.map(c => n(names.entityTypes, c)).join(', ') : 'Any entity type', jur.length ? jur.map(c => n(names.jurisdictions, c)).join(', ') : 'All jurisdictions', ucs.length ? 'use cases ' + ucs.join(', ') : 'all use cases'].join(' · ');
+  const scope = [ets.length ? ets.map(c => n(names.entityTypes, c)).join(', ') : 'Any entity type', jur.length ? jur.map(c => jurisdictionLabel(names.jurisdictions, c)).join(', ') : 'All jurisdictions', ucs.length ? 'use cases ' + ucs.join(', ') : 'all use cases'].join(' · ');
   const brief = {
     format: BRIEF_FORMAT, loadedOn, loadedBy, generatedAt: str(b.generatedAt, 40), scope,
     scopeCodes: { jurisdictions: jur.slice(0, 20), entityTypes: ets.slice(0, 20), useCases: ucs.slice(0, 20) },
@@ -47,7 +61,7 @@ export function readBrief(text, names = {}, loadedOn = '', loadedBy = '') {
 export function briefMismatch(brief, engagement, names = {}) {
   const out = [], sc = (brief && brief.scopeCodes) || {}, e = engagement || {};
   const jur = (sc.jurisdictions || []).filter(j => j !== 'INT');
-  if (e.jurisdiction && jur.length && !jur.includes(e.jurisdiction)) out.push(`The brief covers ${jur.join(', ')}; the company is in ${(names.jurisdictions || {})[e.jurisdiction] || e.jurisdiction}.`);
+  if (e.jurisdiction && jur.length && !jur.map(countryOf).includes(e.jurisdiction)) out.push(`The brief covers ${jur.map(c => jurisdictionLabel(names.jurisdictions, c)).join(', ')}; the company is in ${jurisdictionLabel(names.jurisdictions, e.jurisdiction)}.`);
   const ets = sc.entityTypes || [];
   if (e.entityType && ets.length && !ets.includes(e.entityType) && !ets.includes('anyOrganization')) out.push(`The brief covers ${ets.map(c => (names.entityTypes || {})[c] || c).join(', ')}; the company is a ${((names.entityTypes || {})[e.entityType] || e.entityType).toLowerCase()}.`);
   return out;
