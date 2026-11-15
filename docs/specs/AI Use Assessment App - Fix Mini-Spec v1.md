@@ -139,7 +139,7 @@ Replace `croName` with a choice from the people list, limited to people with the
 - lower-case "counsel" at the start of sentences and table cells
 - "Validation reviewer (Triodian) PhD" and "the counsel deck"
 
-It also names Damian Hickey, Leon Cosgrove, Abhishek Gupta and KJR, and lacks the changes in build specification section 0.2. The subtitle (line 654) says those changes are included.
+It also names three people and a firm, and lacks the changes in build specification section 0.2. The subtitle (line 654) says those changes are included.
 
 **Change.**
 - Rebuild the Reference content from the current AI Use Assessment Framework. Apply the section 0.2 changes:
@@ -148,10 +148,10 @@ It also names Damian Hickey, Leon Cosgrove, Abhishek Gupta and KJR, and lacks th
   - decision 3 starts from current state
 - Write "counsel" for the legal adviser throughout, capitalised at the start of a sentence or cell.
 - Remove every personal name and firm name. Show roles only.
-- Search the whole bundle for each name and for "NRF", "Norton", "Finity" and "KJR", and remove every occurrence.
+- Search the whole bundle for each person's and each firm's name, including abbreviations, and remove every occurrence.
 
 **Test.**
-- None of the names, "NRF", "Norton", "Finity" or "KJR" appears anywhere in the bundle, in any case.
+- No person's or firm's name, or its abbreviation, appears anywhere in the bundle, in any case.
 - No sentence or table cell starts with lower-case "counsel".
 - The Reference text matches the framework section by section.
 
