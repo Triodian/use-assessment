@@ -603,6 +603,17 @@ const MB = () => window.AUABrief;
 const BRIEF_NAMES = {"entityTypes":{"privateCompany":"Private company","listedEntity":"Listed entity","notForProfit":"Not-for-profit","criticalInfrastructureAssetOwner":"Critical infrastructure asset owner","defenceIndustrySupplier":"Defence industry supplier","healthServiceProvider":"Health service provider","authorisedDepositTakingInstitution":"Authorised deposit-taking institution","generalInsurer":"General insurer","lifeInsurer":"Life insurer","privateHealthInsurer":"Private health insurer","superannuationTrustee":"Superannuation trustee","financialServicesLicensee":"Financial services licensee","creditLicensee":"Credit licensee","bank":"Bank","insurer":"Insurer","capitalMarketsIntermediary":"Capital markets intermediary (broker-dealer, adviser, fund manager)","paymentServiceProvider":"Payment service provider","financialInstitution":"Financial institution","other":"Other","anyOrganization":"Any organisation"},"jurisdictions":{"AU":"Australia","SG":"Singapore","US":"United States","INT":"International"}};
 const atlasBriefUrl = () => (SRV.site ? 'https://obligations-atlas-test.triodian.com' : 'https://obligations-atlas.triodian.com') + '/#/brief';
 const briefRaised = q => S.questions.find(x => x.fromBrief && x.fromBrief === q.question);
+/** The dataset and ledger position a brief was built from, in one line, or '' for an older brief without them (S.6). */
+function briefLedger(mb) {
+  const ds = (mb && mb.dataset) || {}, lh = ds.ledgerHead || {};
+  const parts = [ds.name, ds.metamodelVersion ? 'metamodel ' + ds.metamodelVersion : '', lh.sequence != null ? 'ledger #' + lh.sequence + (lh.hash ? ' ' + String(lh.hash).slice(0, 12) + '…' : '') : ''].filter(Boolean);
+  return parts.join(' · ');
+}
+/** One reference's applicability and record identity, for display and the outputs: '' for an older brief (S.6). */
+function refProvenance(r) {
+  const a = r && r[6]; if (!a || typeof a !== 'object') return '';
+  return [a.governedRecordID ? 'record ' + a.governedRecordID : '', a.appliesToAnyAIUse ? 'any AI use' : (a.useCaseIDs || []).length ? 'use cases ' + a.useCaseIDs.join(', ') : '', a.lastVerified ? 'verified ' + a.lastVerified : ''].filter(Boolean).join(' · ');
+}
 function briefCard(fs) {
   const mb = S.engagement.matterBrief, n = mb ? mb.tiers.reduce((m, t) => m + t.refs.length, 0) : 0;
   let h = `<section class="card" id="briefCard"><div class="row between"><h2 class="sh" style="margin:0">Matter brief · obligations in scope</h2><div class="row"><button class="btn sm" data-act="loadBrief" ${fs}>${mb ? 'Load a newer brief' : 'Load the brief'}</button><button class="btn sm ghost" data-act="togglePaste" ${fs}>${UI.paste ? 'Hide paste box' : 'Paste instead'}</button></div></div>`;
@@ -612,7 +623,8 @@ function briefCard(fs) {
   if (!mb) return h + '<p class="small soft" style="margin:0">No matter brief loaded.</p></section>';
   const ds = mb.dataset || {};
   h += `<p class="small" style="margin:0 0 8px"><strong>${esc(mb.scope)}</strong>${mb.loadedOn ? ` · loaded ${esc(dAU(mb.loadedOn))}${mb.loadedBy ? ' by ' + esc(mb.loadedBy) : ''}` : ''}${ds.generatedAt ? ` · Atlas data of ${esc(dAU(String(ds.generatedAt).slice(0, 10)))}` : ''}${ds.preview ? ' · ' + badge('preview data', 'b-ochre') : ''} · ${n} reference${n === 1 ? '' : 's'}</p>`;
-  h += `<div class="tw"><table class="lg"><thead><tr><th style="width:120px">Tier</th><th>Obligations</th></tr></thead><tbody>${mb.tiers.map(t => `<tr><td>${esc(t.tier)}</td><td class="small">${t.refs.length ? t.refs.map(r => `<span class="mono">${esc(r[0])}</span> ${r[5] ? `<a href="${esc(r[5])}" target="_blank" rel="noopener">${esc(r[1])}</a>` : esc(r[1])}${r[3] ? ` <span class="soft">${esc(r[3])}</span>` : ''}`).join('<br>') : '<span class="soft">None in scope</span>'}</td></tr>`).join('')}</tbody></table></div>`;
+  if (briefLedger(mb)) h += `<p class="small soft" style="margin:0 0 8px">Source: ${esc(briefLedger(mb))}</p>`;
+  h += `<div class="tw"><table class="lg"><thead><tr><th style="width:120px">Tier</th><th>Obligations</th></tr></thead><tbody>${mb.tiers.map(t => `<tr><td>${esc(t.tier)}</td><td class="small">${t.refs.length ? t.refs.map(r => `<span class="mono">${esc(r[0])}</span> ${r[5] ? `<a href="${esc(r[5])}" target="_blank" rel="noopener">${esc(r[1])}</a>` : esc(r[1])}${r[3] ? ` <span class="soft">${esc(r[3])}</span>` : ''}${refProvenance(r) ? ` <span class="soft mini">${esc(refProvenance(r))}</span>` : ''}`).join('<br>') : '<span class="soft">None in scope</span>'}</td></tr>`).join('')}</tbody></table></div>`;
   h += (mb.coverage || []).map(c => `<p class="small soft" style="margin:6px 0 0">${esc(c.jurisdiction)}: ${esc(c.note)}</p>`).join('');
   h += (mb.notices || []).map(x => `<p class="small soft" style="margin:6px 0 0">${esc(x)}</p>`).join('');
   const qs = mb.questions || [];
@@ -1371,7 +1383,8 @@ function genAC() {
 }
 function genER() {
   const mb = S.engagement.matterBrief, regimes = mb ? mb.tiers.filter(t => t.refs.length).map(t => `${t.label || t.tier} (${t.refs.length})`) : [];
-  let m = mdHead(O('ER')) + `Each provider's evidence, recorded once. The same record is offered against every regime in the matter brief, rather than answered again for each.${mb ? ` Regimes in the brief: ${regimes.join('; ') || 'none'}.` : ' No matter brief is loaded, so the regimes are not listed; load one in set-up.'}\n\n`;
+  let m = mdHead(O('ER')) + `Each provider's evidence, recorded once. The same record is offered against every regime in the matter brief, rather than answered again for each.${mb ? ` Regimes in the brief: ${regimes.join('; ') || 'none'}.${briefLedger(mb) ? ` Brief built from ${briefLedger(mb)}${mb.generatedAt ? ' on ' + String(mb.generatedAt).slice(0, 10) : ''}.` : ''}` : ' No matter brief is loaded, so the regimes are not listed; load one in set-up.'}\n\n`;
+  if (mb && mb.tiers.some(t => t.refs.some(r => refProvenance(r)))) m += `## Obligations in scope, as recorded\n\n` + tbl(['Tier', 'Obligation', 'Instrument', 'Applies to', 'Record', 'Verified'], mb.tiers.flatMap(t => t.refs.map(r => { const a = r[6] || {}; return [t.tier, `${r[0]} ${r[1]}`, [r[2], r[3]].filter(Boolean).join(', '), a.appliesToAnyAIUse ? 'Any AI use' : (a.useCaseIDs || []).join(', ') || '—', a.governedRecordID || r[0], a.lastVerified || '—']; }))) + '\n';
   const rows = S.arrangements.map(a => { const es = S.entries.filter(e => e.arrangementId === a.id), sup = [...new Set(es.map(e => fvs(e, 8)).filter(Boolean))].join('; '), rec = [...new Set(es.map(e => fvs(e, 18)).filter(Boolean))].join('; '), ob = es.map(e => obResult(e)).filter(o => o.done).map(o => codeOpt(o.rung)); return [a.id, sup || 'not recorded', rec || 'not recorded', [...new Set(ob)].join('; ') || 'not known', mb ? 'Every regime in the brief' : 'Load the matter brief']; });
   return m + (rows.length ? tbl(['Arrangement', 'Provider', 'Evidence received', 'Evidence obtainable', 'Offered against'], rows) : 'No arrangements yet.\n\n') + 'Counsel decides what each regime asks for; this register records only what evidence exists, once.\n\n';
 }
