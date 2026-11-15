@@ -3,7 +3,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { readBrief, BRIEF_FORMAT } from '../public/shared/matter-brief.js';
+import { readBrief, briefMismatch, BRIEF_FORMAT } from '../public/shared/matter-brief.js';
 import { structureError } from '../lib/core/rbac.js';
 
 const raw = fs.readFileSync(new URL('./fixtures/matter-brief-au-general-insurer.json', import.meta.url), 'utf8');
@@ -55,11 +55,18 @@ test('provenance survives the import: sectors, the dataset ledger position and e
   assert.equal(kept.appliesToAnyAIUse, first.appliesToAnyAIUse);
   assert.equal(kept.lastVerified, first.lastVerified);
   assert.deepEqual(kept.keyDates.map(d => d.date), first.keyDates.map(d => d.date));
-  // a brief scoped to sectors keeps them
-  const withSectors = { ...src, scope: { ...src.scope, sectors: ['AU-INSURANCE'] } };
+  // a brief scoped to sectors keeps them (schema shape: { regulatedSectorID, name }), and a sector mismatch is reported
+  const withSectors = { ...src, scope: { ...src.scope, sectors: [{ regulatedSectorID: 'AU-INSURANCE', name: 'Insurance' }] } };
   const b2 = readBrief(JSON.stringify(withSectors)).brief;
   assert.deepEqual(b2.scopeCodes.sectors, ['AU-INSURANCE']);
   assert.match(b2.scope, /sectors AU-INSURANCE/);
+  assert.equal(briefMismatch(b2, { sector: 'AU-INSURANCE' }).length, 0);
+  assert.match(briefMismatch(b2, { sector: 'AU-SUPERANNUATION' })[0], /scoped to Insurance; the engagement is in AU-SUPERANNUATION/);
+  // an adopted-standard record keeps the client's Statement of Applicability row
+  const soa = { obligationID: 'ISO42001-A.5.2', title: 'AI system impact assessment process', instrument: 'ISO/IEC 42001:2023 Annex A', citation: 'A.5.2', status: 'adopted', statementOfApplicability: { applicable: true, justification: 'Required by the board’s AI policy', implementation: 'Partly implemented' } };
+  const b3 = readBrief(JSON.stringify({ ...src, obligationsByTier: { ...src.obligationsByTier, adopted: [soa] } })).brief;
+  const adopted = b3.tiers.find(t => t.tier === 'Adopted standard').refs[0][6];
+  assert.deepEqual(adopted.statementOfApplicability, soa.statementOfApplicability);
   // the server still accepts the richer stored brief
   assert.equal(structureError({ engagement: { matterBrief: brief } }), '');
 });

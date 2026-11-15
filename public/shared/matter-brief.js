@@ -48,16 +48,21 @@ export function readBrief(text, names = {}, loadedOn = '', loadedBy = '') {
   // Provenance kept with the brief (security review 15 Nov 2026, S.6): the sectors it was scoped to, the Atlas dataset
   // and ledger position it was built from, and each reference's structured applicability, so a decision recorded against
   // the brief can be traced back to the exact record that supported it.
-  const secs = Array.isArray(b.scope.sectors) ? b.scope.sectors.map(x => str(isObj(x) ? x.sectorID || x.id : x, 40)).filter(Boolean) : [];
+  // scope.sectors: { regulatedSectorID, name } per the published brief schema (older briefs: none, or bare ids).
+  const secs = Array.isArray(b.scope.sectors) ? b.scope.sectors.map(x => str(isObj(x) ? x.regulatedSectorID || x.sectorID || x.id : x, 40)).filter(Boolean) : [];
+  const secNames = Array.isArray(b.scope.sectors) ? Object.fromEntries(b.scope.sectors.filter(isObj).map(x => [str(x.regulatedSectorID, 40), str(x.name, 120)]).filter(([k, v]) => k && v)) : {};
   const ds = isObj(b.dataset) ? b.dataset : {}, lh = isObj(ds.ledgerHead) ? ds.ledgerHead : {};
   const applicability = o => ({
     jurisdiction: str(o.jurisdiction, 8), appliesToAnyAIUse: o.appliesToAnyAIUse === true, useCaseIDs: Array.isArray(o.useCaseIDs) ? o.useCaseIDs.map(x => str(x, 8)).filter(Boolean).slice(0, 20) : [],
     keyDates: Array.isArray(o.keyDates) ? o.keyDates.filter(isObj).slice(0, 12).map(d => ({ dateType: str(d.dateType, 30), date: str(d.date, 10) })) : [],
     lastVerified: str(o.lastVerified, 10), governedRecordID: str(o.governedRecordID, 100), provenanceRef: str(o.provenanceRef, 100), publicationStatus: str(o.publicationStatus, 30),
+    // An adopted-standard record carries the client's own Statement of Applicability row: whether the control applies,
+    // why, and how far it is implemented. That is the client's justification, so it is kept word for word (bounded).
+    ...(isObj(o.statementOfApplicability) ? { statementOfApplicability: { applicable: o.statementOfApplicability.applicable === true, justification: str(o.statementOfApplicability.justification, 1000), implementation: str(o.statementOfApplicability.implementation, 60) } } : {}),
   });
   const brief = {
     format: BRIEF_FORMAT, loadedOn, loadedBy, generatedAt: str(b.generatedAt, 40), scope: secs.length ? scope + ' · sectors ' + secs.join(', ') : scope,
-    scopeCodes: { jurisdictions: jur.slice(0, 20), entityTypes: ets.slice(0, 20), useCases: ucs.slice(0, 20), sectors: secs.slice(0, 20) },
+    scopeCodes: { jurisdictions: jur.slice(0, 20), entityTypes: ets.slice(0, 20), useCases: ucs.slice(0, 20), sectors: secs.slice(0, 20) }, sectorNames: secNames,
     dataset: isObj(b.dataset) ? { name: str(ds.name, 80), generatedAt: str(ds.generatedAt, 40), preview: !!ds.preview, metamodelVersion: str(ds.metamodelVersion, 20), ledgerHead: { sequence: Number.isInteger(lh.sequence) ? lh.sequence : null, hash: /^[0-9a-f]{16,128}$/.test(lh.hash || '') ? lh.hash : '' } } : {},
     profile: isObj(b.profile) ? { profile: str(b.profile.profile, 40), mode: str(b.profile.mode, 40), reason: str(b.profile.reason, 400) } : null,
     tiers: tiers.map(([k, label]) => ({ tier: label, refs: b.obligationsByTier[k].slice(0, 200).map(o => [str(o.obligationID, 80), str(o.title, 300), str(o.instrument, 300), str(o.citation, 200), str(o.status, 40), /^https:\/\//.test(o.sourceURL || '') ? str(o.sourceURL, 500) : '', applicability(o)]) })),
@@ -75,6 +80,9 @@ export function briefMismatch(brief, engagement, names = {}) {
   if (e.jurisdiction && jur.length && !jur.map(countryOf).includes(e.jurisdiction)) out.push(`The brief covers ${jur.map(c => jurisdictionLabel(names.jurisdictions, c)).join(', ')}; the company is in ${jurisdictionLabel(names.jurisdictions, e.jurisdiction)}.`);
   const ets = sc.entityTypes || [];
   if (e.entityType && ets.length && !ets.includes(e.entityType) && !ets.includes('anyOrganization')) out.push(`The brief covers ${ets.map(c => (names.entityTypes || {})[c] || c).join(', ')}; the company is a ${((names.entityTypes || {})[e.entityType] || e.entityType).toLowerCase()}.`);
+  // The regulated sector too: a brief scoped to one sector's obligations says nothing about another's.
+  const secs = sc.sectors || [], sn = c => ((brief && brief.sectorNames) || {})[c] || (names.sectors || {})[c] || c;
+  if (e.sector && secs.length && !secs.includes(e.sector)) out.push(`The brief was scoped to ${secs.map(sn).join(', ')}; the engagement is in ${sn(e.sector)}.`);
   return out;
 }
 
