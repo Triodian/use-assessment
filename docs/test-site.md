@@ -8,7 +8,7 @@ Risk Appetite **test** site.
 ## Day to day
 - Changes go to the `test` branch first; Cloudflare deploys them to the test site.
 - When they have been checked there, merge `test` into `main`; Cloudflare deploys the live site.
-- The first person listed in `BOOTSTRAP_ADMINS` (lib/config.js) to sign in becomes the site's administrator.
+- The first person listed in the Worker variable `FIRST_ADMINS` to sign in becomes the site's administrator, once; after that administrators are managed in Admin (there is no compiled-in list).
   Add test users in its Admin, separately from the live site.
 - To start the test site again from empty, delete and re-create the test database.
 

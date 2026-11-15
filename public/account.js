@@ -67,7 +67,8 @@ async function loadAdmin() {
 function userForm(u, isNew) {
   const has = r => (u.roles || []).includes(r);
   return `<form class="adm-form" id="userForm" data-id="${esc(u.id || '')}" novalidate>
-    <label class="f">Email<input class="in" id="f-email" type="email" autocomplete="off" value="${esc(u.email || '')}"></label>
+    <label class="f">Email<input class="in" id="f-email" type="email" autocomplete="off" value="${esc(u.email || '')}" ${isNew ? '' : 'readonly aria-describedby="f-email-note"'}></label>
+    ${isNew ? '' : '<p class="small soft" id="f-email-note" style="margin:-6px 0 10px">Only the person can change their email, in their Profile, by confirming the new address with a sign-in. It carries their roles in every app.</p>'}
     <label class="f">Name<input class="in" id="f-name" value="${esc(u.name || '')}"></label>
     <label class="f">Organisation<input class="in" id="f-org" value="${esc(u.organisation || '')}"></label>
     <fieldset class="adm-roles" style="border:0;padding:0;margin:4px 0 0"><legend class="mini" style="margin-bottom:4px">Roles in the assessment (a person may hold more than one)</legend>

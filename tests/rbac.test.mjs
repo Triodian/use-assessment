@@ -55,4 +55,14 @@ if (!/Name the second approver/.test(deny('agreeCounsel', U('ex'), noApprover)))
 if (!/One person cannot give both/.test(deny('agreeCounsel', U('gx'), gcAgreed))) { fails++; console.log('FAIL · the refusal gives the reason'); } else console.log('PASS · the refusal gives the reason');
 t('the method owner turns the setting on in set-up', 'mo', n => { n.engagement.gcActsAsCounsel = true; n.engagement.secondApproverId = 'ex'; }, true);
 t('the GC cannot turn the setting on', 'gx', n => { n.engagement.gcActsAsCounsel = true; }, false);
+// ---- the first save of a deployment, or a file loaded into an empty one, goes through the same rules (security review 15 Nov 2026, S.5) ----
+const first = (label, who, mutate, expectOk) => { const n = base(); n.reviews = [{ point:'R2' }, { point:'R4' }, { point:'R7' }]; n.entries = []; mutate(n); const r = checkSave(null, n, U(who), users); const okd = !r.error; if (okd !== expectOk) fails++; console.log((okd === expectOk ? 'PASS' : 'FAIL') + ' · first save: ' + label + (r.error ? ' → ' + r.error : '')); };
+first('the method owner starts an assessment from the blank template', 'mo', () => {}, true);
+first('an administrator with no role starts one too', 'ad', () => {}, true);
+first('an assessor cannot (set-up permission)', 'as', () => {}, false);
+first('the method owner records their own facts in it', 'mo', n => n.entries = [{ id:'REG-001', arrangementId:'ARR-01', fields:{ '3':{ value:'x' } } }], true);
+first('a file carrying counsel’s R6 is refused', 'mo', n => n.reviews = [{ point:'R6', by:'cn', result:'complete', on:'2026-11-01' }], false);
+first('a file carrying another person’s classification and peer review is refused', 'mo', n => n.entries = [{ id:'REG-001', arrangementId:'ARR-01', fields:{ '3':{ value:'x' }, '15':{ value:'A3' } }, classifiedBy:'as', peerReview:{ personId:'pr', tier:'A3' } }], false);
+first('a file carrying the GC’s agreement to the set is refused', 'mo', n => { n.setAgreed.gcBy = 'gx'; n.setAgreed.gcOn = '2026-11-01'; }, false);
+first('a file carrying someone else’s hand-back is refused', 'mo', n => n.engagement.handBack = { by:'ow', on:'2026-11-01' }, false);
 console.log(fails ? fails + ' FAILED' : 'all passed'); process.exit(fails ? 1 : 0);
