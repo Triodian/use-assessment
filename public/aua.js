@@ -612,7 +612,8 @@ function briefLedger(mb) {
 /** One reference's applicability and record identity, for display and the outputs: '' for an older brief (S.6). */
 function refProvenance(r) {
   const a = r && r[6]; if (!a || typeof a !== 'object') return '';
-  return [a.governedRecordID ? 'record ' + a.governedRecordID : '', a.appliesToAnyAIUse ? 'any AI use' : (a.useCaseIDs || []).length ? 'use cases ' + a.useCaseIDs.join(', ') : '', a.lastVerified ? 'verified ' + a.lastVerified : ''].filter(Boolean).join(' · ');
+  const soa = a.statementOfApplicability;
+  return [a.governedRecordID ? 'record ' + a.governedRecordID : '', a.appliesToAnyAIUse ? 'any AI use' : (a.useCaseIDs || []).length ? 'use cases ' + a.useCaseIDs.join(', ') : '', a.lastVerified ? 'verified ' + a.lastVerified : '', soa ? 'Statement of Applicability: ' + (soa.applicable ? 'applies' : 'not applicable') + (soa.implementation ? ', ' + soa.implementation.toLowerCase() : '') : ''].filter(Boolean).join(' · ');
 }
 function briefCard(fs) {
   const mb = S.engagement.matterBrief, n = mb ? mb.tiers.reduce((m, t) => m + t.refs.length, 0) : 0;
