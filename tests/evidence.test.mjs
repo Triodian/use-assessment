@@ -66,5 +66,10 @@ ok('Lite scope: the note reaches the index', /\| AI dependency register \|[^\n]*
 { const ra = minute => appetiteArtefacts({ calibration: { status: 'approved', approvedOn: '2026-12-02', minuteRef: minute } }, '2026-12-02').find(a => a.id === 'calibration').note;
   ok('a minute reference is prefixed with "minute" once', ra('2026/12-04') === 'Approved by the board, minute 2026/12-04' && ra('Board minute 2026/12-04') === 'Approved by the board, Board minute 2026/12-04', ra('Board minute 2026/12-04')); }
 ok('full scope: no scope note', !assessmentArtefacts(data, '2026-11-01').some(a => /Lite scope/.test(a.note)));
+// Task US.5: the APRA letter and CPS 230 are Australian. Outside Australia the tag line and the index carry ISO/IEC 42001 only.
+ok('a US engagement: the tag line names ISO/IEC 42001 only', tagLine('UA', 'DL1', 'US') === 'ISO/IEC 42001 ' + TAGS.UA.DL1.iso.join(', '), tagLine('UA', 'DL1', 'US'));
+ok('an Australian or unmarked engagement: the tag line is as it was', tagLine('UA', 'DL1', 'AU') === tagLine('UA', 'DL1') && /^APRA letter/.test(tagLine('UA', 'DL1')));
+{ const mu = indexMarkdown({ artefacts: assessmentArtefacts(data, '2026-11-01'), by: 'letter', gatheredOn: '2026-11-08', jurisdiction: 'US' });
+  ok('a US engagement: the index is by ISO/IEC 42001, with no APRA letter, bullets or CPS 230', /by ISO\/IEC 42001:2023 clause and Annex A control/.test(mu) && !/APRA|CPS 230|Letter bullets|Bullets with no evidence/.test(mu), (mu.match(/.{40}(APRA|CPS 230|Letter bullets).{20}/) || [''])[0]); }
 ok('no "must" or "required" in the index', !/\b(must|required)\b/i.test(md + mi));
 console.log(fails ? `\n${fails} failed` : '\nall passed'); process.exit(fails ? 1 : 0);
