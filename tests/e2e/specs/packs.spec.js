@@ -93,7 +93,7 @@ test('a baseline for a public body names the accountable authority on screen and
   await p.locator('[data-act="new"]').first().click();
   await p.evaluate(() => window.AUA.go('setup'));
   const pack = p.locator('#f_engagement_sectorPack');
-  await expect(pack.locator('option')).toHaveCount(12);
+  await expect(pack.locator('option')).toHaveCount(17);
   await pack.selectOption('bpCiGovernment');
   await expect(p.locator('label:has(#f_engagement_insurer)').first()).toContainText('Operator');
   await p.evaluate(() => window.AUA.go('reference'));
@@ -103,6 +103,23 @@ test('a baseline for a public body names the accountable authority on screen and
   expect(st.body).toBe('accountableAuthority');
   expect(st.d4).toContain('tolerance levels for the critical operations');
   expect(await p.evaluate(() => window.TriodianTerms.relabel(window.AUA.state.documents.find(d => d.ref === 'D4').title, 'accountableAuthority'))).toMatch(/^Accountable authority risk appetite statement/);
+  expect(p._errors).toEqual([]);
+  await ctx.close();
+});
+
+test('a US health care provider gets the US health pack: the health baseline with US documents and arrangement type (task US.4)', async ({ browser }) => {
+  const { ctx, p } = await open(browser, null);
+  await p.locator('[data-act="new"]').first().click();
+  await p.evaluate(() => window.AUA.go('setup'));
+  const pack = p.locator('#f_engagement_sectorPack');
+  await expect(pack.locator('option', { hasText: '(United States)' })).toHaveCount(5);
+  await pack.selectOption('usHealth');
+  const st = await p.evaluate(() => ({ pack: window.AUA.state.engagement.sectorPack, d3: window.AUA.state.documents.find(d => d.ref === 'D3').title, d5: window.AUA.state.documents.find(d => d.ref === 'D5').title, b0: window.AUA.content().boundaries[0].parties }));
+  expect(st.pack).toBe('usHealth');
+  expect(st.d3).toBe('Register of business associates and other providers');
+  expect(st.d5).toContain('business associate agreement');
+  expect(st.b0).toMatch(/^The .+ and a business associate/);
+  await p.evaluate(() => window.AUA.save());
   expect(p._errors).toEqual([]);
   await ctx.close();
 });

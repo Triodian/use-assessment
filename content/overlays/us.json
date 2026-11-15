@@ -1,0 +1,53 @@
+{
+  "jurisdiction": "US",
+  "checked": "2026-11-14",
+  "source": "Triodian project note 'United States - jurisdiction scope (US.1)' and the Atlas US round (data/research/2026-11-14-us-overlay.json in obligations-atlas). The documents and arrangement types are what a US entity in the sector usually holds and has; whether an instrument applies is counsel's question, and the matter brief lists the records.",
+  "packs": [
+    {
+      "id": "usBanking", "name": "Bank (United States)", "builtOn": "bpBanking",
+      "instruments": "SR 26-2 on model risk, the 2023 interagency third-party guidance and, in New York, 23 NYCRR 500",
+      "documents": {
+        "D3": "Register of third-party relationships, with those that support critical activities marked, and their subcontractors",
+        "D9": "Existing assurance over the arrangements: audit reports, control reports, certifications, and validation reports for vendor models"
+      },
+      "arrangement": "The {entity} and a third party under a business arrangement: a service provider, a fintech partner, an agent or a broker"
+    },
+    {
+      "id": "usInsurance", "name": "Insurer (United States)", "builtOn": "bpInsurance",
+      "instruments": "the NAIC model bulletin on AI systems as each state has issued it and, in New York, Insurance Circular Letter No. 7",
+      "documents": {
+        "D3": "Register of third-party AI systems and data vendors, managing general agents and third-party administrators",
+        "D5": "The agreement for each arrangement, with schedules and service descriptions, including any audit rights and terms on cooperating with regulatory inquiries"
+      },
+      "arrangement": "The {entity} and a third party: a managing general agent, a third-party administrator, or a vendor of AI systems or external data"
+    },
+    {
+      "id": "usSecurities", "name": "Broker-dealer or investment adviser (United States)", "builtOn": "bpSecurities",
+      "instruments": "Regulation S-P, FINRA Rule 3110 and FINRA's 2026 report on generative AI and AI agents",
+      "documents": {
+        "D2": "AI governance framework, acceptable-use policy and the written supervisory procedures that cover generative AI and AI agents",
+        "D5": "The agreement for each arrangement, with schedules and service descriptions, including its terms on notice of a breach of customer information"
+      },
+      "arrangement": "The {entity} and a service provider that receives, maintains or processes customer information, or the vendor of an AI tool registered staff use"
+    },
+    {
+      "id": "usHealth", "name": "Health care provider (United States)", "builtOn": "bpHealth",
+      "instruments": "45 CFR 92.210 on patient care decision support tools, the HIPAA business associate terms and the HTI-5 changes to certified health IT",
+      "documents": {
+        "D3": "Register of business associates and other providers",
+        "D5": "The agreement for each arrangement, including the business associate agreement, with schedules and service descriptions",
+        "D7": "Any provider disclosure about AI use already received, including the source and known limits of each predictive tool in the electronic health record"
+      },
+      "arrangement": "The {entity} and a business associate: a vendor that creates, receives, maintains or transmits patient information for it"
+    },
+    {
+      "id": "usCriticalInfrastructure", "name": "Critical infrastructure owner or operator (United States)", "builtOn": "bpCiCorporate",
+      "instruments": "NERC CIP-013 supply chain risk management (bulk electric system) and CIRCIA incident and ransom-payment reporting once its final rule is in force",
+      "documents": {
+        "D3": "Vendor register and the supply chain cyber security risk management plan",
+        "D8": "Licence terms, security documentation and remote-access arrangements for each external AI service and tool"
+      },
+      "arrangement": "The {entity} and a vendor of products or services for its operational systems, including any with remote access"
+    }
+  ]
+}
