@@ -40,6 +40,20 @@ Beside the jurisdiction packs, set-up offers a pack for each [best-practice base
 
 Two of the [baseline controls](https://github.com/Triodian/Triodian_Metamodel/blob/main/reference-data/baseline-controls.json) live here. **Agent controls (BC1):** every entry at A3 and above records its permission scope, its action log and how it is stopped, and from A4 the human checkpoint before it acts; the Classify screen shows the card, and the **AC** output lists them. **One evidence register (BC3):** the **ER** output records each provider's evidence once and offers it against every regime in the matter brief.
 
+## Incident accountability (Shape A)
+
+Readiness before an incident, attribution and notification during it, validation afterwards, inside this app and never on the critical path of a live incident (every output downloads; the entity's crisis tool stays where it is). Scoping and sizing are in the Triodian note *AI Incident Accountability module* of 15–16 November 2026.
+
+- **Readiness (A.2).** Nine fields per entry on the Classify screen (`aua-content.json`, `readiness.fields`): the shared infrastructure, the runtime records that would show what the AI did, who holds them and the holder's name, the clause that reaches them, the production time, and the accountable person for the system, the shared infrastructure and the change process. Recorded as facts by an assessor; a blank is a gap with an owner. The provider register import (`public/shared/import.js`) takes the nine as optional columns and writes them back out.
+- **DL11 Incident readiness record (A.3).** Per arrangement: the readiness fields beside the evidence ladder, the notification clocks for the jurisdiction and sector, the board's triggers (P10), and the gaps with owners. Tagged in the evidence index (`public/shared/evidence.js`: APRA letter S1, G2, P2; CPS 230 33, 42, 54; ISO/IEC 42001 A.3.2, A.6.2.8, A.10.3).
+- **DL12 Evidence-preservation hold (A.4).** One letter per record holder, drafted from DL11. Triodian or counsel drafts the addressee, the date to preserve from and a note; counsel alone marks it settled (`holds` in the assessment, keyed by holder; `lib/core/rbac.js`); the app never sends it.
+- **Validation events (A.5).** `exercises` in the assessment: an exercise or incident recorded on the Review screen against the AI uses present, with what each party said against what it showed, the agreed line (settled by counsel), the seams, the finding and the time the records took. Shown on the Findings card, issued as the **VE** output, listed in the evidence feed. The independent reviewer reviews an event and may not be the person who asserted its tolerance and trigger test; a reviewed test is fixed.
+- **Trigger and clock test (A.6).** The event is tested against the calibration set's tolerances (P2) and triggers (P10), over the AppetiteService binding or from a file as elsewhere. The clocks come from `public/shared/clocks.js`, by jurisdiction and pack (CPS 230 72 and 24 hours, CPS 234, SOCI, the Cyber Security Act and the Privacy Act for Australia; MAS TRM and the PDPA for Singapore; the 36-hour rule, Reg S-P, HIPAA, CIRCIA and 23 NYCRR 500 for the United States; DORA Article 19 and the AI Act for an EU pack). A clock the Atlas carries names its governed record and verification date; one it does not yet carry is marked as Triodian's reading. Every line says "confirm with counsel"; the app starts no clock and decides that no notification is due. The GC confirms the clocks on an event.
+- **Worked example (A.7).** Coastline Super records readiness for its entries and one exercise, the 13 November 2026 facts re-set in the trustee's chain (`exampleIncident` in `public/aua.js`). Fictional throughout.
+- **Not in this app.** The register extract v2 is unchanged (its published schema allows no new property); the events travel in the evidence feed. The practice hub's status, the chain step in `triodian-install`, the docs page and the other two apps' copies of `import.js` and `evidence.js` follow in their own repositories.
+
+Tests: `node tests/incident.test.mjs`, `node tests/clocks.test.mjs`, and `tests/e2e/specs/incident.spec.js`.
+
 ## How it is built
 
 Single-assessment web app: each deployment holds one assessment for one insurer.
@@ -158,7 +172,7 @@ into another cloud builds on.
 
 ## Roadmap
 
-What is planned for the suite, and what each item waits on, is at [docs.triodian.com/roadmap](https://docs.triodian.com/roadmap); this README does not keep its own copy. The first item lands in this app: an **AI Incident Accountability** module adding DL11, an incident readiness record per arrangement, and DL12, an evidence-preservation hold letter per record holder, with a validation event in the review flow. Planned, not delivered.
+What is planned for the suite, and what each item waits on, is at [docs.triodian.com/roadmap](https://docs.triodian.com/roadmap); this README does not keep its own copy. The first item lands in this app: an **AI Incident Accountability** module (Shape A), built on the `incident-accountability` branch and in pull request review: DL11, an incident readiness record per arrangement; DL12, an evidence-preservation hold letter per record holder, settled by counsel and never sent by the app; VE, the exercise and incident record; a validation event in the review flow with the tolerance and trigger test against the calibration set and the notification clocks per jurisdiction (`public/shared/clocks.js`, each line per the Atlas as at a stated date, for counsel to confirm). See [Incident accountability](#incident-accountability-shape-a) below. In build, not delivered, until it is merged, deployed to the test site and the tabletop has had its dry run.
 
 ## Contributing
 

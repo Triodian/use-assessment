@@ -34,7 +34,7 @@ Outputs
 
 Every output shows the privilege marking, the calibration status and version, whether it is draft or final, and the date. Open an output to read or download it.
 
-0 of 14 are ready as final. Until their gate is met, the rest are marked draft when downloaded.
+0 of 17 are ready as final. Until their gate is met, the rest are marked draft when downloaded.
 
 AI dependency register
 All 26 fields for every entry in the set. Source index. Count of not-known fields
@@ -114,6 +114,24 @@ Some R5 (legal-line check) hits are still open.
 Evidence register, cross-walked
 Draft
 Some R5 (legal-line check) hits are still open.
+→
+Incident readiness record
+For each arrangement: the AI uses and the infrastructure they share, the runtime records that would show what each did, when and under whose authority; who holds those records, the agreement clause that gives access and how long production takes; the accountable person for the system, for the shared infrastructure and for the change process touching both; the notification clocks that would run. Each blank is listed as a gap with a named owner
+APRA letter S1, G2, P2 · CPS 230 33, 42, 54 · ISO/IEC 42001 A.3.2, A.6.2.8, A.10.3
+Draft
+Some R5 (legal-line check) hits are still open.
+→
+Evidence-preservation hold
+One letter per record holder, drafted from DL11 for counsel to settle and issue: the records to preserve, the agreement clause relied on and the production time expected. Drafted only; the app never sends it
+APRA letter P2 · CPS 230 54 · ISO/IEC 42001 A.10.3, A.6.2.8
+None yet
+No record holder is named in the readiness record.
+→
+Exercise and incident record
+Each exercise or incident recorded against the register: the infrastructure affected, the AI uses present, what each party said against what each party showed, the test against the board's tolerances and triggers, the clocks and when each started, the agreed external line and who speaks to it, the accountable persons at the seams, the finding and how long the records took to produce
+APRA letter A4, S1, B2 · CPS 230 33, 42 · ISO/IEC 42001 A.8.4, 9.1, 10.2
+None yet
+No exercise or incident has been recorded.
 →
 Compare versions
 From

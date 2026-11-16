@@ -220,6 +220,24 @@
    "contents": "AI uses found that are not on the insurer's inventory",
    "id": "DL6",
    "name": "Hand-back list"
+  },
+  {
+   "accepted": "Every readiness field is recorded or listed as a gap with an owner, and counsel has read the clock lines",
+   "contents": "For each arrangement: the AI uses and the infrastructure they share, the runtime records that would show what each did, when and under whose authority; who holds those records, the agreement clause that gives access and how long production takes; the accountable person for the system, for the shared infrastructure and for the change process touching both; the notification clocks that would run. Each blank is listed as a gap with a named owner",
+   "id": "DL11",
+   "name": "Incident readiness record"
+  },
+  {
+   "accepted": "Counsel marks each letter settled",
+   "contents": "One letter per record holder, drafted from DL11 for counsel to settle and issue: the records to preserve, the agreement clause relied on and the production time expected. Drafted only; the app never sends it",
+   "id": "DL12",
+   "name": "Evidence-preservation hold"
+  },
+  {
+   "accepted": "The independent reviewer has reviewed it, and the finding is reconciled against the readiness record",
+   "contents": "Each exercise or incident recorded against the register: the infrastructure affected, the AI uses present, what each party said against what each party showed, the test against the board's tolerances and triggers, the clocks and when each started, the agreed external line and who speaks to it, the accountable persons at the seams, the finding and how long the records took to produce",
+   "id": "VE",
+   "name": "Exercise and incident record"
   }
  ],
  "documents": [
@@ -588,6 +606,11 @@
    "term": "Boundary",
    "where": "Set, Register"
   },
+  "breachTest": {
+   "def": "Whether an exercise or incident crossed a tolerance the board set (P2) or fired one of its triggers (P10), as the people in the room assert it. The person who asserted that no tolerance was breached cannot review that assertion",
+   "term": "Tolerance and trigger test",
+   "where": "Review"
+  },
   "calibration": {
    "def": "The eleven parameters, P1 to P11, that the board sets through the AI Risk Appetite app. They set the insurer’s expectations, limits and grades in this app",
    "term": "Calibration set",
@@ -597,6 +620,11 @@
    "def": "The highest [[tier|authority tier]] the board accepts for AI in a given function and location (P1)",
    "term": "Ceiling",
    "where": "Classify, Findings"
+  },
+  "clock": {
+   "def": "A period an instrument allows for notifying a regulator or another party after a defined moment, such as becoming aware of an incident. Listed per the Atlas as at a stated date, for counsel to confirm; the app starts no clock on its own",
+   "term": "Notification clock",
+   "where": "Review"
   },
   "competence": {
    "def": "For each person with a role: why they are competent for it, and the evidence. Recorded in set-up (ISO/IEC 42001:2023, 7.2).",
@@ -651,6 +679,11 @@
   "handback": {
    "def": "The AI uses found that are not on the insurer’s inventory, handed back to the inventory owner (DL6)",
    "term": "Hand-back list",
+   "where": "Outputs"
+  },
+  "hold": {
+   "def": "A letter asking a record holder to preserve the runtime records named in the readiness record from a given date. Drafted by the app from DL11 (DL12); settled and issued by counsel, never sent by the app",
+   "term": "Evidence-preservation hold",
    "where": "Outputs"
   },
   "impactAssessment": {
@@ -712,6 +745,11 @@
    "def": "A numbered written question that asks counsel for a legal determination. It is never answered in a working paper",
    "term": "Question to counsel",
    "where": "Counsel"
+  },
+  "readiness": {
+   "def": "For an AI use, before any incident: the runtime records that would show what it did, who holds them, the clause that reaches them, how long production takes, and the accountable person for the system, the shared infrastructure and the change process. Recorded on the Classify screen; reported in DL11",
+   "term": "Incident readiness",
+   "where": "Classify"
   },
   "required": {
    "def": "The evidence the insurer can reasonably require at this boundary, as determined with [[counsel]]",
@@ -777,6 +815,11 @@
    "def": "Counsel’s written response, entered word for word by a Triodian person, with the question reference",
    "term": "Transcribed",
    "where": "Counsel"
+  },
+  "validationEvent": {
+   "def": "An exercise or a real incident recorded against the register: which AI uses were near it, what each party said against what each showed, the tolerance and trigger test, the clocks, the agreed line, the finding and the time the records took. Feeds the Use Assessment as a continuous-validation event",
+   "term": "Validation event",
+   "where": "Review"
   }
  },
  "governingBody": "board",
@@ -962,6 +1005,101 @@
    "scale": "None · disclosure · attestation · event notification · audit · continuous telemetry · deterministic actuation control"
   }
  ],
+ "readiness": {
+  "clockNote": "Each clock is shown per the AI Obligations Atlas as at the date given, for counsel to confirm. The app records which clocks would run and when each would start; it does not decide that any notification is due. Counsel confirms before any notification is sent.",
+  "fields": [
+   {
+    "id": "infrastructure",
+    "name": "Shared infrastructure it runs on or touches",
+    "ph": "Platforms, networks, gateways or systems it shares with other AI uses, or \"none known\"",
+    "what": "The attribution lookup: when infrastructure is affected, this is how the AI uses near it are found"
+   },
+   {
+    "id": "records",
+    "name": "Runtime records that would show what it did, when and under whose authority",
+    "ph": "For example: action log with the credential used; configuration change log; inference log with timestamps",
+    "what": "The record, not the vendor's statement about it"
+   },
+   {
+    "id": "holderKind",
+    "name": "Who holds those records",
+    "select": [
+     [
+      "entity",
+      "The insurer"
+     ],
+     [
+      "vendor",
+      "The AI vendor"
+     ],
+     [
+      "infrastructure",
+      "The infrastructure provider"
+     ],
+     [
+      "fourthParty",
+      "A fourth party"
+     ]
+    ],
+    "what": "Which party would have to produce them"
+   },
+   {
+    "id": "holder",
+    "name": "Record holder",
+    "ph": "Legal entity name, as it would be addressed in a hold letter",
+    "what": "The addressee of the evidence-preservation hold (DL12)"
+   },
+   {
+    "id": "clause",
+    "name": "Agreement clause that gives access to the records",
+    "ph": "Clause reference and the words that reach the records, or \"none found\"",
+    "what": "Field 14 holds the information, audit and notification terms; this is the one that reaches the runtime record"
+   },
+   {
+    "id": "production",
+    "name": "Time to produce them",
+    "ph": "As the agreement states it, or as the vendor has said, or \"not stated\"",
+    "what": "Measured against the notification clocks that would run"
+   },
+   {
+    "id": "farSystem",
+    "name": "Accountable person for the system",
+    "ph": "Name and role (the FAR accountable person, or the equivalent)",
+    "what": "Who answers for the AI use"
+   },
+   {
+    "id": "farInfrastructure",
+    "name": "Accountable person for the shared infrastructure",
+    "ph": "Name and role",
+    "what": "Who answers for the infrastructure it shares"
+   },
+   {
+    "id": "farChange",
+    "name": "Accountable person for the change process touching both",
+    "ph": "Name and role",
+    "what": "Who answers for a change on the shared infrastructure that reaches the AI use"
+   }
+  ],
+  "holderKinds": {
+   "entity": "The insurer",
+   "fourthParty": "A fourth party",
+   "infrastructure": "The infrastructure provider",
+   "vendor": "The AI vendor"
+  },
+  "intro": "Readiness before any incident (AI Incident Accountability, Shape A). For this AI use: the records that would show what it did, who holds them, how the insurer gets them and how fast, and who is accountable at each seam. A blank is listed as a gap in the Incident readiness record (DL11) with a named owner.",
+  "neverRequired": "The module may be used during an incident but is never required during one: every output downloads as Word, PDF or Markdown, and the insurer's crisis tool stays on the critical path.",
+  "owners": {
+   "clause": "The GC, through counsel",
+   "farChange": "The CRO",
+   "farInfrastructure": "The CRO",
+   "farSystem": "The CRO",
+   "holder": "The arrangement owner",
+   "holderKind": "The arrangement owner",
+   "infrastructure": "The technology owner",
+   "production": "The arrangement owner, with the provider",
+   "records": "The arrangement owner, with the provider"
+  }
+ },
  "regulatedSectors": [
   {
    "baselineProfiles": [

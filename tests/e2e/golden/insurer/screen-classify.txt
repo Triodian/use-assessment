@@ -112,6 +112,27 @@ At A3 and above, record the controls on this use: its permission scope, where it
 Permission scope
 Action log
 Way to stop it
+Incident readiness
+
+Readiness before any incident (AI Incident Accountability, Shape A). For this AI use: the records that would show what it did, who holds them, how the insurer gets them and how fast, and who is accountable at each seam. A blank is listed as a gap in the Incident readiness record (DL11) with a named owner.
+
+Shared infrastructure it runs on or touches
+Runtime records that would show what it did, when and under whose authority
+Who holds those records
+—
+The insurer
+The AI vendor
+The infrastructure provider
+A fourth party
+Record holder
+Agreement clause that gives access to the records
+Time to produce them
+Accountable person for the system
+Accountable person for the shared infrastructure
+Accountable person for the change process touching both
+
+Not recorded (9 of 9): shared infrastructure it runs on or touches; runtime records that would show what it did, when and under whose authority; who holds those records; record holder; agreement clause that gives access to the records; time to produce them; accountable person for the system; accountable person for the shared infrastructure; accountable person for the change process touching both. Each is a gap in DL11 with its owner.
+
 Phase 3 exit gate
 Fields 15 to 22 complete
 REG-002 · 8 to do

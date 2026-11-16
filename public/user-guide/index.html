@@ -107,6 +107,7 @@ dl.g-dl dd{margin:0;font-size:15px;color:var(--ink-soft)}
     <li><a href="#register">Working on the register</a></li>
     <li><a href="#review">Review points and the legal-line check</a></li>
     <li><a href="#outputs">Outputs</a></li>
+    <li><a href="#incident">Incident accountability: readiness, holds, exercises and incidents</a></li>
     <li><a href="#versions">Comparing versions</a></li>
     <li><a href="#next">The next annual assessment</a></li>
     <li><a href="#notify">Email notifications and your profile</a></li>
@@ -470,6 +471,9 @@ dl.g-dl dd{margin:0;font-size:15px;color:var(--ink-soft)}
     <tr><td class="code">CM</td><td>Closing measures</td><td>Phase 7 gate met</td></tr>
     <tr><td class="code">DR</td><td>Difference report: what changed in the results when a new calibration version was loaded</td><td>Any time</td></tr>
     <tr><td class="code">EP</td><td>Engagement plan: the phases with their timing, the interviews and who attends, the documents needed from the insurer, and the sign-off points R1 to R7, with where each stands</td><td>Any time (a working document)</td></tr>
+    <tr><td class="code">DL11</td><td>Incident readiness record: for each arrangement, the runtime records that would show what each AI use did, who holds them, the clause that reaches them, how long production takes, the accountable persons at each seam, and the notification clocks that would run; every blank listed as a gap with its owner (see <a href="#incident">Incident accountability</a>)</td><td>Phase 3 gate met</td></tr>
+    <tr><td class="code">DL12</td><td>Evidence-preservation hold: one letter per record holder, drafted from DL11 for counsel to settle and issue. The app never sends it</td><td>Phase 3 gate met; counsel marks each letter settled</td></tr>
+    <tr><td class="code">VE</td><td>Exercise and incident record: each exercise or incident recorded against the register, with the tolerance and trigger test, the clocks, the agreed line, the seams and the finding</td><td>Phase 3 gate met; the independent reviewer reviews each event</td></tr>
   </tbody></table></div>
 
   <h3>Draft and final</h3>
@@ -491,6 +495,36 @@ dl.g-dl dd{margin:0;font-size:15px;color:var(--ink-soft)}
 </section>
 
 <!-- 8 -->
+<!-- 7a -->
+<section class="g-sec" id="incident">
+  <div class="g-eyebrow">Assessors, the CRO, counsel, the GC and the independent reviewer</div>
+  <h2>Incident accountability: readiness, holds, exercises and incidents</h2>
+  <p class="g-intro">When something fails on infrastructure an AI system shares, the question a regulator asks first is whether the AI system was involved, and the answer has to come from records, not from the vendor’s statement, inside the regulator’s clock. This part of the app records, before any incident, how far the insurer’s reach to those records goes; drafts the letters that preserve them; and records each exercise or real incident against the register as a validation event. It is not a crisis tool. It may be used during an incident and is never required during one: every output downloads as Word, PDF or Markdown, and the insurer’s own crisis tool stays on the critical path.</p>
+
+  <h3>Readiness, on the Classify screen</h3>
+  <p>Under the classification steps, each entry has an <span class="g-ui">Incident readiness</span> card with nine fields: the shared infrastructure the AI use runs on or touches; the runtime records that would show what it did, when and under whose authority; who holds those records (the insurer, the AI vendor, the infrastructure provider or a fourth party) and the record holder’s name; the agreement clause that reaches the records; the time production takes; and the accountable person for the system, for the shared infrastructure and for the change process touching both. An assessor or the method owner records them, as facts. A blank is not an error: it is listed in DL11 as a gap, with the role that owns closing it. A provider register imported as a CSV can carry the nine fields as columns (shared_infrastructure, runtime_records, record_holder, record_holder_kind, access_clause, production_time, accountable_system, accountable_infrastructure, accountable_change); a file without them loads as before.</p>
+
+  <h3>The readiness record (DL11) and the hold letters (DL12)</h3>
+  <p><span class="g-ui">DL11</span> gathers the readiness fields for every arrangement beside the evidence ladder, lists the notification clocks that would run for the insurer’s jurisdiction and sector, and ends with every gap and its owner. Each clock is shown <em>per the AI Obligations Atlas as at</em> a stated date, or as Triodian’s reading where the Atlas does not yet carry the record, and every line says <em>confirm with counsel</em>: the app starts no clock and decides that no notification is due.</p>
+  <p><span class="g-ui">DL12</span> drafts one evidence-preservation letter for each record holder named in the readiness record: the records to preserve, the clause relied on and the production time expected. On the output, Triodian or counsel adds the addressee, the date to preserve from and counsel’s note. Only counsel marks a letter <span class="g-ui">settled</span>, and once settled its draft is fixed. The app never sends a letter: issuing it is a legal act counsel takes outside the app.</p>
+
+  <h3>Exercises and incidents, on the Review screen</h3>
+  <p>Below the review points, <span class="g-ui">Exercises and incidents</span> records a validation event: the tabletop exercise (<em>The Saturday Morning Question</em>) or a real incident. Anyone with a Triodian role, the CRO, an arrangement owner, the GC or counsel can record one; the independent reviewer reviews it. Each event walks the eight segments of the exercise:</p>
+  <ol>
+    <li><strong>Which AI systems are near this?</strong> Name the infrastructure affected. The app lists the register entries that share it by name (from the readiness record, the system and the platform behind it); tick the AI uses present, and note any named in the room that are not on the register, for the hand-back list.</li>
+    <li><strong>What each party said, and what it showed.</strong> One row per party: the statement, and the record produced, or “nothing yet”.</li>
+    <li><strong>Is a tolerance breached? Has a trigger fired?</strong> With the calibration set loaded, each of the board’s tolerances (P2) and triggers (P10) is tested: breached or not, fired or not, not known yet, with the basis. A fired trigger shows who the appetite says is notified and by when. The person who asserts this test is recorded and cannot review the event.</li>
+    <li><strong>Which clocks run, and from when?</strong> Each clock for the jurisdiction and sector is marked as running or not, from the moment the insurer became aware or from a time you give, and the app shows when it would end. The GC confirms the clocks. Counsel confirms before any notification is sent.</li>
+    <li><strong>The vendor has denied it. Do we?</strong> The agreed external line, who may speak to it, and what may be disclosed while the cause is unknown. Only counsel settles the line.</li>
+    <li><strong>Who holds the seam?</strong> The accountable persons for each AI use present, from the readiness record, and the seams between them.</li>
+    <li><strong>The finding.</strong> What the investigators concluded (the app does not investigate), and how long each record holder took to produce its records, against the readiness record.</li>
+    <li><strong>Actions.</strong> Gap owners named and dates set.</li>
+  </ol>
+  <p>The Findings screen shows each event against the arrangements whose AI uses were present, and <span class="g-ui">VE</span> issues every event as a record. Once the independent reviewer has recorded the review, the tolerance and trigger test is fixed until the method owner clears the review. Where an event shows a tolerance or trigger was set wrongly, that is raised for the next appetite review: the app changes no appetite position and no board direction.</p>
+  <p>The Coastline Super worked example records readiness for its entries and one exercise, the 13 November 2026 facts re-set in the trustee’s chain, so you can read DL11, DL12 and VE before recording your own.</p>
+  <a class="g-top" href="#top">Back to contents</a>
+</section>
+
 <section class="g-sec" id="versions">
   <div class="g-eyebrow">Everyone</div>
   <h2>Comparing versions</h2>
