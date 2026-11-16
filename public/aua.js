@@ -1338,7 +1338,7 @@ function mdHead(o) {
 }
 /* The APRA letter bullet, CPS 230 paragraph and ISO/IEC 42001 control each output serves (task R.2; public/shared/evidence.js).
    Outside Australia (a pack with another jurisdiction, such as the US packs) only the ISO/IEC 42001 control is shown. */
-const evTags = id => (window.AUAEvidence ? window.AUAEvidence.tagLine('UA', id, (BASE.packs[C.pack] || {}).jurisdiction) : '');
+const evTags = id => (window.AUAEvidence ? window.AUAEvidence.tagLine('UA', id, (BASE.packs[C.pack] || {}).jurisdiction, C.pack) : '');   // the jurisdiction's regime for the pack's sector (US.6), else ISO/IEC 42001 only
 const evLine = id => { const t = evTags(id); return t ? `Evidence for: ${t}.\n\n` : ''; };
 const OUTS = [
   { id: 'DL1', name: 'AI dependency register', gate: 3, gen: genDL1 }, { id: 'DL2', name: 'Evidence obtainable at each boundary', gate: 5, gen: genDL2 },
