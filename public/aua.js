@@ -69,12 +69,15 @@ function newAssessment() {
     arrangements: [], setAgreed: { gcBy: '', gcOn: '', counselBy: '', counselOn: '', on: '' },
     entries: [], questions: [], findings: [],
     reviews: C.reviews.map(r => ({ point: r.id, by: '', on: '', result: '', notes: '' })),
-    exceptions: [], independentReviewPoints: [], r5Cleared: {}, diffReports: [], versions: [], previous: null, history: []
+    exceptions: [], independentReviewPoints: [], r5Cleared: {}, diffReports: [], versions: [], previous: null, history: [],
+    // AI Incident Accountability, Shape A: exercises and incidents recorded against the register (validation events), and
+    // the evidence-preservation holds counsel settles, keyed by record holder (development plan tasks A.4 and A.5).
+    exercises: [], holds: {}
   };
 }
 function newEntry(arrId, id) {
   if (!id) { const n = S.entries.reduce((m, e) => Math.max(m, parseInt(String(e.id).slice(4), 10) || 0), 0) + 1; id = 'REG-' + String(n).padStart(3, '0'); }
-  return { id, arrangementId: arrId, fields: {}, functionName: '', locEstablished: '', locRuns: '', authorityTests: [0, 1, 2, 3].map(() => ({ answer: null, source: '' })), tierProposed: '', tierOverrideReason: '', consequenceConfirmedBy: '', consequenceConfirmedOn: '', obtainability: { start: '', rungs: {} }, confChosen: '', confRaiseReason: '', peerReview: { personId: '', tier: '', differs: false, resolution: '', on: '' }, notDeterminable: { on: false, question: '', who: '', since: '' }, dl3Rows: [], classifiedBy: '', reviewedBy: '' };
+  return { id, arrangementId: arrId, fields: {}, functionName: '', locEstablished: '', locRuns: '', authorityTests: [0, 1, 2, 3].map(() => ({ answer: null, source: '' })), tierProposed: '', tierOverrideReason: '', consequenceConfirmedBy: '', consequenceConfirmedOn: '', obtainability: { start: '', rungs: {} }, confChosen: '', confRaiseReason: '', peerReview: { personId: '', tier: '', differs: false, resolution: '', on: '' }, notDeterminable: { on: false, question: '', who: '', since: '' }, dl3Rows: [], classifiedBy: '', reviewedBy: '', readiness: {} };
 }
 function log(action, target, from, to) { REV++; S.history.push({ at: nowISO(), by: pname(UI.personId) || 'unknown', action, target, from: from === undefined ? null : from, to: to === undefined ? null : to }); UI.dirty = true; autosave(); }
 function setFieldVal(e, n, patch) {
@@ -131,6 +134,13 @@ function deny(target, x) {
     case 'annex': return r('methodOwner') ? '' : 'Only the method owner can write the annex text.';
     case 'sign': if (!r('methodOwner')) return 'Only the method owner can sign the annex.'; if (S.entries.some(e => e.peerReview.personId === p.id)) return 'You are the only peer reviewer of at least one entry, so you cannot sign the annex.'; return '';
     case 'handBack': return r('owner') ? '' : 'Only the inventory owner (the arrangement owner role) can accept the hand-back list.';
+    // AI Incident Accountability (Shape A). The same rules are in lib/core/rbac.js, which refuses the save on the server.
+    case 'incident': return tri || r('cro') || r('owner') || r('gc') || r('counsel') ? '' : 'Only someone with a Triodian role, the CRO, an arrangement owner, the GC or counsel can record an exercise or incident.';
+    case 'incidentLine': return r('counsel') ? '' : 'Only counsel can settle the agreed external line and who speaks to it.';
+    case 'incidentClocks': return r('gc') ? '' : 'Only the GC can confirm the clocks.';
+    case 'incidentReview': if (!r('ir')) return 'Only the independent reviewer can review a validation event.'; if (x && x.breachAssertedBy === p.id) return 'You asserted the tolerance and trigger test for this event, so you cannot review it.'; return '';
+    case 'hold': return tri || r('counsel') ? '' : 'Only someone with a Triodian role or counsel can draft a hold letter.';
+    case 'holdSettle': return r('counsel') ? '' : 'Only counsel can mark a hold letter settled. Issuing it is a legal act counsel takes outside the app.';
   }
   return '';
 }
@@ -147,6 +157,8 @@ function pathTarget(path) {
   if (k[0] === 'entries') { const e = S.entries[+k[1]]; if (['tierOverrideReason', 'confChosen', 'confRaiseReason'].includes(k[2]) || (k[2] === 'fields' && k[3] === '16')) return ['classify', e]; if (k[2] === 'peerReview') return ['peer', e]; if (k[2] === 'dl3Rows') return ['tri']; return ['facts', e]; }
   if (k[0] === 'exceptions') return ['tri'];
   if (k[0] === 'independentReviewPoints') return k[2] === 'response' ? ['irRespond'] : k[2] === 'status' ? ['irClose'] : ['irLog'];
+  if (k[0] === 'exercises') { const x = S.exercises[+k[1]]; return /^lineSettled/.test(k[2]) ? ['incidentLine', x] : /^clocksConfirmed/.test(k[2]) ? ['incidentClocks', x] : /^review/.test(k[2]) ? ['incidentReview', x] : ['incident', x]; }
+  if (k[0] === 'holds') return /^settled/.test(k[2]) ? ['holdSettle'] : ['hold'];
   return ['setup'];
 }
 /* R3 is blind: a peer reviewer who has not yet recorded a tier for an entry sees none of the classifier's work on it. */
@@ -328,6 +340,7 @@ function validateFile(o) {
     arrOf(e.authorityTests, p + '.authorityTests').forEach((t, j) => { if (!t || typeof t !== 'object') E(`${p}.authorityTests.${j}`, 'must be an object'); else strOrNull(t.source, `${p}.authorityTests.${j}.source`); });
     arrOf(e.dl3Rows, p + '.dl3Rows').forEach((r, j) => { if (!r || typeof r !== 'object') E(`${p}.dl3Rows.${j}`, 'must be an object'); else { strOrNull(r.category, `${p}.dl3Rows.${j}.category`); strOrNull(r.record, `${p}.dl3Rows.${j}.record`); } });
     ['tierOverrideReason', 'confRaiseReason', 'functionName', 'locEstablished', 'locRuns'].forEach(k => strOrNull(e[k], p + '.' + k));
+    if (e.readiness != null) { if (typeof e.readiness !== 'object' || Array.isArray(e.readiness)) E(p + '.readiness', 'must be an object'); else Object.entries(e.readiness).forEach(([k, v]) => { if (!RD().some(f => f.id === k)) E(`${p}.readiness.${k}`, 'is not a readiness field'); else if (k === 'holderKind') inList(v, HOLDER_KINDS, `${p}.readiness.${k}`, 'a record holder kind'); else strOrNull(v, `${p}.readiness.${k}`); }); }
     Object.entries(e.fields || {}).forEach(([k, f]) => { const fp = `${p}.fields.${k}`; if (!/^\d{1,2}$/.test(k)) E(fp, 'field key must be a number'); if (!f || typeof f !== 'object') return E(fp, 'must be an object'); id(f.by, fp + '.by'); id(f.transcribedBy, fp + '.transcribedBy'); strOrNull(f.value, fp + '.value'); strOrNull(f.source, fp + '.source'); strOrNull(f.detail, fp + '.detail');
       const def = C.fields.find(x => String(x.n) === k); if (def && def.kind.startsWith('select:') && !f.notKnown && f.value) inList(f.value, def.kind.slice(7).split('|'), fp, 'one of the allowed values');
       if (!f.notKnown && f.value) { if (k === '15') inList(f.value, AT, fp, 'a tier A1 to A6'); if (k === '16') inList(f.value, CO, fp, 'a consequence C1 to C5'); if (k === '18') inList(f.value, EV.concat(['none']), fp, 'a rung E0 to E6'); if (k === '25') inList(f.value, EV, fp, 'a rung E0 to E6'); } });
@@ -345,6 +358,16 @@ function validateFile(o) {
   arrOf(o.independentReviewPoints, 'independentReviewPoints').forEach((x, i) => { id(x.ref, `independentReviewPoints.${i}.ref`); inList(x.status, ['open', 'closed', 'disclosed'], `independentReviewPoints.${i}.status`, 'a review point status'); });
   const cb = o.calibration || {}; if (cb.fellBack != null) arrOf(cb.fellBack, 'calibration.fellBack').forEach((x, i) => { if (typeof x !== 'string') E('calibration.fellBack.' + i, 'must be text'); });
   if (o.r5Cleared != null && (typeof o.r5Cleared !== 'object' || Array.isArray(o.r5Cleared))) E('r5Cleared', 'must be an object');
+  // AI Incident Accountability (Shape A): exercises and incidents, and the holds keyed by record holder.
+  arrOf(o.exercises, 'exercises').forEach((x, i) => { const p = 'exercises.' + i; if (!x || typeof x !== 'object') return E(p, 'must be an object');
+    id(x.ref, p + '.ref'); inList(x.kind, ['exercise', 'incident'], p + '.kind', 'exercise or incident'); arrOf(x.entryIds, p + '.entryIds').forEach((v, j) => id(v, `${p}.entryIds.${j}`));
+    ['breachAssertedBy', 'clocksConfirmedBy', 'lineSettledBy', 'reviewedBy', 'recordedBy'].forEach(k => id(x[k], p + '.' + k));
+    ['title', 'date', 'awareAt', 'infrastructure', 'unknowns', 'line', 'speaker', 'seams', 'finding', 'recordsTime', 'actions', 'reviewNote', 'exposure'].forEach(k => strOrNull(x[k], p + '.' + k));
+    arrOf(x.parties, p + '.parties').forEach((r, j) => { if (!r || typeof r !== 'object') E(`${p}.parties.${j}`, 'must be an object'); else ['party', 'said', 'showed'].forEach(k => strOrNull(r[k], `${p}.parties.${j}.${k}`)); });
+    [['tolerances', ['breached', 'notBreached', 'notKnown'], 'result'], ['triggers', ['fired', 'notFired', 'notKnown'], 'fired'], ['clocks', ['runs', 'notRunning', 'notKnown'], 'runs']].forEach(([k, allowed, f]) => {
+      if (x[k] == null) return; if (typeof x[k] !== 'object' || Array.isArray(x[k])) return E(`${p}.${k}`, 'must be an object');
+      Object.entries(x[k]).forEach(([kk, v]) => { if (!v || typeof v !== 'object') return E(`${p}.${k}.${kk}`, 'must be an object'); inList(v[f], allowed, `${p}.${k}.${kk}.${f}`, 'one of ' + allowed.join(', ')); ['note', 'at', 'startedAt'].forEach(z => strOrNull(v[z], `${p}.${k}.${kk}.${z}`)); }); }); });
+  if (o.holds != null) { if (typeof o.holds !== 'object' || Array.isArray(o.holds)) E('holds', 'must be an object'); else Object.entries(o.holds).forEach(([k, h]) => { if (!h || typeof h !== 'object') return E('holds.' + k, 'must be an object'); ['addressee', 'note', 'from'].forEach(z => strOrNull(h[z], `holds.${k}.${z}`)); id(h.settledBy, `holds.${k}.settledBy`); strOrNull(h.settledOn, `holds.${k}.settledOn`); }); }
   if (o.calibration && o.calibration.loaded) { const w = validateCalibration(Object.assign({ schema: 'triodian.raf.calibration.v1' }, o.calibration)); if (w) E('calibration', w); }
   return err[0] || '';
 }
@@ -947,6 +970,7 @@ function importRegister(text, file) {
     const put = (n, v) => { if (v) e.fields[n] = { value: v, source: src(row), notKnown: false, carried: true, by: UI.personId, on: today() }; };
     put(3, row.boundary); put(4, row.where); put(5, [row.function, row.criticalOperation ? 'critical operation: ' + row.criticalOperation : ''].filter(Boolean).join(' · ')); put(6, row.onInventory);
     put(7, row.system); put(8, row.provider); put(9, row.platform); put(10, row.location); put(11, row.whatItDoes); put(12, row.human); put(13, row.credentials);
+    if (row.readiness) RD().forEach(f => { const v = String(row.readiness[f.id] || '').trim(); if (v) e.readiness[f.id] = v; });   // incident readiness columns (A.2), when the file carries them
     S.entries.push(e); newEnt++;
   });
   UI.importReport = { what: 'provider register', file: file || '', loaded: newEnt, arrangements: newArr, skipped, refused: r.refused };
@@ -962,7 +986,7 @@ function registerForImport() {
   return IMP().writeArrangements(S.entries.map(e => { const a = S.arrangements.find(x => x.id === e.arrangementId) || {}, v5 = String(fv(e, 5) || ''), op = opOf(e);
     return { providerId: a.externalId || a.id || '', systemId: e.externalId || e.id, provider: fv(e, 8) || a.parties || '', system: fv(e, 7) || '', arrangement: a.name || '', function: v5.replace(/\s*·\s*critical operation:.*$/i, ''), criticalOperation: op,
       boundary: fv(e, 3) || '', where: fv(e, 4) || '', platform: fv(e, 9) || '', location: fv(e, 10) || '', whatItDoes: fv(e, 11) || '', human: fv(e, 12) || '', credentials: fv(e, 13) || '', onInventory: fv(e, 6) || '',
-      users: '', authority: fv(e, 15) || '', consequence: fv(e, 16) || '', information: '', kind: '', adm: null, owner: '' }; }));
+      users: '', authority: fv(e, 15) || '', consequence: fv(e, 16) || '', information: '', kind: '', adm: null, owner: '', readiness: Object.assign({}, rd(e)) }; }));
 }
 function screenSet() {
   const cv = coverage(), c = cal(), p1 = P('P1'), fns = p1 ? Object.keys(p1) : [], why = deny('set'), fs = why ? 'disabled' : '';
@@ -1072,7 +1096,7 @@ function screenClassify() {
   UI.entryId = e.id; const i = eIdx(e), b = bp(), m = me(), cwhy = deny('classify', e), canC = !cwhy, bl = blindFor(e), base = 'c-' + sid(e.id);
   const s = bl ? 5 : UI.step;
   const steps = ['Authority', 'Consequence', rungLabel(), 'Obtainability', 'Blind re-derivation'];
-  const agentCard = agentControlsCard(e);
+  const agentCard = agentControlsCard(e) + (bl ? '' : readinessCard(e));
   const facts = `<div class="card"><h2 class="sh">Facts · fields 11 to 13</h2>${[11, 12, 13].map(n => `<div style="margin-bottom:10px"><div class="mini">Field ${n}: ${esc(FLD(n).name)}</div><div class="small">${e.fields[n] && e.fields[n].notKnown ? '<em>not known</em>' : esc(optL(fv(e, n))) || '—'}</div><div class="mini">${esc((e.fields[n] || {}).source || '')}</div></div>`).join('')}
     ${bl ? '' : `<div class="mini">Field 5: function · field 4: where the AI acts</div><div class="small">${esc(fv(e, 5) || '—')} · ${esc(optL(fv(e, 4)) || '—')}</div>`}</div>`;
   const ex = expected(e), ob = obResult(e), fl = flags(e);
@@ -1221,6 +1245,7 @@ function screenFindings() {
       ${s.fd.type === 'F3' ? `<p class="small" style="margin-top:10px">Technical classification, shown beside counsel’s conclusion: ${esc(S.entries.filter(e => e.arrangementId === s.a.id).map(e => `${e.id} ${fv(e, 15) || '—'} / ${fv(e, 16) || '—'}`).join(' · '))}</p>` : ''}
       ${s.h.length ? '' : `<div class="fgrid" style="margin-top:12px">${fld('Named gap owner (field 26)', `arrangements.${arrIdx(s.a)}.findingOwner`, s.a.findingOwner || s.fd.owner || '')}</div>`}
       ${!s.h.length && s.fd.type === 'F2' ? `<p class="mini" style="margin:12px 0 0">Corrective action (ISO/IEC 42001:2023, 10.2)</p>${corrFields(`arrangements.${arrIdx(s.a)}.corrective`, s.a.corrective)}` : ''}
+      ${!s.h.length && exFor(s.a).length ? `<div class="panel2" style="margin-top:12px;padding:10px 14px"><div class="mini" style="margin-bottom:6px">Exercises and incidents recorded against this arrangement (validation events)</div>${exFor(s.a).map(x => `<div class="small"><strong>${esc(x.ref)}</strong> · ${esc(exKind(x))}${x.date ? ' · ' + esc(dAU(x.date)) : ''} · ${esc(x.title || 'untitled')}${x.finding ? ' · ' + esc(x.finding) : ''} ${x.reviewedBy ? badge('reviewed', 'b-green') : badge('not reviewed', 'b-grey')} <button class="lnk mono" data-act="go" data-to="review">review</button></div>`).join('')}</div>` : ''}
       ${ws(s)}</section>`).join('')}</div>
   ${gateCard(5)}${stepbar(gate(gates()[5].ok, gates()[5].ok ? 'Phase 5 met' : 'Phase 5 open'))}`;
 }
@@ -1318,8 +1343,185 @@ function screenReview() {
   <section class="card" style="margin-top:18px"><div class="row between"><h2 class="sh" style="margin:0">${T('ir', 'Independent review')} points</h2><button class="btn sm" data-act="addIR" ${deny('irLog') ? 'disabled title="' + esc(deny('irLog')) + '"' : ''}>Add point</button></div>${whyNote(deny('irLog'))}
     <p class="small soft">The independent reviewer logs each point. Triodian responds. Only the independent reviewer closes or discloses a point.</p>
     <div class="stack" style="gap:10px;margin-top:12px">${S.independentReviewPoints.map((x, i) => `<div class="panel2" style="padding:12px 14px"><div class="fgrid" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr))">${fld(x.ref + ': output', `independentReviewPoints.${i}.output`, x.output, { select: [['', '—'], ...OUTS.map(o => [o.id, o.id + ' ' + o.name])] })}${fld('Section', `independentReviewPoints.${i}.section`, x.section)}${fld('Status', `independentReviewPoints.${i}.status`, x.status, { select: [['open', 'Open'], ['closed', 'Closed'], ['disclosed', 'Disclosed']] })}</div><div class="grid2" style="margin-top:8px">${fld('Point', `independentReviewPoints.${i}.point`, x.point, { area: true })}${fld('Response', `independentReviewPoints.${i}.response`, x.response, { area: true })}</div></div>`).join('') || '<p class="small soft">No points logged.</p>'}</div></section>
+  ${exercisesSection()}
   ${gateCard(6)}${stepbar(gate(gates()[6].ok, gates()[6].ok ? 'Phase 6 met' : 'Phase 6 open'))}`;
 }
+/* ---------- AI Incident Accountability, Shape A (development plan tasks A.2 to A.6) ----------
+   Readiness before any incident, recorded per entry on the Classify screen (A.2) and reported as the Incident readiness
+   record DL11 (A.3); evidence-preservation holds drafted per record holder as DL12 and settled by counsel (A.4);
+   exercises and incidents recorded against the register as validation events on the Review screen, shown on the
+   Findings card and issued as the Exercise and incident record VE (A.5); the test against the board's tolerances (P2)
+   and triggers (P10) and the notification clocks from public/shared/clocks.js, each per the Atlas as at a stated date
+   for counsel to confirm (A.6). Nothing here is operational: the module may be used during an incident and is never
+   required during one. Wording lives in aua-content.json (readiness). */
+const RD = () => ((C && C.readiness) || {}).fields || [];
+const HOLDER_KINDS = ['entity', 'vendor', 'infrastructure', 'fourthParty'];
+const rd = e => (e && e.readiness) || {};
+const rdName = id => (RD().find(f => f.id === id) || {}).name || id;
+const rdOwner = id => (((C.readiness || {}).owners) || {})[id] || '';
+const holderKindName = k => (((C.readiness || {}).holderKinds) || {})[k] || k;
+const lc1 = s => String(s || '').replace(/^./, c => c.toLowerCase());
+const rdValue = (e, id) => { const v = String(rd(e)[id] || '').trim(); return id === 'holderKind' ? holderKindName(v) : v; };
+/** The readiness fields not yet recorded for an entry, each with the role that owns the gap. */
+const rdGaps = e => RD().filter(f => !String(rd(e)[f.id] || '').trim()).map(f => ({ id: f.id, name: f.name, owner: rdOwner(f.id) }));
+const rdDone = e => rdGaps(e).length === 0;
+function readinessCard(e) {
+  const i = eIdx(e), gaps = rdGaps(e), R = C.readiness || {};
+  return `<div class="card" id="readiness"><h2 class="sh">${T('readiness', 'Incident readiness')}</h2><p class="small soft" style="margin:0 0 8px">${esc(R.intro || '')}</p><div class="fgrid">${RD().map(f => fld(f.name, `entries.${i}.readiness.${f.id}`, rd(e)[f.id] || '', f.select ? { select: [['', '—'], ...f.select] } : { ph: f.ph || '' })).join('')}</div>${gaps.length ? `<p class="small" style="margin:8px 0 0">Not recorded (${gaps.length} of ${RD().length}): ${esc(gaps.map(g => g.name.toLowerCase()).join('; '))}. Each is a gap in DL11 with its owner.</p>` : '<p class="small" style="margin:8px 0 0;color:var(--green)">Readiness recorded in full.</p>'}</div>`;
+}
+/* The attribution lookup: the AI uses near an affected piece of infrastructure, found by the words they share with the
+   shared-infrastructure field, the system name (field 7) and the platform behind it (field 9). */
+const infraTokens = s => [...new Set(String(s || '').toLowerCase().split(/[^a-z0-9]+/).filter(w => w.length >= 4 && !['none', 'known', 'with', 'from', 'that', 'this', 'platform', 'system', 'service', 'infrastructure', 'shared'].includes(w)))];
+function infraHits(text) {
+  const toks = infraTokens(text); if (!toks.length) return [];
+  return S.entries.filter(e => { const hay = [rd(e).infrastructure, fv(e, 7), fv(e, 9)].join(' ').toLowerCase(); return toks.some(t => hay.includes(t)); });
+}
+/** Every record holder named in the register, with the entries whose records it holds. Keyed for the holds map. */
+const holdKey = name => sid(String(name || '').trim().toLowerCase()).slice(0, 60);
+function holders() {
+  const by = new Map();
+  S.entries.forEach(e => { const h = String(rd(e).holder || '').trim(); if (!h) return; const k = holdKey(h); if (!by.has(k)) by.set(k, { key: k, holder: h, kind: rd(e).holderKind || '', entries: [] }); by.get(k).entries.push(e); });
+  return [...by.values()];
+}
+const holdOf = k => Object.assign({ addressee: '', note: '', from: '', settledBy: '', settledOn: '' }, (S.holds || {})[k] || {});
+/* ---------- exercises and incidents (validation events) ---------- */
+function newExercise(ref) {
+  if (!ref) { let n = S.exercises.length + 1; while (S.exercises.some(x => x.ref === 'VE-' + String(n).padStart(2, '0'))) n++; ref = 'VE-' + String(n).padStart(2, '0'); }
+  return { ref, kind: 'exercise', title: '', date: '', awareAt: '', infrastructure: '', entryIds: [], unknowns: '', parties: [], tolerances: {}, triggers: {}, breachAssertedBy: '', breachAssertedOn: '', clocks: {}, clocksConfirmedBy: '', clocksConfirmedOn: '', line: '', speaker: '', lineSettledBy: '', lineSettledOn: '', seams: '', finding: '', recordsTime: '', exposure: '', actions: '', recordedBy: '', recordedOn: '', reviewedBy: '', reviewedOn: '', reviewNote: '' };
+}
+const exIdx = x => S.exercises.indexOf(x);
+const exFor = a => S.exercises.filter(x => (x.entryIds || []).some(id => { const e = ent(id); return e && e.arrangementId === a.id; }));
+const exKind = x => x.kind === 'incident' ? 'Incident' : 'Exercise';
+const packJur = () => ((BASE && BASE.packs && BASE.packs[C.pack]) || {}).jurisdiction || '';
+const CK = () => window.AUAClocks || null;
+const exClocks = () => (CK() ? CK().clocksFor(packJur(), C.pack) : []);
+const tolKey = k => sid(k).slice(0, 80);
+/** The board's tolerances (P2) as [key, label, threshold], and its triggers (P10). Empty until a calibration set is loaded. */
+const tolerances = () => { const p2 = P('P2'); return p2 && typeof p2 === 'object' ? Object.entries(p2).map(([k, v]) => [tolKey(k), k, v || '']) : []; };
+const triggers = () => P('P10') || [];
+const TOL_OPTS = [['', '—'], ['breached', 'Breached'], ['notBreached', 'Not breached'], ['notKnown', 'Not known yet']], TRG_OPTS = [['', '—'], ['fired', 'Fired'], ['notFired', 'Not fired'], ['notKnown', 'Not known yet']], CLK_OPTS = [['', '—'], ['runs', 'Runs'], ['notRunning', 'Does not run'], ['notKnown', 'Not known yet']];
+const tolLabel = v => ({ breached: 'Breached', notBreached: 'Not breached', notKnown: 'Not known yet' })[v] || 'not tested';
+const trgLabel = v => ({ fired: 'Fired', notFired: 'Not fired', notKnown: 'Not known yet' })[v] || 'not tested';
+const clkLabel = v => ({ runs: 'Runs', notRunning: 'Does not run', notKnown: 'Not known yet' })[v] || 'not assessed';
+/** When a clock ends for this event: from the time recorded for the clock, else from when the entity became aware. */
+const clockEnd = (x, c) => { const k = CK(); if (!k) return ''; const r = (x.clocks || {})[c.id] || {}; return k.endsAt(c, r.startedAt || x.awareAt); };
+const clockStart = (x, c) => ((x.clocks || {})[c.id] || {}).startedAt || x.awareAt || '';
+/** The internal clock a fired trigger starts: the P10 hours from the time it fired, to its recipient. */
+const triggerDue = (x, t) => { const r = (x.triggers || {})[t.ref] || {}; if (r.fired !== 'fired' || t.hours == null || !CK()) return ''; return CK().endsAt({ hours: t.hours }, r.at || x.awareAt || ''); };
+const breachSummary = x => { const T = tolerances(), b = T.filter(([k]) => ((x.tolerances || {})[k] || {}).result === 'breached'), f = triggers().filter(t => ((x.triggers || {})[t.ref] || {}).fired === 'fired'); return { breached: b, fired: f }; };
+function exerciseCard(x) {
+  const i = exIdx(x), base = 'ex-' + sid(x.ref), why = deny('incident', x), ed = !why, T = tolerances(), TR = triggers(), CL = exClocks(), nm = id => pname(id) || id || '—';
+  const allHits = infraHits(x.infrastructure), hits = allHits.filter(e => !(x.entryIds || []).includes(e.id));
+  const present = (x.entryIds || []).map(ent).filter(Boolean);
+  const entRow = e => `<label class="cb small"><input type="checkbox" id="${base}-e-${sid(e.id)}" data-arrchk="exercises.${i}.entryIds" value="${esc(e.id)}" ${(x.entryIds || []).includes(e.id) ? 'checked' : ''} ${ed ? '' : 'disabled'}>${esc(e.id)} · ${esc(fv(e, 7) || 'system not recorded')} · ${esc(fv(e, 8) || '')}${rd(e).holder ? ' · records held by ' + esc(rd(e).holder) : ''}</label>`;
+  const stamp = s => (CK() ? CK().stamp(s) : s) || '—';
+  const settled = (by, on, what) => by ? badge(`${what} · ${nm(by)} · ${dAU(on)}`, 'b-green') : badge(what === 'Settled' ? 'not settled' : what === 'Confirmed' ? 'not confirmed' : 'not reviewed', 'b-grey');
+  return `<section class="card" id="${base}"><div class="row between"><div><div class="eyebrow">${esc(x.ref)} · ${exKind(x)}${x.date ? ' · ' + esc(dAU(x.date)) : ''}</div><div style="font:600 20px/1.2 var(--serif)">${esc(x.title || 'Untitled')}</div></div><div class="row">${settled(x.reviewedBy, x.reviewedOn, 'Reviewed')}${ed ? `<button class="btn sm ghost" data-act="rmExercise" data-i="${i}">Delete</button>` : ''}</div></div>${whyNote(why)}
+  <div class="fgrid" style="margin-top:10px">${fld('Exercise or incident', `exercises.${i}.kind`, x.kind, { select: [['exercise', 'Exercise (tabletop)'], ['incident', 'Incident']] })}${fld('Title', `exercises.${i}.title`, x.title, { ph: 'For example: The Saturday Morning Question, run 24 November 2026' })}${fld('Date', `exercises.${i}.date`, x.date, { type: 'date' })}${fld('When the ' + N.entity + ' became aware (the moment the clocks run from)', `exercises.${i}.awareAt`, x.awareAt, { type: 'datetime-local' })}</div>
+  <h3 class="sh" style="margin-top:14px">1 · Which AI systems are near this?</h3>
+  ${fld('Infrastructure affected', `exercises.${i}.infrastructure`, x.infrastructure, { ph: 'The platform, network, gateway or system where the outage or change happened' })}
+  ${hits.length ? `<div class="panel2" style="padding:10px 14px;margin-top:8px"><div class="mini" style="margin-bottom:6px">Register hits: AI uses that share this infrastructure by name (from the readiness record, the system and the platform behind it). Tick those present.</div><div class="stack" style="gap:4px">${hits.map(entRow).join('')}</div></div>` : x.infrastructure ? `<p class="small soft" style="margin:8px 0 0">${allHits.length ? `Register hits: ${esc(allHits.map(e => e.id).join(', '))}, all ticked as present.` : 'No register entry names this infrastructure. Record the shared infrastructure on each entry’s Classify screen, or tick the AI uses present below.'}</p>` : ''}
+  <details class="pr" style="margin-top:8px"><summary>AI uses present · ${present.length} ticked${present.length ? ': ' + esc(present.map(e => e.id).join(', ')) : ''}</summary><div class="stack" style="gap:4px;padding:0 16px 12px">${S.entries.map(entRow).join('') || '<span class="small soft">No register entries.</span>'}</div></details>
+  ${fld('AI uses named in the room that are not on the register (unknowns, for the hand-back list)', `exercises.${i}.unknowns`, x.unknowns, { area: true })}
+  <h3 class="sh" style="margin-top:14px">2 · What each party said, and what it showed</h3>
+  <div class="stack" style="gap:8px">${(x.parties || []).map((r, j) => `<div class="fgrid" style="grid-template-columns:minmax(120px,0.6fr) 1fr 1fr">${fld('Party', `exercises.${i}.parties.${j}.party`, r.party, { ph: 'The AI vendor; the infrastructure provider; the ' + N.entity })}${fld('Said', `exercises.${i}.parties.${j}.said`, r.said, { area: true, ph: 'The statement, with where and when it was made' })}${fld('Showed', `exercises.${i}.parties.${j}.showed`, r.showed, { area: true, ph: 'The record produced, or “nothing yet”' })}</div>`).join('')}</div>
+  <button class="btn sm" style="margin-top:6px" data-act="addParty" data-i="${i}" ${ed ? '' : 'disabled'}>Add a party</button>
+  <h3 class="sh" style="margin-top:14px">3 · ${T_('breachTest', 'Is a tolerance breached? Has a trigger fired?')}</h3>
+  ${cal() ? `<p class="small soft">Tested against ${esc(calLabel())}. ${x.breachAssertedBy ? 'Asserted by ' + esc(nm(x.breachAssertedBy)) + ' on ' + esc(dAU(x.breachAssertedOn)) + '. ' : ''}The person who asserts the test cannot review this event.</p>
+    <div class="stack" style="gap:6px">${T.map(([k, label, thr]) => `<div class="fgrid" style="grid-template-columns:minmax(0,1.2fr) 160px minmax(0,1fr)"><div class="small"><strong>${esc(label)}</strong><br><span class="soft">${esc(thr)}</span></div>${fld('Result', `exercises.${i}.tolerances.${k}.result`, ((x.tolerances || {})[k] || {}).result || '', { select: TOL_OPTS })}${fld('Basis', `exercises.${i}.tolerances.${k}.note`, ((x.tolerances || {})[k] || {}).note || '', { ph: 'What shows it' })}</div>`).join('') || '<p class="small soft">The calibration set carries no tolerances (P2).</p>'}</div>
+    <div class="stack" style="gap:6px;margin-top:10px">${TR.map(t => `<div class="fgrid" style="grid-template-columns:minmax(0,1.2fr) 160px minmax(0,1fr)"><div class="small"><strong>${esc(t.ref)} ${esc(t.trigger)}</strong><br><span class="soft">${esc(t.measure)} · ${esc(t.threshold || '')}${t.hours != null ? ' · ' + t.hours + ' hours to ' + esc(t.recipient || '') : ''}</span></div>${fld('Fired', `exercises.${i}.triggers.${t.ref}.fired`, ((x.triggers || {})[t.ref] || {}).fired || '', { select: TRG_OPTS })}${fld('When', `exercises.${i}.triggers.${t.ref}.at`, ((x.triggers || {})[t.ref] || {}).at || '', { type: 'datetime-local' })}${triggerDue(x, t) ? `<p class="mini" style="grid-column:1/-1;margin:0">Notify ${esc(t.recipient || '')} by ${esc(stamp(triggerDue(x, t)))} (${t.hours} hours from when it fired, P10).</p>` : ''}</div>`).join('') || '<p class="small soft">The calibration set carries no triggers (P10).</p>'}</div>` : `<p class="small">Load the calibration set in set-up (from the Risk Appetite app, or from a file) to test this event against the board’s tolerances and triggers.</p>`}
+  <h3 class="sh" style="margin-top:14px">4 · ${T_('clock', 'Which clocks run, and from when?')}</h3>
+  <p class="small soft">${esc((C.readiness || {}).clockNote || '')}</p>
+  ${CL.length ? `<div class="stack" style="gap:6px">${CL.map(c => { const r = (x.clocks || {})[c.id] || {}, end = clockEnd(x, c); return `<div class="fgrid" style="grid-template-columns:minmax(0,1.4fr) 150px minmax(0,1fr)"><div class="small"><strong>${esc(c.instrument)}, ${esc(c.where)}</strong> · ${esc(CK().period(c))} to ${esc(c.to)}<br><span class="soft">${esc(c.what)}. Runs from ${esc(c.from)}.</span><br><span class="mini">${esc(CK().basisLine(c))}</span></div>${fld('Runs?', `exercises.${i}.clocks.${c.id}.runs`, r.runs || '', { select: CLK_OPTS })}${fld('Runs from (blank: when the ' + N.entity + ' became aware)', `exercises.${i}.clocks.${c.id}.startedAt`, r.startedAt || '', { type: 'datetime-local' })}${r.runs === 'runs' ? `<p class="mini" style="grid-column:1/-1;margin:0">${end ? 'Ends ' + esc(stamp(end)) + ' (' + esc(CK().period(c)) + ' from ' + esc(stamp(clockStart(x, c))) + ')' : 'Record when the ' + N.entity + ' became aware to see when it ends'}.</p>` : ''}</div>`; }).join('')}</div>` : `<p class="small soft">No clocks are listed for this pack${packJur() === 'any' ? ' (a best-practice baseline names no regulator; the matter brief lists the jurisdiction’s records)' : ''}.</p>`}
+  <div class="row" style="margin-top:8px">${x.clocksConfirmedBy ? settled(x.clocksConfirmedBy, x.clocksConfirmedOn, 'Confirmed') : `<button class="btn sm" data-act="confirmClocks" data-i="${i}" ${deny('incidentClocks', x) ? 'disabled title="' + esc(deny('incidentClocks', x)) + '"' : ''}>Confirm the clocks as GC</button>`}${whyNote(x.clocksConfirmedBy ? '' : deny('incidentClocks', x))}</div>
+  <h3 class="sh" style="margin-top:14px">5 · The vendor has denied it. Do we?</h3>
+  <div class="grid2">${fld('Agreed external line (what may be said, on what evidence)', `exercises.${i}.line`, x.line, { area: true })}${fld('Who may speak to it', `exercises.${i}.speaker`, x.speaker, { ph: 'Name and role' })}</div>
+  ${fld('What may be disclosed while the cause is unknown (from the confidentiality exposure position, if one exists)', `exercises.${i}.exposure`, x.exposure, { area: true })}
+  <div class="row" style="margin-top:8px">${x.lineSettledBy ? settled(x.lineSettledBy, x.lineSettledOn, 'Settled') : `<button class="btn sm" data-act="settleLine" data-i="${i}" ${deny('incidentLine', x) ? 'disabled title="' + esc(deny('incidentLine', x)) + '"' : ''}>Settle the line as counsel</button>`}${whyNote(x.lineSettledBy ? '' : deny('incidentLine', x))}</div>
+  <h3 class="sh" style="margin-top:14px">6 · Who holds the seam?</h3>
+  ${present.length ? `<div class="tw"><table class="lg"><thead><tr><th>Entry</th><th>System</th><th>Infrastructure</th><th>Change</th></tr></thead><tbody>${present.map(e => `<tr><td class="code">${esc(e.id)}</td><td class="small">${esc(rd(e).farSystem || 'not recorded')}</td><td class="small">${esc(rd(e).farInfrastructure || 'not recorded')}</td><td class="small">${esc(rd(e).farChange || 'not recorded')}</td></tr>`).join('')}</tbody></table></div>` : '<p class="small soft">Tick the AI uses present to see their accountable persons.</p>'}
+  ${fld('The seams between them, and who holds each', `exercises.${i}.seams`, x.seams, { area: true, ph: 'Where one person’s accountability ends and the next begins; what no one holds' })}
+  <h3 class="sh" style="margin-top:14px">7 · The finding</h3>
+  <div class="grid2">${fld('Finding (what the investigators concluded; the app does not investigate)', `exercises.${i}.finding`, x.finding, { area: true })}${fld('Time the records took to produce, against the readiness record', `exercises.${i}.recordsTime`, x.recordsTime, { area: true, ph: 'Per record holder: asked on, received on; or not yet received' })}</div>
+  <h3 class="sh" style="margin-top:14px">8 · Actions</h3>
+  ${fld('Gap owners named and dates set', `exercises.${i}.actions`, x.actions, { area: true })}
+  <div class="panel2" style="padding:12px 14px;margin-top:12px"><div class="row between"><strong class="small">Independent review of this event</strong>${settled(x.reviewedBy, x.reviewedOn, 'Reviewed')}</div>${fld('Reviewer’s note', `exercises.${i}.reviewNote`, x.reviewNote, { area: true })}<div class="row" style="margin-top:6px">${x.reviewedBy ? '' : `<button class="btn sm" data-act="reviewExercise" data-i="${i}" ${deny('incidentReview', x) ? 'disabled title="' + esc(deny('incidentReview', x)) + '"' : ''}>Record the review</button>`}${whyNote(x.reviewedBy ? '' : deny('incidentReview', x))}</div></div>
+  <p class="mini" style="margin-top:8px">Recorded by ${esc(nm(x.recordedBy))}${x.recordedOn ? ', ' + esc(dAU(x.recordedOn)) : ''}. Issued as the Exercise and incident record (VE) under Outputs.</p></section>`;
+}
+const T_ = (id, text) => (C.glossary && C.glossary[id] ? T(id, text) : text);
+function exercisesSection() {
+  const why = deny('incident');
+  return `<section class="card" style="margin-top:18px"><div class="row between"><h2 class="sh" style="margin:0">${T_('validationEvent', 'Exercises and incidents')} · validation events</h2><button class="btn sm" data-act="addExercise" ${why ? 'disabled title="' + esc(why) + '"' : ''}>Add an exercise or incident</button></div>${whyNote(why)}
+    <p class="small soft">An exercise (the tabletop) or a real incident, recorded against the register: which AI uses were near it, what each party said against what it showed, the tolerance and trigger test, the clocks, the agreed line, the seams and the finding. Each feeds this assessment as a continuous-validation event. ${esc((C.readiness || {}).neverRequired || '')}</p>
+    <div class="stack" style="gap:14px;margin-top:12px">${S.exercises.map(exerciseCard).join('') || '<p class="small soft">None recorded.</p>'}</div></section>`;
+}
+/* ---------- outputs: DL11, DL12 and VE ---------- */
+const clockTable = () => { const k = CK(); if (!k) return ''; const rows = k.rows(packJur(), C.pack); return rows.length ? tbl(['Instrument', 'What', 'Notified', 'Period', 'Runs from', 'Basis'], rows) : `No clocks are listed for this pack${packJur() === 'any' ? ': a best-practice baseline names no regulator, and the matter brief lists the jurisdiction’s records' : ''}.\n\n`; };
+const triggerTable = () => { const p10 = P('P10'); return p10 ? tbl(['Ref', 'Trigger', 'Measure', 'Threshold', 'Time', 'Recipient'], p10.map(t => [t.ref, t.trigger, t.measure, t.threshold || '[not set]', t.hours != null ? t.hours + ' hours' : '[not set]', t.recipient || '[not set]'])) : ''; };
+const notRec = 'not recorded';
+function genDL11() {
+  const R = C.readiness || {};
+  let m = mdHead(O('DL11')) + `${R.intro || ''} ${R.neverRequired || ''}\n\n`;
+  m += `## Summary\n\n` + (S.entries.length ? tbl(['Arrangement', 'Entry', 'System', 'Tier', 'Consequence', 'Critical operation', 'Shared infrastructure', 'Record holder', 'Production time', 'Readiness gaps'], S.entries.map(e => [e.arrangementId, e.id, fvs(e, 7), fvs(e, 15), fvs(e, 16), opOf(e) || 'none', rd(e).infrastructure || notRec, rd(e).holder ? `${rd(e).holder}${rd(e).holderKind ? ' (' + lc1(holderKindName(rd(e).holderKind)) + ')' : ''}` : notRec, rd(e).production || notRec, String(rdGaps(e).length)])) : 'No register entries yet.\n\n');
+  m += `## Notification clocks that would run\n\n${clockTable()}${R.clockNote || ''}\n\n`;
+  if (cal()) m += `## Triggers the board has set (P10, ${calLabel()})\n\n` + triggerTable() + (P('P2') ? `The board's tolerances (P2): ${tolerances().map(([, k]) => k).join('; ')}. The thresholds are in the calibration set.\n\n` : '');
+  else m += `No calibration set is loaded, so the board's tolerances and triggers are not listed. Load it in set-up.\n\n`;
+  m += `## Readiness by arrangement\n\n`;
+  S.arrangements.forEach(a => {
+    const es = S.entries.filter(e => e.arrangementId === a.id), evs = exFor(a);
+    m += `### ${a.id} · ${a.name || ''}\n\nParties: ${a.parties || '—'}. Boundary: ${(a.boundaries || []).join(', ') || '—'}. Next contracting point: ${a.nextContracting ? dDoc(a.nextContracting) : '—'}. Named gap owner (field 26): ${a.findingOwner || '[not named]'}.\n\n`;
+    es.forEach(e => { const ex = expected(e), ob = obResult(e);
+      m += `#### ${e.id} · ${fvs(e, 7) || 'system not recorded'}\n\nSupplier: ${fvs(e, 8) || '—'}. Platform behind it: ${fvs(e, 9) || '—'}. What the AI does: ${fvs(e, 11) || '—'}\n\n`;
+      m += tbl(['Readiness', 'Recorded', 'Gap owner'], RD().map(f => { const v = rdValue(e, f.id); return [f.name, v || notRec, v ? '' : rdOwner(f.id)]; }));
+      m += `Evidence ladder: ${rungWord()} ${ex ? codeOpt(ex.value) : '—'}; obtainable ${ob.done ? codeOpt(ob.rung) : 'not yet tested'}; received ${fvs(e, 18) || '—'}; required ${fvs(e, 25) || 'awaiting counsel'}. Agreement terms on information, audit and notification (field 14): ${fvs(e, 14) || '—'}\n\n`;
+    });
+    if (evs.length) m += `Exercises and incidents recorded against this arrangement: ${evs.map(x => `${x.ref} ${exKind(x).toLowerCase()}${x.date ? ', ' + dDoc(x.date) : ''}${x.finding ? ': ' + x.finding : ''}`).join('; ')}.\n\n`;
+  });
+  const gaps = S.entries.flatMap(e => rdGaps(e).map(g => [e.id, e.arrangementId, g.name, g.owner, arr(e.arrangementId).findingOwner || '[not named]']));
+  m += `## Gaps, with owners\n\n` + (gaps.length ? tbl(['Entry', 'Arrangement', 'Not recorded', 'Owner (role)', 'Named gap owner'], gaps) : 'Every readiness field is recorded for every entry.\n\n');
+  m += `This record states what the register shows about reach to the runtime records before any incident. It does not say what the law requires; counsel decides what applies, and confirms each clock before any notification is sent.\n`;
+  return m;
+}
+function genDL12() {
+  const H = holders(), e = S.engagement, R = C.readiness || {};
+  let m = mdHead(O('DL12')) + `One letter per record holder named in the readiness record (DL11), drafted for counsel to settle and issue. The app never sends a letter: issuing it is a legal act counsel takes outside the app. ${R.neverRequired || ''}\n\n`;
+  if (!H.length) return m + 'No record holder is named yet. Record the record holder on each entry’s Classify screen (incident readiness).\n';
+  m += `## Letters\n\n` + tbl(['Letter', 'Record holder', 'Holds records for', 'Status'], H.map((h, k) => { const s = holdOf(h.key); return ['HOLD-' + String(k + 1).padStart(2, '0'), `${h.holder}${h.kind ? ' (' + lc1(holderKindName(h.kind)) + ')' : ''}`, h.entries.map(x => x.id).join(', '), s.settledBy ? `Settled by counsel: ${pname(s.settledBy)}, ${dDoc(s.settledOn)}` : 'Draft, not settled']; }));
+  H.forEach((h, k) => { const s = holdOf(h.key), no = 'HOLD-' + String(k + 1).padStart(2, '0');
+    m += `## ${no} · ${h.holder}\n\n${s.settledBy ? `Settled by counsel: ${pname(s.settledBy)}, ${dDoc(s.settledOn)}.` : 'DRAFT · not yet settled by counsel.'} Drafted only; not sent by the app.\n\n---\n\n`;
+    m += `${e.privilegeMarking || '[Privilege marking]'}\n\n${e.counselFirm || '[Counsel firm]'}, on behalf of ${e.insurer || '[' + N.Entity + ']'}\n\n**To:** ${h.holder}${h.kind ? ' (' + lc1(holderKindName(h.kind)) + ')' : ''}${s.addressee ? ', ' + s.addressee : ''}\n\n**Date:** [date of issue]\n\n**Re:** Preservation of records relating to ${h.entries.map(x => fvs(x, 7) || x.id).join('; ')}\n\n`;
+    m += `1. ${e.insurer || 'The ' + N.entity} asks ${h.holder} to preserve, from ${s.from || '[the date of this letter]'}, and not to alter, delete, overwrite or allow to expire, the following records, in the form in which they are kept:\n\n`;
+    h.entries.forEach(x => { m += `   - For ${fvs(x, 7) || x.id} (${x.id}): ${rd(x).records || '[the runtime records that would show what the system did, when and under whose authority]'}${rd(x).clause ? `, under ${rd(x).clause}` : ''}.\n`; });
+    m += `\n2. The records are to be produced to ${e.insurer || 'the ' + N.entity}, through ${e.counselFirm || 'its counsel'}, ${[...new Set(h.entries.map(x => rd(x).production).filter(Boolean))].join('; ') ? 'within the time the agreement provides (' + [...new Set(h.entries.map(x => rd(x).production).filter(Boolean))].join('; ') + ')' : 'within the time the agreement provides'}, or as soon as practicable where none is stated.\n\n`;
+    m += `3. Please confirm in writing, within [two business days], that the records are preserved, naming the person responsible for their preservation and production.\n\n`;
+    m += `4. Nothing in this letter waives any right ${e.insurer || 'the ' + N.entity} holds under the agreement${h.entries.some(x => rd(x).clause) ? ` (including ${[...new Set(h.entries.map(x => rd(x).clause).filter(Boolean))].join('; ')})` : ''} or otherwise.\n\n`;
+    if (s.note) m += `${s.note}\n\n`;
+    m += `[Signed for ${e.counselFirm || 'counsel'}]\n\n---\n\n`;
+  });
+  m += `Each draft is prepared by the app from the readiness record for counsel to settle. It states no legal conclusion; counsel decides what is required and what is sent.\n`;
+  return m;
+}
+function genVE() {
+  const R = C.readiness || {};
+  let m = mdHead(O('VE')) + `Each exercise or incident recorded against the register, as a validation event under continuous validation. ${R.neverRequired || ''}\n\n`;
+  if (!S.exercises.length) return m + 'No exercise or incident has been recorded. Record one on the Review screen.\n';
+  const k = CK();
+  S.exercises.forEach(x => {
+    const present = (x.entryIds || []).map(ent).filter(Boolean), nm = id => pname(id) || id || '—', T = tolerances(), TR = triggers(), CL = exClocks(), st = s => (k ? k.stamp(s) : s) || '—';
+    m += `## ${x.ref} · ${exKind(x)} · ${x.title || 'Untitled'}\n\n${x.date ? 'Date: ' + dDoc(x.date) + '. ' : ''}${x.awareAt ? `The ${N.entity} became aware at ${st(x.awareAt)}. ` : ''}Recorded by ${nm(x.recordedBy)}${x.recordedOn ? ', ' + dDoc(x.recordedOn) : ''}.\n\n`;
+    m += `### 1. Which AI systems were near it\n\nInfrastructure affected: ${x.infrastructure || '—'}\n\n` + (present.length ? tbl(['Entry', 'System', 'Supplier', 'Tier', 'Shared infrastructure', 'Record holder', 'Production time'], present.map(e => [e.id, fvs(e, 7), fvs(e, 8), fvs(e, 15), rd(e).infrastructure || notRec, rd(e).holder || notRec, rd(e).production || notRec])) : 'No AI use on the register was recorded as present.\n\n') + (x.unknowns ? `Named in the room but not on the register: ${x.unknowns}\n\n` : '');
+    m += `### 2. What each party said, and what it showed\n\n` + ((x.parties || []).length ? tbl(['Party', 'Said', 'Showed'], x.parties.map(r => [r.party, r.said, r.showed])) : 'Nothing recorded.\n\n');
+    m += `### 3. Tolerance and trigger test\n\n` + (cal() ? `Tested against ${calLabel()}. ${x.breachAssertedBy ? `Asserted by ${nm(x.breachAssertedBy)}, ${dDoc(x.breachAssertedOn)}.` : 'Not yet asserted.'}\n\n` + (T.length ? tbl(['Tolerance (threshold in the calibration set)', 'Result', 'Basis'], T.map(([key, label]) => { const r = (x.tolerances || {})[key] || {}; return [label, tolLabel(r.result), r.note || '']; })) : '') + (TR.length ? tbl(['Trigger', 'Measure', 'Fired', 'When', 'Notify by (P10)'], TR.map(t => { const r = (x.triggers || {})[t.ref] || {}; return [`${t.ref} ${t.trigger}`, t.measure, trgLabel(r.fired), r.at ? st(r.at) : '', triggerDue(x, t) ? `${t.recipient || ''} by ${st(triggerDue(x, t))}` : '']; })) : '') : 'No calibration set was loaded, so the event was not tested against the board’s tolerances and triggers.\n\n');
+    m += `### 4. Clocks\n\n${R.clockNote || ''}\n\n` + (CL.length ? tbl(['Instrument', 'What', 'Period', 'Runs?', 'Runs from', 'Ends', 'Basis'], CL.map(c => { const r = (x.clocks || {})[c.id] || {}; return [`${c.instrument}, ${c.where}`, c.what, k.period(c), clkLabel(r.runs), r.runs === 'runs' ? st(clockStart(x, c)) : '', r.runs === 'runs' ? st(clockEnd(x, c)) : '', k.basisLine(c)]; })) : 'No clocks are listed for this pack.\n\n') + `${x.clocksConfirmedBy ? `Clocks confirmed by the GC: ${nm(x.clocksConfirmedBy)}, ${dDoc(x.clocksConfirmedOn)}.` : 'Clocks not yet confirmed by the GC.'}\n\n`;
+    m += `### 5. The agreed external line\n\n${x.line || '[not recorded]'}\n\nWho may speak to it: ${x.speaker || '[not recorded]'}. ${x.lineSettledBy ? `Settled by counsel: ${nm(x.lineSettledBy)}, ${dDoc(x.lineSettledOn)}.` : 'Not yet settled by counsel.'}\n\n${x.exposure ? `What may be disclosed while the cause is unknown: ${x.exposure}\n\n` : ''}`;
+    m += `### 6. Who holds the seam\n\n` + (present.length ? tbl(['Entry', 'System', 'Shared infrastructure', 'Change process'], present.map(e => [e.id, rd(e).farSystem || notRec, rd(e).farInfrastructure || notRec, rd(e).farChange || notRec])) : '') + (x.seams ? `${x.seams}\n\n` : '');
+    m += `### 7. The finding\n\n${x.finding || '[not recorded]'}\n\nTime the records took to produce, against the readiness record: ${x.recordsTime || '[not recorded]'}\n\n### 8. Actions\n\n${x.actions || '[none recorded]'}\n\n`;
+    m += `Independent review: ${x.reviewedBy ? `${nm(x.reviewedBy)}, ${dDoc(x.reviewedOn)}${x.reviewNote ? '. ' + x.reviewNote : ''}` : 'not yet reviewed'}.\n\n`;
+  });
+  m += `Where an event shows a tolerance or trigger was set wrongly, that is raised for the next appetite review; this record changes no appetite position and no board direction.\n`;
+  return m;
+}
+
 /* ---------- outputs ---------- */
 let RAW = false, FORCE = '';
 const FREQ = { E0: 'n/a', E1: 'On change, or annually', E2: 'Per reporting period', E3: 'On event, within an agreed time', E4: 'On demand or scheduled', E5: 'Each window', E6: 'Each action, reported in aggregate' };
@@ -1348,7 +1550,9 @@ const OUTS = [
   { id: 'CM', name: 'Closing measures', gate: 7, gen: genCM }, { id: 'DR', name: 'Difference report', gate: 0, gen: genDR },
   { id: 'EP', name: 'Engagement plan', gate: 0, gen: genEP },
   { id: 'NC', name: 'Nonconformity and corrective action register', gate: 5, gen: genNC },
-  { id: 'AC', name: 'Agent controls', gate: 3, gen: genAC }, { id: 'ER', name: 'Evidence register, cross-walked', gate: 5, gen: genER }
+  { id: 'AC', name: 'Agent controls', gate: 3, gen: genAC }, { id: 'ER', name: 'Evidence register, cross-walked', gate: 5, gen: genER },
+  // AI Incident Accountability, Shape A (tasks A.3 to A.5)
+  { id: 'DL11', name: 'Incident readiness record', gate: 3, gen: genDL11 }, { id: 'DL12', name: 'Evidence-preservation hold', gate: 3, gen: genDL12 }, { id: 'VE', name: 'Exercise and incident record', gate: 3, gen: genVE }
 ];
 const O = id => OUTS.find(o => o.id === id) || OUTS[0];
 function fieldOut(e, n) {
@@ -1539,6 +1743,8 @@ function outStatusInfo(o) {
   const e = S.engagement, why = finalWhy(o);
   if (o.id === 'DL5' && e.annexSigned.by) return [why ? 'draft · signed' : 'final · signed', why ? 'b-ochre' : 'b-green', why];
   if (o.id === 'DL6' && e.handBack.by) return ['accepted', 'b-green', ''];
+  if (o.id === 'DL12') { const H = holders(); if (!H.length) return ['none yet', 'b-grey', 'No record holder is named in the readiness record.']; if (H.every(h => holdOf(h.key).settledBy)) return ['settled by counsel', 'b-green', '']; }
+  if (o.id === 'VE' && !S.exercises.length) return ['none yet', 'b-grey', 'No exercise or incident has been recorded.'];
   if (o.id === 'DR' && !S.diffReports.length) return ['none yet', 'b-grey', 'No difference reports have been made.'];
   return why ? ['draft', 'b-grey', why] : ['final', 'b-green', ''];
 }
@@ -1564,6 +1770,7 @@ function screenOutputs() {
   ${o.id === 'DL3' ? `<details class="pr" style="margin-bottom:12px"><summary>Categories of rule for each B3 entry</summary><div class="stack" style="padding:0 20px 18px">${b3.length ? b3.map(x => { const i = eIdx(x); return `<div><div class="mini">${esc(x.id)} · ${esc(fv(x, 7))}</div>${(x.dl3Rows || []).map((r, j) => `<div class="fgrid" style="margin-top:6px">${fld('Category of rule', `entries.${i}.dl3Rows.${j}.category`, r.category)}${fld('Record it would produce', `entries.${i}.dl3Rows.${j}.record`, r.record)}</div>`).join('')}<button class="btn sm" style="margin-top:6px" data-act="addDl3" data-id="${esc(x.id)}" ${deny('tri') ? 'disabled title="' + esc(deny('tri')) + '"' : ''}>Add category</button></div>`; }).join('') : '<p class="small soft">No B3 entries.</p>'}${whyNote(deny('tri'))}</div></details>` : ''}
   ${o.id === 'DL4' && P('P10') ? `<details class="pr" style="margin-bottom:12px"><summary>P10 triggers that apply to each item</summary><div class="stack" style="padding:0 20px 18px">${S.arrangements.filter(a => ['F1', 'F2'].includes(finding(a).type)).map(a => { const ai = arrIdx(a), all = P('P10').map(t => t.ref), sel = Array.isArray(a.dl4Triggers) ? a.dl4Triggers : all; return `<div><div class="mini">${esc(a.id)} · ${esc(a.name)}</div><div class="row" style="gap:4px 14px">${all.map(r => `<label class="cb small"><input type="checkbox" id="dl4-${sid(a.id)}-${sid(r)}" data-arrchk="arrangements.${ai}.dl4Triggers" value="${esc(r)}" ${sel.includes(r) ? 'checked' : ''} ${deny('tri') ? 'disabled' : ''}>${esc(r)}</label>`).join('')}</div></div>`; }).join('') || '<p class="small soft">No F1 or F2 findings yet.</p>'}${whyNote(deny('tri'))}</div></details>` : ''}
   ${o.id === 'DL5' ? `<details class="pr" id="annexText" style="margin-bottom:12px" ${UI.annexOpen ? 'open' : ''}><summary>Method owner's text for each section</summary><div class="stack" style="padding:0 20px 18px">${C.annexOutline.map((t, k) => fld(`${k + 1}. ${t}`, `engagement.annexText.${k + 1}`, (e.annexText || {})[k + 1] || '', { area: true })).join('')}</div></details><div class="row" style="margin-bottom:12px">${e.annexSigned.by ? badge('signed · ' + pname(e.annexSigned.by), 'b-green') : `<button class="btn sm" data-act="signAnnex" ${deny('sign') ? 'disabled' : ''}>Sign the annex</button>${whyNote(deny('sign'))}`}</div>` : ''}
+  ${o.id === 'DL12' ? `<details class="pr" style="margin-bottom:12px" open><summary>Each letter: addressee, the date preserved from, counsel’s note, and whether counsel has settled it</summary><div class="stack" style="padding:0 20px 18px;gap:12px">${holders().map((h, k) => { const hs = holdOf(h.key); return `<div><div class="row between"><div class="mini">HOLD-${String(k + 1).padStart(2, '0')} · ${esc(h.holder)}${h.kind ? ' · ' + esc(holderKindName(h.kind)) : ''} · records for ${esc(h.entries.map(x => x.id).join(', '))}</div>${hs.settledBy ? badge('settled · ' + pname(hs.settledBy) + ' · ' + dAU(hs.settledOn), 'b-green') : `<button class="btn sm" data-act="settleHold" data-k="${esc(h.key)}" ${deny('holdSettle') ? 'disabled title="' + esc(deny('holdSettle')) + '"' : ''}>Mark settled as counsel</button>`}</div><div class="fgrid" style="margin-top:6px">${fld('Addressee (name and role at the record holder)', `holds.${h.key}.addressee`, hs.addressee, { disabled: !!hs.settledBy })}${fld('Preserve from', `holds.${h.key}.from`, hs.from, { ph: 'A date and time, or leave blank for the date of the letter', disabled: !!hs.settledBy })}${fld('Counsel’s note (added to the letter)', `holds.${h.key}.note`, hs.note, { area: true, disabled: !!hs.settledBy })}</div></div>`; }).join('') || '<p class="small soft">No record holder is named in the readiness record yet.</p>'}${whyNote(deny('hold'))}<p class="small soft">A letter is drafted here and never sent by the app. Counsel settles it and issues it outside the app.</p></div></details>` : ''}
   ${o.id === 'DL6' ? `<div class="row" style="margin-bottom:12px">${e.handBack.by ? badge('accepted · ' + pname(e.handBack.by) + ' · ' + dAU(e.handBack.on), 'b-green') : `<button class="btn sm" data-act="acceptHB" ${deny('handBack') ? 'disabled' : ''}>Accept hand-back list</button>${whyNote(deny('handBack'))}`}</div>` : ''}
   ${o.id === 'DL1' ? `<p class="small soft">The register extract is read by the AI Risk Appetite app for its check K10. For each entry it holds only the function, location, tier, consequence and the evidence rung currently received. It contains no facts, sources or client wording.</p>` : ''}
   <div class="card md" aria-label="Preview">${mdToHtml(md)}</div>${gateCard(7)}<div class="stepbar"><button class="btn" data-act="outList">← All outputs</button><span></span></div>`;
@@ -1706,9 +1913,11 @@ function go(to, fromPop) { const same = UI.screen === to; UI.screen = to; UI.dra
 function setPath(path, v) {
   const pt = pathTarget(path), why = deny(pt[0], pt[1]); if (why) { toast(why); return false; }
   if (path === 'engagement.legalPhrasesText') { S.engagement.legalPhrases = String(v).split('\n').map(x => x.trim()).filter(Boolean); log('legalPhrases', 'R5', null, S.engagement.legalPhrases.length + ' phrases'); return true; }
+  if (/^exercises\.\d+\.(tolerances|triggers)\./.test(path) && (S.exercises[+path.split('.')[1]] || {}).reviewedBy) { toast('This event has been reviewed. Its tolerance and trigger test cannot change until the review is cleared by the method owner.'); return false; }
   const ks = path.split('.'), last = ks.pop(); let o = S; ks.forEach(k => { if (o[k] == null) o[k] = {}; o = o[k]; });
   const from = o[last]; if (from === v) return true; o[last] = v;
   if (/^entries\.\d+\.notDeterminable\.on$/.test(path) && v) { const nd = S.entries[+ks[1]].notDeterminable; if (!nd.since) nd.since = today(); }
+  if (/^exercises\.\d+\.(tolerances|triggers)\./.test(path)) { const x = S.exercises[+ks[1]]; x.breachAssertedBy = UI.personId; x.breachAssertedOn = today(); }
   log('edit', path, typeof from === 'object' ? null : from, v); return true;
 }
 /* ---------- the server: sign-in identity, loading and saving ---------- */
@@ -1818,9 +2027,12 @@ function hydrate(o) {
     x.fields = e.fields && typeof e.fields === 'object' ? e.fields : {}; x.peerReview = Object.assign(newEntry('', 'x').peerReview, e.peerReview); x.obtainability = Object.assign({ start: '', rungs: {} }, e.obtainability); x.obtainability.rungs = x.obtainability.rungs || {};
     x.notDeterminable = Object.assign({ on: false, question: '', who: '', since: '' }, e.notDeterminable); x.authorityTests = Array.isArray(e.authorityTests) && e.authorityTests.length === 4 ? e.authorityTests.map(t => Object.assign({ answer: null, source: '' }, t)) : b.authorityTests;
     if (!x.confChosen && e.confBasis) x.confChosen = { seen: 'high', described: 'medium', inferred: 'low' }[e.confBasis] || ''; delete x.confBasis; delete x.expectedRung; delete x.flags; delete x.confidence;
+    x.readiness = e.readiness && typeof e.readiness === 'object' && !Array.isArray(e.readiness) ? e.readiness : {};
     x.dl3Rows = Array.isArray(e.dl3Rows) ? e.dl3Rows : []; if (e.b2Support) { if (!x.confRaiseReason) x.confRaiseReason = 'Supported at B2 (from earlier file)'; } delete x.b2Support; x.arrangementId = x.arrangementId || ''; return x; });
   m.reviews = C.reviews.map(r => Object.assign({ point: r.id, by: '', on: '', result: '', notes: '' }, (o.reviews || []).find(x => x.point === r.id)));
   m.findings = [];
+  m.exercises = (Array.isArray(o.exercises) ? o.exercises : []).map(x => Object.assign(newExercise(x.ref || ''), x, { entryIds: Array.isArray(x.entryIds) ? x.entryIds : [], parties: Array.isArray(x.parties) ? x.parties : [], tolerances: x.tolerances && typeof x.tolerances === 'object' ? x.tolerances : {}, triggers: x.triggers && typeof x.triggers === 'object' ? x.triggers : {}, clocks: x.clocks && typeof x.clocks === 'object' ? x.clocks : {} }));
+  m.holds = o.holds && typeof o.holds === 'object' && !Array.isArray(o.holds) ? o.holds : {};
   return m;
 }
 function snapshotForSave() {
@@ -1942,7 +2154,35 @@ function buildExampleSuper() {
       consultations: [{ id: 'S1', askedBy: 'p11', askedOn: '2026-12-15', topic: 'How the obtainable rung was reached for the group insurer, and what would move it.', heldOn: '2026-12-17', outcome: 'Walked through the five tests. No defined trigger and the reach of the notice clause are what hold the rung; the CTO will raise both ahead of the 1 July 2027 renewal.', recordedBy: 'p8' }],
       reviews: [{ id: 'F1', askedBy: 'p1', askedOn: '2026-12-11', note: '', facts: [{ id: 'F1.1', text: 'The triage model is run by Tallowfield Analytics on Southgate’s behalf, in Australia.', answer: 'correct', correction: '', answeredBy: 'p11', answeredOn: '2026-12-11' }, { id: 'F1.2', text: 'Coastline Super staff have no access to the triage model’s settings.', answer: 'correct', correction: '', answeredBy: 'p12', answeredOn: '2026-12-14' }, { id: 'F1.3', text: 'The enterprise assistant is not connected to the member administration system.', answer: 'incorrect', correction: 'It is not connected, but two teams have pasted member correspondence into it. The acceptable-use policy was re-issued on 9 December.', answeredBy: 'p13', answeredOn: '2026-12-14' }] }] }; }
   exampleIso(X);
+  exampleIncident(X);
   S = old; return X;
+}
+/* AI Incident Accountability, Shape A: the Coastline Super example records incident readiness for each entry and one
+   exercise, the 13 November 2026 facts re-set in the trustee's chain (the scenario pack, plan task A.1): a vendor change
+   on shared infrastructure on a Friday afternoon, an AI system expanded across the same infrastructure three days
+   earlier, an outage of a critical operation, the AI vendor's denial within hours, a journalist, and the regulator's
+   question at 9am on the Saturday. Fictional throughout; nothing here is the public record of any real party. */
+function exampleIncident(X) {
+  const R = (id, o) => { const e = X.entries.find(x => x.id === id); if (e) e.readiness = o; };
+  R('REG-001', { infrastructure: 'Southgate claims platform, hosted on Meridian Cloud (fictional); Southgate API gateway', records: 'Triage routing log: each claim’s route, the timestamp and the rule version applied, held in the triage platform', holderKind: 'vendor', holder: 'Southgate Group Life Ltd (fictional)', clause: 'cl.18.3 (the trustee may examine claims statistics and financial records relating to the Policy); it does not name the routing log', production: 'Not stated in the policy; Southgate has said five business days (IV-2)', farSystem: 'Peter Andrianakis, head of insurance and claims', farInfrastructure: 'Not named: the platform is Southgate’s. Mei-Lin Zhou (CTO) holds Coastline Super’s side of the interface', farChange: 'Not named' });
+  R('REG-002', { infrastructure: 'Southgate API gateway (shared with the triage model)', records: 'Scoring request and response log with the model version; the configuration change log', holderKind: 'fourthParty', holder: 'Tallowfield Analytics (fictional)', clause: 'None found: D6-ARR01 has no term reaching Southgate’s sub-contractors', production: 'Not stated', farSystem: 'Peter Andrianakis, head of insurance and claims', farInfrastructure: 'Not named', farChange: 'Not named' });
+  R('REG-003', { infrastructure: 'Northwind Cloud tenant; Coastline Super’s identity platform', records: 'Usage log by user and team; prompts and outputs are not retained (D8-ARR02 p.6)', holderKind: 'vendor', holder: 'Northwind Cloud Pty Ltd (fictional)', clause: 'cl.8: usage reports on request', production: 'Monthly report; on request within ten business days (cl.8)', farSystem: 'Mei-Lin Zhou, chief technology officer', farInfrastructure: 'Mei-Lin Zhou, chief technology officer', farChange: 'Mei-Lin Zhou, chief technology officer' });
+  R('REG-004', { infrastructure: 'Harbourline administration platform' });
+  X.holds = { [holdKey('Southgate Group Life Ltd (fictional)')]: { addressee: 'General counsel, Southgate Group Life', from: '18 December 2026, 16:30 AEST', note: 'Please include the change tickets raised on the claims platform between 11 and 18 December 2026.', settledBy: 'p1', settledOn: '2026-12-19' } };
+  const x = Object.assign(newExercise('VE-01'), { kind: 'exercise', title: 'The Saturday Morning Question: the 13 November 2026 facts re-set in Coastline Super’s chain', date: '2026-12-18', awareAt: '2026-12-18T16:30', infrastructure: 'Southgate claims platform and its API gateway', entryIds: ['REG-001', 'REG-002'],
+    unknowns: 'A claims-correspondence drafting assistant at Southgate, named in the room by the head of insurance and claims; not on the register or the inventory',
+    parties: [{ party: 'Tallowfield Analytics (the scoring service)', said: 'Social media, Friday 19:40: “Our scoring service was not involved in today’s disruption at Southgate.”', showed: 'Nothing by Saturday 09:00. A first extract of the scoring log arrived on Tuesday 22 December.' }, { party: 'Southgate Group Life (the insurer)', said: 'Friday 18:05 by phone: a network configuration change by the hosting provider that afternoon.', showed: 'Change ticket CHG-4471 on the claims platform, Saturday 10:15 (cl.18.3).' }, { party: 'Coastline Super', said: 'Nothing publicly until the line below was settled.', showed: 'Register entries REG-001 and REG-002 and their readiness records, to counsel, Friday 17:30.' }],
+    tolerances: { [tolKey('C5 Critical disruption · Insurance claims handling')]: { result: 'notBreached', note: 'Claims handling was down 11 hours (Friday 16:30 to Saturday 03:40); the tolerance is five business days' }, [tolKey('C4 Member harm')]: { result: 'notKnown', note: 'Whether any claim was wrongly routed during the outage is not known until the routing log is produced' }, [tolKey('C2 Contract breach')]: { result: 'notKnown', note: 'Whether the gateway expansion breached the policy’s change terms is a question for counsel' } },
+    triggers: { TR4: { fired: 'fired', at: '2026-12-18T17:10' }, TR6: { fired: 'fired', at: '2026-12-15T14:00' }, TR7: { fired: 'notFired', at: '' }, TR3: { fired: 'notFired', at: '' } }, breachAssertedBy: 'p10', breachAssertedOn: '2026-12-18',
+    clocks: { 'AU-CPS230-33': { runs: 'runs', startedAt: '' }, 'AU-CPS230-42': { runs: 'notRunning', startedAt: '' }, 'AU-CPS234-35': { runs: 'notKnown', startedAt: '' }, 'AU-CPS230-59': { runs: 'notKnown', startedAt: '2026-12-15T14:00' }, 'AU-CSA-27': { runs: 'notRunning', startedAt: '' }, 'AU-NDB-26WH': { runs: 'notRunning', startedAt: '' } }, clocksConfirmedBy: 'p2', clocksConfirmedOn: '2026-12-18',
+    line: 'Coastline Super’s insurance claims handling was disrupted from 16:30 on Friday 18 December. Benefit payments and member services were not affected. We have asked each provider to preserve its records and will say whether the claims scoring service was involved when those records show it, not before.', speaker: 'Anjali Deshmukh, CRO; the chair for the board', lineSettledBy: 'p1', lineSettledOn: '2026-12-18',
+    exposure: 'No member data and no individual claim is to be described. The policy’s change terms are not to be quoted while counsel is considering C2.',
+    seams: 'The system: Peter Andrianakis. The platform: Southgate’s, with no Coastline Super person named for it. The change process on the platform: Southgate’s, with no one named on either side. The seam no one holds is the change process on shared infrastructure that reaches the scoring service.',
+    finding: 'Inject at 3:00: the cause was the scoring service’s configuration push on 15 December, which raised request volume on the shared gateway; the Friday network change exposed it. Tallowfield’s Friday statement was not borne out by its own log.',
+    recordsTime: 'Southgate routing log and change ticket: asked Saturday 09:20, received Saturday 10:15, under cl.18.3. Tallowfield scoring log: asked Saturday 09:20 through Southgate; first extract Tuesday 22 December, produced voluntarily, as no clause reaches it.',
+    actions: 'A clause reaching Tallowfield’s scoring and configuration logs at the 1 July 2027 renewal: the GC, through counsel. An accountable person for the change process on the shared platform, on both sides: the CRO, by 31 January 2027. The drafting assistant at Southgate to the hand-back list: the AI governance team.',
+    recordedBy: 'p5', recordedOn: '2026-12-18', reviewedBy: 'p9', reviewedOn: '2026-12-22', reviewNote: 'The test and the clocks were asserted by the CRO and confirmed by the GC; the records’ timing is reconciled against the readiness record. The one seam no one holds is the finding of the exercise.' });
+  X.exercises = [x];
 }
 /* The banking worked example: Wattlebrook Bank (fictional), the same bank as the worked examples in AI Board Direction
    and AI Risk Appetite. It uses the ADI pack and the calibration set the board approved in the Risk Appetite example,
@@ -2056,7 +2296,7 @@ function onClick(ev) {
   const el = ev.target.closest('[data-act]'); if (!el) return;
   if (el.tagName === 'SELECT' || (el.tagName === 'INPUT' && el.type !== 'button')) return;
   const a = el.dataset.act, d = el.dataset, e = curEntry(), m = me();
-  const gateOf = { importRegister: 'set', confirmCarried: 'facts', confirmAllCarried: 'facts', addPerson: 'setup', rmPerson: 'setup', addDoc: 'setup', addIv: 'setup', loadCal: 'setup', loadCalApp: 'setup', loadBrief: 'setup', pasteBrief: 'setup', askBrief: 'ask', addArr: 'set', rmArr: 'set', addEntry: 'facts', rmEntry: 'facts', addQ: 'ask', askFrom: 'ask', runR2: 'r2', recR4: 'r4', recR6: 'r6', recR7: 'r7', clearHit: 'r5', addExc: 'tri', addIR: 'irLog', signAnnex: 'sign', acceptHB: 'handBack', agreeGC: 'agreeGC', agreeCounsel: 'agreeCounsel', confirmCons: 'consequence', addDl3: 'tri', answerQ: 'answer', applyDet: 'answer', openOwner: 'answer' }[a];
+  const gateOf = { importRegister: 'set', confirmCarried: 'facts', confirmAllCarried: 'facts', addPerson: 'setup', rmPerson: 'setup', addDoc: 'setup', addIv: 'setup', loadCal: 'setup', loadCalApp: 'setup', loadBrief: 'setup', pasteBrief: 'setup', askBrief: 'ask', addArr: 'set', rmArr: 'set', addEntry: 'facts', rmEntry: 'facts', addQ: 'ask', askFrom: 'ask', runR2: 'r2', recR4: 'r4', recR6: 'r6', recR7: 'r7', clearHit: 'r5', addExc: 'tri', addIR: 'irLog', signAnnex: 'sign', acceptHB: 'handBack', agreeGC: 'agreeGC', agreeCounsel: 'agreeCounsel', confirmCons: 'consequence', addDl3: 'tri', answerQ: 'answer', applyDet: 'answer', openOwner: 'answer', addExercise: 'incident', addParty: 'incident', settleHold: 'holdSettle' }[a];
   if (gateOf) { const why = deny(gateOf, a === 'rmEntry' ? ent(d.id) : null); if (why) return toast(why); }
   const A = {
     go: () => { if (d.to === 'outputs') UI.outTab = ''; go(d.to); }, drawer: () => { UI.drawer = !UI.drawer; UI.acct = false; render(); },
@@ -2143,7 +2383,15 @@ function onClick(ev) {
     issueFeed: () => { const why = deny('tri'); if (why) return toast(why); S.feedback = registerExtractV2(); log('issueFeed', 'feedback', null, S.feedback.generated); render(); toast('The in-use feed is issued. AI Risk Appetite reads it on decisions 3 and 8 and in the board view.'); },
     dlExtract: () => download(`AUA-${slug(S.engagement.insurer)}-register-extract.json`, JSON.stringify(registerExtract(), null, 2), 'application/json'), cpExtract: () => copyText(JSON.stringify(registerExtract(), null, 2)),
     signAnnex: () => { S.engagement.annexSigned = { by: UI.personId, on: today() }; log('signAnnex', 'DL5', null, pname(UI.personId)); render(); },
-    acceptHB: () => { S.engagement.handBack = { by: UI.personId, on: today() }; log('handBack', 'DL6', null, 'accepted'); render(); }
+    acceptHB: () => { S.engagement.handBack = { by: UI.personId, on: today() }; log('handBack', 'DL6', null, 'accepted'); render(); },
+    // AI Incident Accountability (Shape A)
+    addExercise: () => { const x = newExercise(); x.recordedBy = UI.personId; x.recordedOn = today(); S.exercises.push(x); log('addExercise', x.ref); render(); const el = document.getElementById('ex-' + sid(x.ref)); if (el) el.scrollIntoView(); },
+    rmExercise: () => { const x = S.exercises[+d.i]; if (!x) return; if (confirm('Delete ' + x.ref + '?')) { S.exercises.splice(+d.i, 1); log('deleteExercise', x.ref); render(); } },
+    addParty: () => { const x = S.exercises[+d.i]; if (!x) return; x.parties = x.parties || []; x.parties.push({ party: '', said: '', showed: '' }); log('addParty', x.ref); render(); },
+    settleLine: () => { const x = S.exercises[+d.i]; const why = deny('incidentLine', x); if (why) return toast(why); x.lineSettledBy = UI.personId; x.lineSettledOn = today(); log('settleLine', x.ref, null, pname(UI.personId)); render(); },
+    confirmClocks: () => { const x = S.exercises[+d.i]; const why = deny('incidentClocks', x); if (why) return toast(why); x.clocksConfirmedBy = UI.personId; x.clocksConfirmedOn = today(); log('confirmClocks', x.ref, null, pname(UI.personId)); render(); },
+    reviewExercise: () => { const x = S.exercises[+d.i]; const why = deny('incidentReview', x); if (why) return toast(why); x.reviewedBy = UI.personId; x.reviewedOn = today(); log('reviewExercise', x.ref, null, pname(UI.personId)); render(); },
+    settleHold: () => { const why = deny('holdSettle'); if (why) return toast(why); S.holds = S.holds || {}; S.holds[d.k] = Object.assign(holdOf(d.k), { settledBy: UI.personId, settledOn: today() }); log('settleHold', d.k, null, pname(UI.personId)); render(); }
   };
   if (A[a]) A[a]();
 }

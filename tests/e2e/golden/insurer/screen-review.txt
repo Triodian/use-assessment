@@ -106,6 +106,13 @@ The independent reviewer logs each point. Triodian responds. Only the independen
 
 No points logged.
 
+Exercises and incidents · validation events
+Add an exercise or incident
+
+An exercise (the tabletop) or a real incident, recorded against the register: which AI uses were near it, what each party said against what it showed, the tolerance and trigger test, the clocks, the agreed line, the seams and the finding. Each feeds this assessment as a continuous-validation event. The module may be used during an incident but is never required during one: every output downloads as Word, PDF or Markdown, and the insurer's crisis tool stays on the critical path.
+
+None recorded.
+
 Phase 6 exit gate
 R7 (independent review) complete
 ← Findings
