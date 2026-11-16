@@ -52,7 +52,7 @@ The server design is the same as the AI Risk Appetite app's (`Triodian/risk_appe
   - `/profile/` – your name, organisation and email address, from `account.js`
 - `src/worker.js` – Cloudflare entry point, and the link that reads the Risk Appetite app's calibration set
 - `lib/core/` – cloud-neutral API (`api.js`), roles (`roles.js`), the server-side save check (`rbac.js`), three-way merge
-- `lib/identity/cloudflare-access.js` – verifies the Cloudflare Access sign-in
+- `lib/identity/` – sign-in: `provider.js` picks the adapter for the deployment (`IDENTITY_PROVIDER`: `access`, the default, or `oidc`), `cloudflare-access.js` verifies the Cloudflare Access sign-in, `oidc.js` is the OpenID Connect relying party for a deployment not behind Access (Entra ID, Google Workspace, Okta), `session.js` the sessions and `people.js` the shared identity database. The provider supplies the email only; roles stay in the app
 - `lib/store/d1.js` – database access (Cloudflare D1)
 - `lib/config.js` – Access team domain and AUD tag, first administrator
 - `wrangler.jsonc` – Worker configuration (name, custom domain, database, test site)
