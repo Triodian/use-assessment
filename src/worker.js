@@ -4,9 +4,13 @@
 //   identity  → lib/identity/cloudflare-access.js (Cloudflare Access sign-in)
 //   storage   → lib/store/d1.js (Cloudflare D1); users from lib/identity/people.js when IDENTITY is bound
 //   calibration → the AI Risk Appetite app's issued calibration set, through the APPETITE service binding
-//                 (plan task 1B.4); the older Access service token still works where no binding is set
+//                 (plan task 1B.4) or, on a platform without bindings, HTTPS with LINK_SECRET (lib/platform/links.js);
+//                 the older Access service token still works where neither is set
 //   email     → Cloudflare Email Service binding EMAIL, only when NOTIFY_SENDING is "on" (off by default)
+// The same handler runs on Node with SQLite (src/node.js, lib/platform/node.js): env is the platform (development plan ID.3).
 import { whoIs, handleAuth, gate, markDemo } from '../lib/identity/session.js';
+import { serviceLink, handleLink } from '../lib/platform/links.js';
+import { statusForService } from './status.js';
 import { d1Store } from '../lib/store/d1.js';
 import { identityUsers, withIdentity } from '../lib/identity/people.js';
 import { handle, issuedFeedback, assessmentEvidence } from '../lib/core/api.js';
@@ -20,9 +24,10 @@ const json = (obj, status = 200) => new Response(JSON.stringify(obj), {
  *  First choice: the APPETITE service binding to the app's AppetiteService entrypoint (no URL, no secret).
  *  Kept for one release: APPETITE_URL with an Access service token, for a site that has no binding yet. */
 export function calibrationReader(env) {
-  if (env.APPETITE && typeof env.APPETITE.calibrationSet === 'function') return async () => {
+  const link = serviceLink(env, 'APPETITE', ['calibrationSet']);
+  if (link && typeof link.calibrationSet === 'function') return async () => {
     let r;
-    try { r = await env.APPETITE.calibrationSet(); }
+    try { r = await link.calibrationSet(); }
     catch (e) { console.error(e); return { status: 503, error: 'The Risk Appetite app could not be reached through the APPETITE service binding. Check that the binding names the Risk Appetite Worker deployed in this account.' }; }
     if (!r || r.status !== 200) return { status: (r && r.status) || 502, error: (r && r.body && r.body.error) || 'The Risk Appetite app did not return a calibration set.' };
     return r.body;
@@ -69,6 +74,10 @@ export async function evidenceForService(env) {
   catch (e) { console.error(e); return { status: 500, body: { error: 'The Use Assessment app hit an error listing its artefacts.' } }; }
 }
 
+/** What the other apps may read from this one over a link (the service entrypoints in src/service.js and
+ *  src/status-service.js on Cloudflare; /api/link/<method> with LINK_SECRET elsewhere, lib/platform/links.js). */
+export const LINK_METHODS = { feedback: feedbackForService, evidence: evidenceForService, status: async env => ({ status: 200, body: await statusForService(env) }) };
+
 /** The commit this Worker was deployed from (APP_COMMIT, set by the gated workflow's deploy step), on every response
  *  as X-Triodian-Release and at /api/version, so a test can attest the deployed revision rather than infer it
  *  (penetration retest 16 Nov 2026: "live authentication results alone do not establish that the fixes are deployed";
@@ -87,6 +96,9 @@ export default {
     // Sign-in: /login (a static page), /auth/* (lib/identity/session.js). Pages need a session; assets do not.
     if (url.pathname.startsWith('/auth/')) return (await handleAuth(request, env)) || new Response('Not found', { status: 404 });
     if (!url.pathname.startsWith('/api/')) return (await gate(request, env)) || markDemo(await env.ASSETS.fetch(request), env);
+    // Another app of the suite, over HTTPS with the deployment's LINK_SECRET (only where there are no service bindings).
+    const link = await handleLink(request, env, LINK_METHODS);
+    if (link) return link;
 
     const who = await whoIs(request, env);
     if (!who.email) return json({ error: who.error }, who.status || 401);
@@ -100,7 +112,7 @@ export default {
         site: env.SITE_LABEL || '', readCalibration: calibrationReader(env),
         // The jurisdiction and sector this deployment starts in (set at install); a new engagement starts on their pack.
         defaults: { jurisdiction: String(env.DEFAULT_JURISDICTION || 'AU').toUpperCase(), sector: env.DEFAULT_SECTOR || '' },
-        linkMissing: env.APPETITE ? [] : ['the APPETITE service binding'],
+        linkMissing: serviceLink(env, 'APPETITE', ['calibrationSet']) ? [] : ['the APPETITE service binding'],
         origin: siteUrl(env, request), sender: emailSender(env), defer: p => ctx.waitUntil(p),
       }, storeFor(env));
       return json(r.body, r.status);
