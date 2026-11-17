@@ -1,6 +1,6 @@
 # AI Use Assessment
 
-[![Tests](https://github.com/Triodian/use-assessment/actions/workflows/tests.yml/badge.svg)](https://github.com/Triodian/use-assessment/actions/workflows/tests.yml) [![Licence: Apache 2.0](https://img.shields.io/badge/licence-Apache%202.0-blue.svg)](LICENSE)
+[![Tests](https://github.com/Triodian/use-assessment/actions/workflows/tests.yml/badge.svg)](https://github.com/Triodian/use-assessment/actions/workflows/tests.yml) [![Licence: Apache 2.0](https://img.shields.io/badge/licence-Apache%202.0-blue.svg)](LICENSE) [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/Triodian/use-assessment/badge)](https://scorecard.dev/viewer/?uri=github.com/Triodian/use-assessment)
 
 AI Use Assessment measures the AI used in a regulated entity's supply chain, starting with general insurers, against
 the entity's AI risk appetite. Working from the entity's own documents, without approaching providers, it builds a
